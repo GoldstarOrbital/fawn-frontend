@@ -1,0 +1,1203 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>FAWN — Banking That Makes Sense</title>
+  <meta name="description" content="Flat-fee banking for Gen Z. $0.01 per transaction, FDIC-insured, live financial news." />
+  <meta name="theme-color" content="#00c896" />
+  <meta property="og:title" content="FAWN — Banking for Gen Z" />
+  <meta property="og:description" content="Flat-fee banking. No monthly fees. Live financial news powered by AI." />
+  <meta property="og:type" content="website" />
+  <link rel="manifest" href="manifest.json" />
+  <style>
+    :root {
+      --green: #00c896;
+      --green-dark: #00a87e;
+      --green-faint: rgba(0,200,150,0.1);
+      --bg: #0d0d0d;
+      --surface: #161616;
+      --surface2: #1f1f1f;
+      --border: #2a2a2a;
+      --text: #f0f0f0;
+      --muted: #888;
+      --red: #ff4d4d;
+      --sidebar-w: 220px;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
+    body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; }
+
+    /* ── UTILS ── */
+    .hidden { display: none !important; }
+    .green { color: var(--green); }
+    .muted { color: var(--muted); }
+
+    /* ── AUTH ── */
+    #auth-screen {
+      min-height: 100vh; display: flex; flex-direction: column;
+      align-items: center; justify-content: center; padding: 24px;
+      background: radial-gradient(ellipse at top, rgba(0,200,150,0.07) 0%, transparent 60%);
+    }
+
+    .auth-logo { font-size: 2.8rem; font-weight: 800; color: var(--green); letter-spacing: -1px; margin-bottom: 6px; }
+    .auth-tagline { color: var(--muted); font-size: 0.92rem; margin-bottom: 40px; }
+
+    .auth-card {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: 20px; padding: 36px; width: 100%; max-width: 400px;
+    }
+
+    .auth-card h2 { font-size: 1.3rem; font-weight: 700; margin-bottom: 6px; }
+    .auth-card .auth-sub { color: var(--muted); font-size: 0.85rem; margin-bottom: 28px; }
+
+    .field { margin-bottom: 16px; }
+    .field label { display: block; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.6px; color: var(--muted); margin-bottom: 7px; }
+    .field input {
+      width: 100%; background: var(--surface2); border: 1px solid var(--border);
+      border-radius: 10px; padding: 13px 15px; color: var(--text); font-size: 0.95rem;
+      outline: none; transition: border-color 0.2s;
+    }
+    .field input:focus { border-color: var(--green); }
+
+    .checkbox-row { display: flex; align-items: center; gap: 10px; cursor: pointer; font-size: 0.88rem; color: var(--muted); }
+    .checkbox-row input[type=checkbox] { width: 16px; height: 16px; accent-color: var(--green); cursor: pointer; }
+
+    .btn {
+      width: 100%; padding: 14px; background: var(--green); color: #000;
+      font-weight: 700; font-size: 0.95rem; border: none; border-radius: 12px;
+      cursor: pointer; transition: all 0.2s; margin-top: 4px;
+    }
+    .btn:hover { background: var(--green-dark); }
+    .btn:active { transform: scale(0.98); }
+    .btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+
+    .auth-switch { text-align: center; margin-top: 20px; font-size: 0.85rem; color: var(--muted); }
+    .auth-switch a { color: var(--green); cursor: pointer; text-decoration: none; font-weight: 600; }
+
+    .error-box {
+      background: rgba(255,77,77,0.1); border: 1px solid rgba(255,77,77,0.3);
+      border-radius: 10px; padding: 12px 16px;
+      font-size: 0.85rem; color: var(--red); margin-top: 14px;
+    }
+
+    /* ── APP SHELL ── */
+    #app-screen { display: none; }
+
+    .shell {
+      display: grid;
+      grid-template-columns: var(--sidebar-w) 1fr;
+      min-height: 100vh;
+    }
+
+    /* Sidebar */
+    .sidebar {
+      background: var(--surface); border-right: 1px solid var(--border);
+      display: flex; flex-direction: column; padding: 20px 14px;
+      position: sticky; top: 0; height: 100vh;
+    }
+
+    .sidebar-logo { font-size: 1.7rem; font-weight: 800; color: var(--green); letter-spacing: -0.5px; margin-bottom: 36px; padding: 0 8px; }
+
+    .nav-section { font-size: 0.68rem; font-weight: 700; text-transform: uppercase; letter-spacing: 1.5px; color: #444; padding: 0 8px; margin: 16px 0 8px; }
+
+    .nav-item {
+      display: flex; align-items: center; gap: 11px;
+      padding: 10px 12px; border-radius: 10px; cursor: pointer;
+      font-size: 0.88rem; color: var(--muted); transition: all 0.15s;
+      user-select: none;
+    }
+    .nav-item:hover { background: var(--surface2); color: var(--text); }
+    .nav-item.active { background: var(--green-faint); color: var(--green); font-weight: 600; }
+    .nav-item .icon { font-size: 1rem; width: 20px; text-align: center; }
+
+    .sidebar-spacer { flex: 1; }
+
+    .user-chip {
+      display: flex; align-items: center; gap: 10px;
+      padding: 12px; border-radius: 12px; border: 1px solid var(--border);
+      cursor: pointer; transition: border-color 0.2s;
+    }
+    .user-chip:hover { border-color: var(--muted); }
+
+    .user-avatar {
+      width: 34px; height: 34px; border-radius: 50%;
+      background: var(--green); color: #000;
+      display: flex; align-items: center; justify-content: center;
+      font-weight: 800; font-size: 0.85rem; flex-shrink: 0;
+    }
+
+    .user-name { font-size: 0.82rem; font-weight: 600; color: var(--text); }
+    .user-tier { font-size: 0.7rem; color: var(--green); }
+
+    /* Main area */
+    .main { padding: 32px 36px; overflow-y: auto; }
+
+    /* ── TABS ── */
+    .tab { display: none; }
+    .tab.active { display: block; }
+
+    /* ── DASHBOARD ── */
+    .page-header { margin-bottom: 28px; }
+    .page-header h1 { font-size: 1.5rem; font-weight: 800; letter-spacing: -0.5px; }
+    .page-header p { color: var(--muted); font-size: 0.9rem; margin-top: 4px; }
+
+    .balance-card {
+      background: linear-gradient(135deg, #00c896 0%, #009e78 60%, #006e55 100%);
+      border-radius: 22px; padding: 30px; color: #000;
+      margin-bottom: 24px; position: relative; overflow: hidden;
+    }
+    .balance-card::before {
+      content: ''; position: absolute; top: -60px; right: -60px;
+      width: 220px; height: 220px; border-radius: 50%;
+      background: rgba(255,255,255,0.08); pointer-events: none;
+    }
+    .balance-card::after {
+      content: ''; position: absolute; bottom: -40px; left: 30%;
+      width: 140px; height: 140px; border-radius: 50%;
+      background: rgba(255,255,255,0.05); pointer-events: none;
+    }
+
+    .balance-eyebrow { font-size: 0.72rem; font-weight: 700; text-transform: uppercase; letter-spacing: 1.5px; opacity: 0.65; margin-bottom: 6px; }
+    .balance-amount { font-size: 3.2rem; font-weight: 800; letter-spacing: -2px; line-height: 1; margin-bottom: 20px; }
+
+    .balance-pills { display: flex; gap: 20px; flex-wrap: wrap; }
+    .balance-pill { font-size: 0.78rem; opacity: 0.7; display: flex; align-items: center; gap: 5px; }
+
+    .quick-actions { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; margin-bottom: 28px; }
+
+    .qa-btn {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: 14px; padding: 18px 12px; text-align: center;
+      cursor: pointer; transition: all 0.2s;
+    }
+    .qa-btn:hover { border-color: var(--green); background: var(--green-faint); }
+    .qa-icon { font-size: 1.4rem; margin-bottom: 8px; }
+    .qa-label { font-size: 0.78rem; color: var(--muted); font-weight: 500; }
+
+    .stats-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-bottom: 28px; }
+
+    .stat-card {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: 14px; padding: 20px;
+    }
+    .stat-label { font-size: 0.75rem; color: var(--muted); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 8px; }
+    .stat-value { font-size: 1.6rem; font-weight: 800; letter-spacing: -0.5px; }
+    .stat-value.pos { color: var(--green); }
+    .stat-value.neg { color: var(--red); }
+
+    /* ── TRANSACTIONS ── */
+    .section-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; }
+    .section-title { font-size: 0.95rem; font-weight: 700; }
+    .section-link { font-size: 0.8rem; color: var(--green); cursor: pointer; text-decoration: none; }
+
+    .tx-list { background: var(--surface); border: 1px solid var(--border); border-radius: 16px; overflow: hidden; }
+
+    .tx-item {
+      display: flex; justify-content: space-between; align-items: center;
+      padding: 15px 20px; border-bottom: 1px solid var(--border);
+      transition: background 0.15s; cursor: default;
+    }
+    .tx-item:last-child { border-bottom: none; }
+    .tx-item:hover { background: var(--surface2); }
+
+    .tx-left { display: flex; align-items: center; gap: 14px; }
+
+    .tx-icon {
+      width: 40px; height: 40px; border-radius: 12px;
+      background: var(--surface2); display: flex;
+      align-items: center; justify-content: center; font-size: 1.1rem;
+      flex-shrink: 0;
+    }
+    .tx-icon.credit { background: rgba(0,200,150,0.12); }
+    .tx-icon.debit { background: rgba(255,255,255,0.05); }
+
+    .tx-name { font-size: 0.88rem; font-weight: 600; }
+    .tx-meta { font-size: 0.75rem; color: var(--muted); margin-top: 2px; }
+
+    .tx-right { text-align: right; }
+    .tx-amount { font-size: 0.9rem; font-weight: 700; }
+    .tx-amount.credit { color: var(--green); }
+    .tx-status { font-size: 0.72rem; color: var(--muted); margin-top: 2px; }
+
+    .empty-state {
+      padding: 52px 24px; text-align: center;
+      display: flex; flex-direction: column; align-items: center; gap: 12px;
+    }
+    .empty-icon { font-size: 2.5rem; opacity: 0.4; }
+    .empty-title { font-size: 0.95rem; font-weight: 600; color: var(--muted); }
+    .empty-sub { font-size: 0.82rem; color: #555; max-width: 260px; line-height: 1.6; }
+
+    /* ── ONBOARDING BANNER ── */
+    .onboard-banner {
+      background: rgba(0,200,150,0.06); border: 1px solid rgba(0,200,150,0.2);
+      border-radius: 16px; padding: 20px 24px; margin-bottom: 24px;
+      display: flex; align-items: flex-start; gap: 16px;
+    }
+    .onboard-icon { font-size: 1.8rem; flex-shrink: 0; }
+    .onboard-title { font-size: 0.95rem; font-weight: 700; margin-bottom: 4px; }
+    .onboard-sub { font-size: 0.82rem; color: var(--muted); line-height: 1.5; }
+
+    /* ── NEWS ── */
+    .topic-row { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 14px; }
+
+    .chip {
+      padding: 6px 16px; border-radius: 100px; border: 1px solid var(--border);
+      font-size: 0.8rem; color: var(--muted); cursor: pointer; transition: all 0.15s;
+      user-select: none;
+    }
+    .chip:hover { border-color: var(--muted); color: var(--text); }
+    .chip.on { background: var(--green); color: #000; border-color: var(--green); font-weight: 700; }
+    .chip-remove { margin-left: 6px; font-size: 0.75rem; opacity: 0.7; }
+
+    .keyword-row {
+      display: flex; gap: 8px; margin-bottom: 20px;
+    }
+    .keyword-input {
+      flex: 1; background: var(--surface); border: 1px solid var(--border);
+      border-radius: 10px; padding: 9px 14px; color: var(--text);
+      font-size: 0.88rem; outline: none; transition: border-color 0.15s;
+    }
+    .keyword-input:focus { border-color: var(--green); }
+    .keyword-input::placeholder { color: var(--muted); }
+    .keyword-add-btn {
+      padding: 9px 18px; background: var(--surface); border: 1px solid var(--border);
+      border-radius: 10px; color: var(--text); font-size: 0.88rem; cursor: pointer;
+      transition: border-color 0.15s, color 0.15s; white-space: nowrap;
+    }
+    .keyword-add-btn:hover { border-color: var(--green); color: var(--green); }
+
+    .news-fetch-btn {
+      display: inline-flex; align-items: center; gap: 8px;
+      padding: 11px 24px; background: var(--green); color: #000;
+      font-weight: 700; font-size: 0.88rem; border: none;
+      border-radius: 10px; cursor: pointer; margin-bottom: 24px;
+      transition: background 0.2s;
+    }
+    .news-fetch-btn:hover { background: var(--green-dark); }
+    .news-fetch-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+    .news-card {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: 16px; padding: 28px;
+    }
+    .news-meta { display: flex; align-items: center; gap: 10px; margin-bottom: 18px; flex-wrap: wrap; }
+    .live-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--green); animation: pulse 1.8s infinite; }
+    .live-label { font-size: 0.75rem; color: var(--green); font-weight: 700; text-transform: uppercase; letter-spacing: 1px; }
+    .news-topics-used { font-size: 0.75rem; color: var(--muted); }
+    .news-count { font-size: 0.75rem; color: var(--muted); margin-left: auto; }
+
+    .news-body { font-size: 0.95rem; line-height: 1.8; color: var(--text); margin-bottom: 20px; }
+
+    .headline-list { display: flex; flex-direction: column; gap: 10px; margin-bottom: 20px; }
+    .headline-item {
+      display: flex; align-items: flex-start; gap: 12px;
+      background: var(--surface2); border: 1px solid var(--border);
+      border-radius: 12px; padding: 14px 16px;
+      text-decoration: none; color: var(--text);
+      transition: border-color 0.15s, background 0.15s;
+    }
+    .headline-item:hover { border-color: var(--green); background: #1a2a22; }
+    .headline-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--green); margin-top: 7px; flex-shrink: 0; }
+    .headline-text { flex: 1; font-size: 0.9rem; line-height: 1.5; }
+    .headline-source { font-size: 0.72rem; color: var(--muted); margin-top: 3px; }
+
+    .skeleton-line {
+      background: linear-gradient(90deg, var(--surface2) 25%, #252525 50%, var(--surface2) 75%);
+      background-size: 200% 100%; animation: shimmer 1.5s infinite;
+      border-radius: 6px; height: 14px; margin-bottom: 10px;
+    }
+    @keyframes shimmer { 0%{background-position:200% 0} 100%{background-position:-200% 0} }
+
+    .disclaimer-box {
+      border-top: 1px solid var(--border); padding-top: 16px;
+      font-size: 0.75rem; color: #555; line-height: 1.6;
+    }
+
+    /* ── MODAL ── */
+    .modal-overlay {
+      position: fixed; inset: 0; background: rgba(0,0,0,0.75);
+      display: flex; align-items: center; justify-content: center;
+      z-index: 200; padding: 20px;
+      backdrop-filter: blur(4px);
+    }
+    .modal {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: 20px; padding: 32px; width: 100%; max-width: 400px;
+    }
+    .modal h3 { font-size: 1.1rem; font-weight: 700; margin-bottom: 6px; }
+    .modal p { font-size: 0.85rem; color: var(--muted); margin-bottom: 24px; }
+    .modal-close { float: right; cursor: pointer; color: var(--muted); font-size: 1.2rem; line-height: 1; margin-top: -4px; }
+
+    .modal-actions { display: flex; gap: 12px; margin-top: 20px; }
+    .btn-outline {
+      flex: 1; padding: 12px; background: transparent; color: var(--text);
+      border: 1px solid var(--border); border-radius: 10px; font-size: 0.9rem;
+      font-weight: 600; cursor: pointer; transition: border-color 0.2s;
+    }
+    .btn-outline:hover { border-color: var(--muted); }
+    .btn-green { flex: 1; padding: 12px; background: var(--green); color: #000; border: none; border-radius: 10px; font-size: 0.9rem; font-weight: 700; cursor: pointer; }
+
+    /* ── TOAST ── */
+    #toast {
+      position: fixed; bottom: 28px; left: 50%;
+      transform: translateX(-50%) translateY(80px);
+      background: var(--surface2); border: 1px solid var(--border);
+      border-radius: 12px; padding: 12px 22px; font-size: 0.88rem;
+      transition: transform 0.3s ease; z-index: 300; white-space: nowrap;
+    }
+    #toast.show { transform: translateX(-50%) translateY(0); }
+
+    @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.3} }
+
+    /* ── LOADING SPINNER ── */
+    .spinner {
+      display: inline-block; width: 18px; height: 18px;
+      border: 2px solid var(--border); border-top-color: var(--green);
+      border-radius: 50%; animation: spin 0.7s linear infinite;
+      vertical-align: middle;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* ── TX SEARCH BAR ── */
+    .tx-search-wrap { margin-bottom: 14px; position: relative; }
+    .tx-search {
+      width: 100%; background: var(--surface); border: 1px solid var(--border);
+      border-radius: 12px; padding: 11px 14px 11px 38px; color: var(--text);
+      font-size: 0.88rem; outline: none; transition: border-color 0.15s;
+    }
+    .tx-search:focus { border-color: var(--green); }
+    .tx-search::placeholder { color: var(--muted); }
+    .tx-search-icon { position: absolute; left: 13px; top: 50%; transform: translateY(-50%); color: var(--muted); font-size: 0.9rem; pointer-events: none; }
+
+    /* ── RESPONSIVE ── */
+    @media (max-width: 768px) {
+      .shell { grid-template-columns: 1fr; }
+      .sidebar {
+        position: fixed; bottom: 0; left: 0; right: 0; top: auto;
+        height: auto; flex-direction: row;
+        align-items: center; justify-content: space-around;
+        padding: 8px 0 env(safe-area-inset-bottom, 8px);
+        border-right: none; border-top: 1px solid var(--border); border-bottom: none;
+        z-index: 100;
+      }
+      .sidebar-logo { display: none; }
+      .nav-section, .sidebar-spacer, .user-chip { display: none; }
+      .nav-item {
+        flex-direction: column; padding: 6px 16px; gap: 3px;
+        font-size: 0.68rem; white-space: nowrap; flex: 1;
+        justify-content: center; text-align: center; border-radius: 8px;
+      }
+      .nav-item .icon { font-size: 1.3rem; width: auto; }
+      .main { padding: 20px 16px 80px; }
+      .quick-actions { grid-template-columns: repeat(2, 1fr); }
+      .stats-row { grid-template-columns: 1fr 1fr; }
+      .balance-amount { font-size: 2.4rem; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- ── AUTH ── -->
+<div id="auth-screen">
+  <div class="auth-logo">fawn</div>
+  <div class="auth-tagline">Banking that makes sense. Finally.</div>
+
+  <!-- LOGIN -->
+  <div class="auth-card" id="login-card">
+    <h2>Welcome back</h2>
+    <div class="auth-sub">Sign in to your FAWN account</div>
+    <div class="field"><label>Email</label><input type="email" id="l-email" placeholder="you@example.com" onkeydown="if(event.key==='Enter')login()" /></div>
+    <div class="field"><label>Password</label><input type="password" id="l-pass" placeholder="••••••••" onkeydown="if(event.key==='Enter')login()" /></div>
+    <button class="btn" id="login-btn" onclick="login()">Sign in</button>
+    <div id="login-err" class="error-box hidden"></div>
+    <div class="auth-switch">Don't have an account? <a onclick="showRegister()">Create one free</a></div>
+  </div>
+
+  <!-- REGISTER -->
+  <div class="auth-card hidden" id="reg-card">
+    <h2>Create your account</h2>
+    <div class="auth-sub">Takes about 60 seconds. No credit check.</div>
+    <div class="field"><label>Full name</label><input type="text" id="r-name" placeholder="Alex Goldsmith" /></div>
+    <div class="field"><label>Email</label><input type="email" id="r-email" placeholder="you@example.com" /></div>
+    <div class="field"><label>Phone</label><input type="tel" id="r-phone" placeholder="5551234567" /></div>
+    <div class="field"><label>Password</label><input type="password" id="r-pass" placeholder="Create a password" /></div>
+    <div class="field">
+      <label class="checkbox-row">
+        <input type="checkbox" id="r-student" />
+        I'm a current college student (free tier)
+      </label>
+    </div>
+    <button class="btn" id="reg-btn" onclick="register()">Create account</button>
+    <div id="reg-err" class="error-box hidden"></div>
+    <div class="auth-switch">Already have an account? <a onclick="showLogin()">Sign in</a></div>
+  </div>
+</div>
+
+<!-- ── STATUS BAR ── -->
+<div id="status-bar" style="display:none;position:fixed;top:0;left:0;right:0;z-index:2000;background:#7c2d12;color:#fde8d8;font-size:0.8rem;font-weight:600;text-align:center;padding:8px 16px"></div>
+
+<!-- ── WELCOME MODAL ── -->
+<div id="welcome-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.7);z-index:1000;align-items:center;justify-content:center;padding:24px">
+  <div style="background:var(--surface);border:1px solid var(--border);border-radius:24px;padding:40px 36px;max-width:420px;width:100%;text-align:center;position:relative">
+    <div style="font-size:3rem;margin-bottom:16px">🌿</div>
+    <div style="font-size:1.5rem;font-weight:800;margin-bottom:10px">Welcome to FAWN</div>
+    <div style="color:var(--muted);font-size:0.95rem;line-height:1.6;margin-bottom:28px">
+      Your FDIC-insured account is ready. Here's what you can do:
+    </div>
+    <div style="display:flex;flex-direction:column;gap:12px;margin-bottom:32px;text-align:left">
+      <div style="display:flex;gap:14px;align-items:flex-start">
+        <span style="font-size:1.3rem">🏦</span>
+        <div><strong>Account Info</strong> — tap "Account Info" to get your routing and account numbers for direct deposits.</div>
+      </div>
+      <div style="display:flex;gap:14px;align-items:flex-start">
+        <span style="font-size:1.3rem">⚡</span>
+        <div><strong>Live News</strong> — filter real financial headlines by any keyword. Crypto, housing, your favorite stock.</div>
+      </div>
+      <div style="display:flex;gap:14px;align-items:flex-start">
+        <span style="font-size:1.3rem">🎁</span>
+        <div><strong>Refer friends</strong> — share your link and earn rewards when they join.</div>
+      </div>
+    </div>
+    <button onclick="closeWelcome()" style="width:100%;padding:14px;background:var(--green);color:#000;font-weight:800;font-size:1rem;border:none;border-radius:12px;cursor:pointer">
+      Let's go →
+    </button>
+  </div>
+</div>
+
+<!-- ── APP ── -->
+<div id="app-screen">
+  <div class="shell">
+
+    <!-- Sidebar -->
+    <aside class="sidebar">
+      <div class="sidebar-logo">fawn</div>
+
+      <div class="nav-section">Main</div>
+      <div class="nav-item active" id="nav-dashboard" onclick="showTab('dashboard')">
+        <span class="icon">🏠</span> Dashboard
+      </div>
+      <div class="nav-item" id="nav-transactions" onclick="showTab('transactions')">
+        <span class="icon">↕️</span> Transactions
+      </div>
+
+      <div class="nav-section">Discover</div>
+      <div class="nav-item" id="nav-news" onclick="showTab('news')">
+        <span class="icon">📰</span> News
+      </div>
+
+      <div class="sidebar-spacer"></div>
+
+      <div class="user-chip" onclick="confirmLogout()">
+        <div class="user-avatar" id="sidebar-avatar">?</div>
+        <div>
+          <div class="user-name" id="sidebar-name">Loading…</div>
+          <div class="user-tier" id="sidebar-tier">—</div>
+        </div>
+      </div>
+    </aside>
+
+    <!-- Main -->
+    <main class="main">
+
+      <!-- DASHBOARD -->
+      <div class="tab active" id="tab-dashboard">
+        <div class="page-header">
+          <h1 id="greeting">Good morning</h1>
+          <p id="greeting-sub">Here's what's happening with your money.</p>
+        </div>
+
+        <!-- Onboarding banner (shown when no Unit account) -->
+        <div class="onboard-banner hidden" id="onboard-banner">
+          <div class="onboard-icon">🏦</div>
+          <div>
+            <div class="onboard-title">Your bank account is being set up</div>
+            <div class="onboard-sub">We're creating your FDIC-insured deposit account. This usually takes just a moment. Add your Anthropic and Unit API keys to your <code>.env</code> file to activate all features.</div>
+          </div>
+        </div>
+
+        <div class="balance-card">
+          <div style="display:flex;justify-content:space-between;align-items:flex-start">
+            <div class="balance-eyebrow">Available Balance</div>
+            <button onclick="loadBalance()" id="balance-refresh-btn" title="Refresh balance" style="background:rgba(0,0,0,0.18);border:none;border-radius:8px;padding:5px 9px;cursor:pointer;font-size:1rem;color:#000;line-height:1;transition:background 0.15s" onmouseover="this.style.background='rgba(0,0,0,0.3)'" onmouseout="this.style.background='rgba(0,0,0,0.18)'">↻</button>
+          </div>
+          <div class="balance-amount" id="balance-amt">$—</div>
+          <div class="balance-pills">
+            <div class="balance-pill">✓ FDIC Insured</div>
+            <div class="balance-pill">✓ Fully Liquid</div>
+            <div class="balance-pill" id="acct-pill">Loading…</div>
+          </div>
+        </div>
+
+        <!-- Account Details Card -->
+        <div id="acct-details-card" style="display:none;background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:18px 22px;margin-bottom:20px">
+          <div style="font-size:0.7rem;color:var(--muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:14px">Account Details</div>
+          <div style="display:flex;gap:12px;flex-wrap:wrap">
+            <div style="flex:1;min-width:140px">
+              <div style="font-size:0.72rem;color:var(--muted);margin-bottom:4px">Routing Number</div>
+              <div style="display:flex;align-items:center;gap:8px">
+                <span id="routing-num" style="font-family:monospace;font-size:0.95rem;letter-spacing:1px">—</span>
+                <button onclick="copyField('routing-num','Routing number')" style="background:none;border:none;color:var(--muted);cursor:pointer;font-size:0.8rem;padding:2px 6px;border-radius:6px;border:1px solid var(--border)">copy</button>
+              </div>
+            </div>
+            <div style="flex:1;min-width:140px">
+              <div style="font-size:0.72rem;color:var(--muted);margin-bottom:4px">Account Number</div>
+              <div style="display:flex;align-items:center;gap:8px">
+                <span id="acct-num" style="font-family:monospace;font-size:0.95rem;letter-spacing:1px">—</span>
+                <button onclick="copyField('acct-num','Account number')" style="background:none;border:none;color:var(--muted);cursor:pointer;font-size:0.8rem;padding:2px 6px;border-radius:6px;border:1px solid var(--border)">copy</button>
+              </div>
+            </div>
+          </div>
+          <div style="font-size:0.7rem;color:var(--muted);margin-top:10px">Use these to receive direct deposits or ACH transfers.</div>
+        </div>
+
+        <div class="quick-actions">
+          <div class="qa-btn" onclick="toggleAcctDetails()">
+            <div class="qa-icon">🏦<span id="acct-check" style="display:none;font-size:0.7rem;vertical-align:super;color:var(--green)"> ✓</span></div>
+            <div class="qa-label">Account Info</div>
+          </div>
+          <div class="qa-btn" onclick="toast('Send money coming soon')">
+            <div class="qa-icon">⬆️</div>
+            <div class="qa-label">Send</div>
+          </div>
+          <div class="qa-btn" onclick="showTab('transactions')">
+            <div class="qa-icon">📋</div>
+            <div class="qa-label">History</div>
+          </div>
+          <div class="qa-btn" onclick="showTab('news')">
+            <div class="qa-icon">🧠</div>
+            <div class="qa-label">News</div>
+          </div>
+        </div>
+
+        <div class="stats-row">
+          <div class="stat-card">
+            <div class="stat-label">This month in</div>
+            <div class="stat-value pos" id="stat-in">$—</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-label">This month out</div>
+            <div class="stat-value neg" id="stat-out">$—</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-label">Total transactions</div>
+            <div class="stat-value" id="stat-count">—</div>
+          </div>
+        </div>
+
+        <!-- Referral card -->
+        <div id="referral-card" style="display:none;background:linear-gradient(135deg,rgba(0,200,150,0.08),transparent);border:1px solid rgba(0,200,150,0.25);border-radius:16px;padding:18px 22px;margin-bottom:20px">
+          <div style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:12px">
+            <div>
+              <div style="font-size:0.7rem;color:var(--green);text-transform:uppercase;letter-spacing:1px;margin-bottom:6px">Invite Friends</div>
+              <div style="font-size:1rem;font-weight:700;margin-bottom:4px">Earn rewards for every friend you bring in</div>
+              <div style="font-size:0.8rem;color:var(--muted)">Your link: <span id="referral-url" style="color:var(--text);font-family:monospace"></span></div>
+              <div style="font-size:0.8rem;color:var(--muted);margin-top:4px"><span id="referral-count">0</span> friends joined so far</div>
+            </div>
+            <button onclick="copyReferral()" style="background:var(--green);color:#000;font-weight:700;font-size:0.82rem;border:none;border-radius:10px;padding:10px 18px;cursor:pointer;white-space:nowrap">Copy link</button>
+          </div>
+        </div>
+
+        <!-- Spending breakdown -->
+        <div class="section-header" style="margin-top:28px">
+          <div class="section-title">Spending breakdown</div>
+        </div>
+        <div style="background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:20px 24px;margin-bottom:28px">
+          <div id="spending-chart"><div style="color:var(--muted);font-size:0.85rem">Loading…</div></div>
+        </div>
+
+        <div class="section-header">
+          <div class="section-title">Recent transactions</div>
+          <a class="section-link" onclick="showTab('transactions')">View all →</a>
+        </div>
+        <div class="tx-list" id="dash-tx"></div>
+      </div>
+
+      <!-- TRANSACTIONS -->
+      <div class="tab" id="tab-transactions">
+        <div class="page-header">
+          <h1>Transactions</h1>
+          <p>Your complete transaction history.</p>
+        </div>
+        <div class="tx-search-wrap">
+          <span class="tx-search-icon">🔍</span>
+          <input class="tx-search" id="tx-search" type="search" placeholder="Search by description or category…" oninput="filterTxns(this.value)" />
+        </div>
+        <div class="tx-list" id="full-tx"></div>
+      </div>
+
+      <!-- NEWS -->
+      <div class="tab" id="tab-news">
+        <div class="page-header">
+          <h1>Financial News</h1>
+          <p>Live summaries from major outlets. Stays right here — no links, no redirects.</p>
+        </div>
+
+        <!-- Filter chips -->
+        <div class="topic-row" id="topic-row">
+          <div class="chip" data-t="economy">Economy</div>
+          <div class="chip" data-t="inflation">Inflation</div>
+          <div class="chip" data-t="fed">Fed</div>
+          <div class="chip" data-t="crypto">Crypto</div>
+          <div class="chip" data-t="stocks">Stocks</div>
+          <div class="chip" data-t="housing">Housing</div>
+          <div class="chip" data-t="jobs">Jobs</div>
+          <div class="chip" data-t="student loans">Student Loans</div>
+          <div class="chip" data-t="nvidia">Nvidia</div>
+          <div class="chip" data-t="oil">Oil</div>
+        </div>
+
+        <div class="keyword-row">
+          <input class="keyword-input" id="keyword-input" type="text"
+            placeholder="Filter by keyword (e.g. Apple, tariffs, Tesla)…"
+            onkeydown="if(event.key==='Enter') addKeyword()" maxlength="40" />
+          <button class="keyword-add-btn" onclick="addKeyword()">+ Add</button>
+        </div>
+
+        <!-- Live status bar -->
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;flex-wrap:wrap;gap:8px">
+          <div style="display:flex;align-items:center;gap:8px">
+            <div class="live-dot"></div>
+            <span style="font-size:0.75rem;color:var(--green);font-weight:700;text-transform:uppercase;letter-spacing:1px">Live</span>
+            <span style="font-size:0.75rem;color:var(--muted)" id="news-count"></span>
+          </div>
+          <div style="display:flex;align-items:center;gap:12px">
+            <span style="font-size:0.72rem;color:var(--muted)">Refreshes in <span id="news-countdown">30</span>s</span>
+            <button onclick="fetchNews(true)" style="background:none;border:1px solid var(--border);color:var(--muted);font-size:0.75rem;padding:4px 12px;border-radius:20px;cursor:pointer" id="news-refresh-btn">↻ Now</button>
+          </div>
+        </div>
+
+        <!-- Article feed -->
+        <div id="news-feed">
+          <div style="color:var(--muted);font-size:0.9rem;padding:20px 0;text-align:center">Loading live news…</div>
+        </div>
+
+        <div class="disclaimer-box hidden" id="news-disc" style="margin-top:16px"></div>
+      </div>
+
+    </main>
+  </div>
+</div>
+
+<!-- TOAST -->
+<div id="toast"></div>
+
+<script>
+  const API = 'https://web-production-13d5b.up.railway.app';
+  let token = localStorage.getItem('fawn_token');
+  let user = null;
+  let allTxns = [];
+
+  // ── BOOT ──
+  window.onload = () => {
+    // Pull ?ref= from URL and stash it
+    const urlRef = new URLSearchParams(window.location.search).get('ref');
+    if (urlRef) {
+      sessionStorage.setItem('fawn_ref', urlRef);
+      // Show register tab by default when arriving via referral link
+      if (!token) setTimeout(() => showRegister(), 50);
+    }
+    // Pull ?tab= for deep links (PWA shortcuts)
+    const urlTab = new URLSearchParams(window.location.search).get('tab');
+    if (urlTab) sessionStorage.setItem('fawn_start_tab', urlTab);
+
+    token ? loadApp() : showAuthScreen();
+  };
+
+  // ── AUTH SCREENS ──
+  function showAuthScreen() {
+    document.getElementById('auth-screen').style.display = 'flex';
+    document.getElementById('app-screen').style.display = 'none';
+  }
+
+  function showRegister() {
+    document.getElementById('login-card').classList.add('hidden');
+    document.getElementById('reg-card').classList.remove('hidden');
+  }
+
+  function showLogin() {
+    document.getElementById('reg-card').classList.add('hidden');
+    document.getElementById('login-card').classList.remove('hidden');
+  }
+
+  async function login() {
+    const btn = document.getElementById('login-btn');
+    btn.disabled = true; btn.textContent = 'Signing in…';
+    clearErr('login-err');
+    try {
+      const r = await post('/auth/login', {
+        email: val('l-email'), password: val('l-pass'),
+      });
+      token = r.access_token;
+      localStorage.setItem('fawn_token', token);
+      loadApp();
+    } catch(e) { showErr('login-err', e.message); document.getElementById('l-pass').value = ''; }
+    finally { btn.disabled = false; btn.textContent = 'Sign in'; }
+  }
+
+  async function register() {
+    const btn = document.getElementById('reg-btn');
+    btn.disabled = true; btn.textContent = 'Creating account…';
+    clearErr('reg-err');
+    try {
+      const r = await post('/auth/register', {
+        full_name: val('r-name'), email: val('r-email'),
+        phone: val('r-phone'), password: val('r-pass'),
+        is_student: document.getElementById('r-student').checked,
+      });
+      token = r.access_token;
+      localStorage.setItem('fawn_token', token);
+      localStorage.setItem('fawn_new_user', '1');
+      // Apply referral code if one was in the URL
+      const ref = sessionStorage.getItem('fawn_ref');
+      if (ref) {
+        try { await authPost('/referral/use', { code: ref }); } catch {}
+        sessionStorage.removeItem('fawn_ref');
+      }
+      loadApp();
+    } catch(e) { showErr('reg-err', e.message); }
+    finally { btn.disabled = false; btn.textContent = 'Create account'; }
+  }
+
+  function logout() {
+    stopAutoRefresh();
+    stopNewsAutoRefresh();
+    token = null; user = null; allTxns = [];
+    localStorage.removeItem('fawn_token');
+    showAuthScreen();
+  }
+
+  // ── APP ──
+  async function loadApp() {
+    document.getElementById('auth-screen').style.display = 'none';
+    document.getElementById('app-screen').style.display = 'block';
+
+    try {
+      user = await authGet('/auth/me');
+    } catch { logout(); return; }
+
+    // Sidebar
+    const initials = user.full_name.split(' ').map(w => w[0]).join('').slice(0,2).toUpperCase();
+    document.getElementById('sidebar-avatar').textContent = initials;
+    document.getElementById('sidebar-name').textContent = user.full_name;
+    document.getElementById('sidebar-tier').textContent = user.is_student ? '✦ Student (free)' : 'Standard';
+
+    // Greeting
+    const h = new Date().getHours();
+    document.getElementById('greeting').textContent =
+      h < 12 ? `Good morning, ${user.full_name.split(' ')[0]}` :
+      h < 17 ? `Good afternoon, ${user.full_name.split(' ')[0]}` :
+               `Good evening, ${user.full_name.split(' ')[0]}`;
+
+    maybeShowWelcome();
+
+    if (!user.account_active) {
+      document.getElementById('onboard-banner').classList.remove('hidden');
+      document.getElementById('balance-amt').textContent = '$0.00';
+      document.getElementById('acct-pill').textContent = 'Account pending';
+      setDashTx([]);
+      setStats([]);
+    } else {
+      document.getElementById('acct-pill').textContent = 'Account active';
+      loadBalance();
+      loadTxns();
+      loadReferral();
+      startAutoRefresh();
+    }
+  }
+
+  async function loadBalance() {
+    const el = document.getElementById('balance-amt');
+    el.innerHTML = '<span class="spinner"></span>';
+    try {
+      const d = await authGet('/accounts/balance');
+      el.textContent = fmt(d.available);
+    } catch { el.textContent = '$—'; }
+  }
+
+  async function loadTxns() {
+    const fullEl = document.getElementById('full-tx');
+    const dashEl = document.getElementById('dash-tx');
+    if (fullEl) fullEl.innerHTML = '<div style="padding:32px;text-align:center"><span class="spinner"></span></div>';
+    if (dashEl) dashEl.innerHTML = '<div style="padding:32px;text-align:center"><span class="spinner"></span></div>';
+    try {
+      const d = await authGet('/transactions/?limit=50');
+      allTxns = d.transactions || [];
+      setDashTx(allTxns.slice(0, 5));
+      setFullTx(allTxns);
+      setStats(allTxns);
+      loadSpendingChart();
+    } catch {
+      if (fullEl) fullEl.innerHTML = emptyState('Could not load transactions', 'Backend may be offline.');
+      if (dashEl) dashEl.innerHTML = '';
+    }
+  }
+
+  function filterTxns(query) {
+    const q = query.trim().toLowerCase();
+    if (!q) { setFullTx(allTxns); return; }
+    const filtered = allTxns.filter(t =>
+      (t.description || '').toLowerCase().includes(q) ||
+      (t.category || '').toLowerCase().includes(q)
+    );
+    document.getElementById('full-tx').innerHTML = filtered.length
+      ? filtered.map(txCard).join('')
+      : emptyState('No matches', 'Try a different description or category.');
+  }
+
+  function setStats(txns) {
+    const now = new Date();
+    const prefix = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}`;
+    const month = txns.filter(t => (t.date || '').startsWith(prefix));
+    const totalIn = month.filter(t => t.amount > 0).reduce((s, t) => s + t.amount, 0);
+    const totalOut = month.filter(t => t.amount < 0).reduce((s, t) => s + Math.abs(t.amount), 0);
+    document.getElementById('stat-in').textContent = fmt(totalIn);
+    document.getElementById('stat-out').textContent = fmt(totalOut);
+    document.getElementById('stat-count').textContent = txns.length;
+  }
+
+  function setDashTx(txns) {
+    document.getElementById('dash-tx').innerHTML = txns.length ? txns.map(txCard).join('') : emptyState('No transactions yet', 'Your activity will show up here once you start using your account.');
+  }
+
+  function setFullTx(txns) {
+    document.getElementById('full-tx').innerHTML = txns.length ? txns.map(txCard).join('') : emptyState('No transactions yet', 'Your activity will show up here once you start using your account.');
+  }
+
+  function txCard(t) {
+    const credit = t.amount >= 0;
+    const icon = t.emoji || (credit ? '⬇️' : '⬆️');
+    return `<div class="tx-item">
+      <div class="tx-left">
+        <div class="tx-icon ${credit ? 'credit' : 'debit'}">${icon}</div>
+        <div>
+          <div class="tx-name">${escHtml(t.description || 'Transaction')}</div>
+          <div class="tx-meta">${t.category ? `<span style="color:var(--muted)">${t.category}</span> · ` : ''}${t.date || '—'}</div>
+        </div>
+      </div>
+      <div class="tx-right">
+        <div class="tx-amount ${credit ? 'credit' : ''}">${credit ? '+' : ''}${fmt(t.amount)}</div>
+        <div class="tx-status">${t.status || ''}</div>
+      </div>
+    </div>`;
+  }
+
+  async function loadSpendingChart() {
+    const el = document.getElementById('spending-chart');
+    if (!el) return;
+    try {
+      const d = await authGet('/transactions/summary');
+      const cats = (d.categories || []).slice(0, 6);
+      if (!cats.length) { el.innerHTML = '<div style="color:var(--muted);font-size:0.85rem;padding:8px 0">No spending data yet.</div>'; return; }
+      el.innerHTML = cats.map(c => `
+        <div style="margin-bottom:12px">
+          <div style="display:flex;justify-content:space-between;font-size:0.82rem;margin-bottom:4px">
+            <span>${c.emoji} ${escHtml(c.category)}</span>
+            <span style="color:var(--muted)">${fmt(c.total)} · ${c.pct}%</span>
+          </div>
+          <div style="background:var(--surface2);border-radius:100px;height:6px;overflow:hidden">
+            <div style="background:var(--green);height:100%;width:${c.pct}%;border-radius:100px;transition:width 0.6s ease"></div>
+          </div>
+        </div>`).join('');
+    } catch { el.innerHTML = ''; }
+  }
+
+  function emptyState(title, sub) {
+    return `<div class="empty-state">
+      <div class="empty-icon">🌿</div>
+      <div class="empty-title">${title}</div>
+      <div class="empty-sub">${sub}</div>
+    </div>`;
+  }
+
+  // ── NEWS ──
+  // ── NEWS ──
+  let newsTimer = null;
+  let newsCountdown = 30;
+  let newsCountdownTimer = null;
+
+  function addKeyword() {
+    const input = document.getElementById('keyword-input');
+    const kw = input.value.trim();
+    if (!kw) return;
+    input.value = '';
+    const existing = [...document.querySelectorAll('#topic-row .chip')].map(c => c.dataset.t.toLowerCase());
+    if (existing.includes(kw.toLowerCase())) { toast('Already added'); return; }
+    const row = document.getElementById('topic-row');
+    const chip = document.createElement('div');
+    chip.className = 'chip on';
+    chip.dataset.t = kw.toLowerCase();
+    chip.innerHTML = `${escHtml(kw)} <span class="chip-remove">✕</span>`;
+    chip.querySelector('.chip-remove').onclick = e => { e.stopPropagation(); chip.remove(); if (token) fetchNews(true); };
+    chip.onclick = () => { chip.classList.toggle('on'); if (token) fetchNews(true); };
+    row.appendChild(chip);
+    if (token) fetchNews(true);
+  }
+
+  document.getElementById('topic-row').addEventListener('click', e => {
+    const chip = e.target.closest('.chip');
+    if (!chip || e.target.classList.contains('chip-remove')) return;
+    chip.classList.toggle('on');
+    if (token) fetchNews(true);
+  });
+
+  function startNewsAutoRefresh() {
+    clearInterval(newsTimer);
+    clearInterval(newsCountdownTimer);
+    newsCountdown = 30;
+    newsTimer = setInterval(() => fetchNews(false), 30000);
+    newsCountdownTimer = setInterval(() => {
+      newsCountdown--;
+      const el = document.getElementById('news-countdown');
+      if (el) el.textContent = newsCountdown > 0 ? newsCountdown : 30;
+      if (newsCountdown <= 0) newsCountdown = 30;
+    }, 1000);
+  }
+
+  function stopNewsAutoRefresh() {
+    clearInterval(newsTimer);
+    clearInterval(newsCountdownTimer);
+  }
+
+  function renderArticles(articles) {
+    if (!articles.length) {
+      return '<div style="color:var(--muted);font-size:0.9rem;padding:24px 0;text-align:center">No stories matched your filters — try different keywords or clear all chips.</div>';
+    }
+    return articles.map((a, i) => `
+      <div class="article-card" id="article-${i}" style="background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:18px 20px;margin-bottom:10px;cursor:pointer;transition:border-color 0.15s" onclick="toggleArticle(${i})">
+        <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:12px">
+          <div style="flex:1">
+            <div style="font-size:0.88rem;font-weight:600;line-height:1.45;margin-bottom:6px">${escHtml(a.title)}</div>
+            <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">
+              ${a.source ? `<span style="font-size:0.7rem;color:var(--green);font-weight:700;text-transform:uppercase;letter-spacing:0.5px">${escHtml(a.source)}</span>` : ''}
+              ${a.pub_date ? `<span style="font-size:0.7rem;color:var(--muted)">${escHtml(a.pub_date)}</span>` : ''}
+            </div>
+          </div>
+          <span style="color:var(--muted);font-size:0.8rem;flex-shrink:0;margin-top:2px" id="chevron-${i}">▾</span>
+        </div>
+        <div id="article-body-${i}" style="display:none;margin-top:12px;padding-top:12px;border-top:1px solid var(--border);font-size:0.875rem;line-height:1.7;color:#ccc">
+          ${escHtml(a.summary)}
+        </div>
+      </div>`).join('');
+  }
+
+  function toggleArticle(i) {
+    const body = document.getElementById(`article-body-${i}`);
+    const chev = document.getElementById(`chevron-${i}`);
+    const card = document.getElementById(`article-${i}`);
+    const open = body.style.display === 'none';
+    body.style.display = open ? 'block' : 'none';
+    chev.textContent = open ? '▴' : '▾';
+    card.style.borderColor = open ? 'var(--green)' : 'var(--border)';
+  }
+
+  async function fetchNews(manual = false) {
+    const keywords = [...document.querySelectorAll('#topic-row .chip.on')].map(c => c.dataset.t);
+    const feed = document.getElementById('news-feed');
+    const countEl = document.getElementById('news-count');
+    const btn = document.getElementById('news-refresh-btn');
+
+    if (manual) {
+      feed.style.opacity = '0.4';
+      if (btn) { btn.disabled = true; btn.textContent = '…'; }
+    }
+
+    try {
+      const params = keywords.map(k => `keywords=${encodeURIComponent(k)}`).join('&');
+      const d = await authGet(`/news/headlines${params ? '?' + params : ''}`);
+      const articles = d.articles || [];
+
+      if (countEl) countEl.textContent = articles.length ? `· ${articles.length} stories` : '';
+      feed.innerHTML = renderArticles(articles);
+      feed.style.opacity = '1';
+
+      const disc = document.getElementById('news-disc');
+      disc.textContent = d.disclaimer || '';
+      disc.classList.toggle('hidden', !d.disclaimer);
+
+      // Reset countdown and re-sync the interval
+      newsCountdown = 30;
+      const cdEl = document.getElementById('news-countdown');
+      if (cdEl) cdEl.textContent = '30';
+      startNewsAutoRefresh();
+    } catch {
+      feed.innerHTML = '<div style="color:var(--muted);font-size:0.9rem;padding:20px 0;text-align:center">Could not reach news service. Backend running on port 8001?</div>';
+      feed.style.opacity = '1';
+    }
+
+    if (btn) { btn.disabled = false; btn.textContent = '↻ Now'; }
+  }
+
+  function escHtml(s) {
+    return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+  }
+
+  // ── TABS ──
+  function showTab(name) {
+    const tabEl = document.getElementById(`tab-${name}`);
+    const navEl = document.getElementById(`nav-${name}`);
+    if (!tabEl || !navEl) return;
+    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+    document.querySelectorAll('[id^=nav-]').forEach(n => n.classList.remove('active'));
+    tabEl.classList.add('active');
+    navEl.classList.add('active');
+    if (name === 'transactions' && user?.account_active) loadTxns();
+    if (name === 'news') {
+      if (token) { fetchNews(true); startNewsAutoRefresh(); }
+    } else {
+      stopNewsAutoRefresh();
+    }
+  }
+
+  // ── UTILS ──
+  const fmt = n => new Intl.NumberFormat('en-US', { style:'currency', currency:'USD' }).format(n || 0);
+  const val = id => { const el = document.getElementById(id); return el ? el.value.trim() : ''; };
+  const showErr = (id, msg) => { const e = document.getElementById(id); e.textContent = msg; e.classList.remove('hidden'); };
+  const clearErr = id => document.getElementById(id).classList.add('hidden');
+
+  function toast(msg, duration = 3000) {
+    const t = document.getElementById('toast');
+    t.textContent = msg; t.classList.add('show');
+    setTimeout(() => t.classList.remove('show'), duration);
+  }
+
+  async function post(path, body) {
+    const r = await fetch(API + path, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(body),
+    });
+    const data = await r.json();
+    if (!r.ok) throw new Error(data.detail || `Error ${r.status}`);
+    return data;
+  }
+
+  async function authGet(path) {
+    const r = await fetch(API + path, { headers: { Authorization: `Bearer ${token}` } });
+    const data = await r.json();
+    if (!r.ok) throw new Error(data.detail || `Error ${r.status}`);
+    return data;
+  }
+
+  async function authPost(path, body) {
+    const r = await fetch(API + path, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+      body: JSON.stringify(body),
+    });
+    const data = await r.json();
+    if (!r.ok) throw new Error(data.detail || `Error ${r.status}`);
+    return data;
+  }
+
+  function maybeShowWelcome() {
+    if (localStorage.getItem('fawn_new_user') === '1') {
+      localStorage.removeItem('fawn_new_user');
+      const modal = document.getElementById('welcome-modal');
+      if (modal) modal.style.display = 'flex';
+    }
+    // Handle PWA deep-link tab
+    const startTab = sessionStorage.getItem('fawn_start_tab');
+    if (startTab) { sessionStorage.removeItem('fawn_start_tab'); showTab(startTab); }
+  }
+
+  function closeWelcome() {
+    document.getElementById('welcome-modal').style.display = 'none';
+  }
+
+  async function loadReferral() {
+    try {
+      const d = await authGet('/referral/code');
+      document.getElementById('referral-url').textContent = d.invite_url;
+      document.getElementById('referral-count').textContent = d.referrals;
+      document.getElementById('referral-card').style.display = 'block';
+    } catch {}
+  }
+
+  function copyReferral() {
+    const url = document.getElementById('referral-url').textContent;
+    navigator.clipboard.writeText(url).then(() => toast('Invite link copied! 🎉')).catch(() => toast('Copy failed'));
+  }
+
+  let acctDetailsLoaded = false;
+  async function toggleAcctDetails() {
+    const card = document.getElementById('acct-details-card');
+    const visible = card.style.display !== 'none';
+    card.style.display = visible ? 'none' : 'block';
+    if (!visible && !acctDetailsLoaded) {
+      try {
+        const d = await authGet('/accounts/details');
+        document.getElementById('routing-num').textContent = d.routing_number || '—';
+        document.getElementById('acct-num').textContent = d.account_number || '—';
+        acctDetailsLoaded = true;
+        const chk = document.getElementById('acct-check');
+        if (chk) chk.style.display = 'inline';
+      } catch { card.style.display = 'none'; toast('Could not load account details'); }
+    }
+  }
+
+  function copyField(id, label) {
+    const text = document.getElementById(id).textContent;
+    navigator.clipboard.writeText(text).then(() => toast(`${label} copied!`)).catch(() => toast('Copy failed'));
+  }
+
+  // ── AUTO-REFRESH balance every 60s while app is open ──
+  let refreshInterval = null;
+  function startAutoRefresh() {
+    stopAutoRefresh();
+    refreshInterval = setInterval(() => {
+      if (user?.account_active) loadBalance();
+    }, 60000);
+  }
+  function stopAutoRefresh() {
+    if (refreshInterval) { clearInterval(refreshInterval); refreshInterval = null; }
+  }
+  document.addEventListener('visibilitychange', () => {
+    document.hidden ? stopAutoRefresh() : (user && startAutoRefresh());
+  });
+
+  // ── KEYBOARD SHORTCUTS ──
+  document.addEventListener('keydown', e => {
+    if (!user) return;
+    // Only fire when no input is focused
+    if (['INPUT','TEXTAREA'].includes(document.activeElement?.tagName)) return;
+    if (e.key === '1') showTab('dashboard');
+    if (e.key === '2') showTab('transactions');
+    if (e.key === '3') showTab('news');
+    if (e.key === 'r' && !e.ctrlKey && !e.metaKey) {
+      const activeTab = document.querySelector('.tab.active')?.id;
+      if (activeTab === 'tab-news') { fetchNews(true); toast('News refreshed'); }
+      else { loadBalance(); loadTxns(); toast('Refreshed'); }
+    }
+    if (e.key === 'Escape') closeWelcome();
+  });
+
+  // ── LOGOUT CONFIRMATION ──
+  window.confirmLogout = function() {
+    if (confirm('Sign out of FAWN?')) logout();
+  };
+
+  // ── STATUS BAR: show backend connectivity ──
+  async function pingBackend() {
+    const bar = document.getElementById('status-bar');
+    if (!bar) return;
+    try {
+      const r = await fetch(API + '/health');
+      if (r.ok) { bar.style.display = 'none'; }
+      else throw new Error();
+    } catch {
+      bar.style.display = 'block';
+      bar.textContent = '⚠ Cannot reach FAWN server — make sure the backend is running on port 8001';
+    }
+  }
+  setInterval(pingBackend, 30000);
+  pingBackend();
+
+  // Register service worker for PWA install support
+  if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.register('sw.js').catch(() => {});
+  }
+</script>
+</body>
+</html>

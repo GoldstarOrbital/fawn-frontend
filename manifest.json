@@ -1,0 +1,38 @@
+{
+  "name": "FAWN — Banking for Gen Z",
+  "short_name": "FAWN",
+  "description": "Flat-fee banking with live financial news. Built for college students.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#0d0d0d",
+  "theme_color": "#00c896",
+  "orientation": "portrait-primary",
+  "icons": [
+    {
+      "src": "icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ],
+  "categories": ["finance", "banking"],
+  "screenshots": [],
+  "shortcuts": [
+    {
+      "name": "Dashboard",
+      "url": "/?tab=dashboard",
+      "description": "View your balance and recent transactions"
+    },
+    {
+      "name": "News",
+      "url": "/?tab=news",
+      "description": "Live financial headlines"
+    }
+  ]
+}
