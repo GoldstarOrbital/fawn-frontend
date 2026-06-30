@@ -298,6 +298,14 @@
     .onboard-icon { font-size: 1.8rem; flex-shrink: 0; }
     .onboard-title { font-size: 0.95rem; font-weight: 700; margin-bottom: 4px; }
     .onboard-sub { font-size: 0.82rem; color: var(--muted); line-height: 1.5; }
+    .onboard-actions { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 14px; }
+    .onboard-action {
+      border: 1px solid rgba(0,200,150,0.34); border-radius: 10px; padding: 10px 14px;
+      background: var(--green); color: #000; font-size: 0.82rem; font-weight: 850;
+      cursor: pointer;
+    }
+    .onboard-action.secondary { background: transparent; color: var(--green); }
+    .onboard-action:disabled { opacity: 0.55; cursor: not-allowed; }
 
     /* ── NEWS ── */
     .topic-row { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 14px; }
@@ -607,8 +615,12 @@
         <div class="onboard-banner hidden" id="onboard-banner">
           <div class="onboard-icon">🏦</div>
           <div>
-            <div class="onboard-title">Your bank account is being set up</div>
-            <div class="onboard-sub">We're creating your FDIC-insured deposit account. This usually takes just a moment. Add your Anthropic and Unit API keys to your <code>.env</code> file to activate all features.</div>
+            <div class="onboard-title" id="onboard-title">Complete your secure banking application</div>
+            <div class="onboard-sub" id="onboard-sub">FAWN uses Unit for hosted identity verification and account opening. Your SSN and address are entered with Unit, not stored by FAWN.</div>
+            <div class="onboard-actions">
+              <button class="onboard-action" id="unit-form-btn" onclick="startUnitApplication()">Start secure application</button>
+              <button class="onboard-action secondary" onclick="refreshApplicationStatus()">Refresh status</button>
+            </div>
           </div>
         </div>
 
@@ -864,6 +876,7 @@
   let schoolDirectory = [];
   let selectedSchoolKey = null;
   let savingsLoaded = false;
+  let unitApplicationStarted = localStorage.getItem('fawn_unit_application_started') === '1';
 
   const SCHOOL_THEMES = {
     ucla: ['#2774ae', '#ffd100', 'UCLA'],
@@ -1013,16 +1026,73 @@
 
     if (!user.account_active) {
       document.getElementById('onboard-banner').classList.remove('hidden');
+      renderOnboardingState();
       document.getElementById('balance-amt').textContent = '$0.00';
       document.getElementById('acct-pill').textContent = 'Account pending';
       setDashTx([]);
       setStats([]);
     } else {
+      localStorage.removeItem('fawn_unit_application_started');
+      unitApplicationStarted = false;
+      document.getElementById('onboard-banner').classList.add('hidden');
       document.getElementById('acct-pill').textContent = 'Account active';
       loadBalance();
       loadTxns();
       loadReferral();
       startAutoRefresh();
+    }
+  }
+
+  function renderOnboardingState() {
+    const title = document.getElementById('onboard-title');
+    const sub = document.getElementById('onboard-sub');
+    const btn = document.getElementById('unit-form-btn');
+    if (!title || !sub || !btn) return;
+
+    if (user?.application_pending || unitApplicationStarted) {
+      title.textContent = 'Banking application under review';
+      sub.textContent = 'Thanks. Unit is reviewing your secure application. Refresh status after you finish the hosted form, or check back shortly.';
+      btn.textContent = 'Resume secure application';
+    } else {
+      title.textContent = 'Complete your secure banking application';
+      sub.textContent = 'FAWN uses Unit for hosted identity verification and account opening. Your SSN and address are entered with Unit, not stored by FAWN.';
+      btn.textContent = 'Start secure application';
+    }
+  }
+
+  async function startUnitApplication() {
+    const btn = document.getElementById('unit-form-btn');
+    if (btn) { btn.disabled = true; btn.textContent = 'Opening secure form...'; }
+    try {
+      const data = await authPost('/unit/application-form', {});
+      if (!data.application_form_url) throw new Error('Unit did not return an application form URL');
+      unitApplicationStarted = true;
+      localStorage.setItem('fawn_unit_application_started', '1');
+      renderOnboardingState();
+      window.open(data.application_form_url, '_blank', 'noopener,noreferrer');
+      toast('Secure Unit application opened in a new tab.');
+    } catch (e) {
+      toast(e.message || 'Could not open secure application');
+    } finally {
+      if (btn) { btn.disabled = false; renderOnboardingState(); }
+    }
+  }
+
+  async function refreshApplicationStatus() {
+    try {
+      await authPost('/accounts/refresh-application-status', {});
+    } catch {}
+    try {
+      user = await authGet('/auth/me');
+      if (user.account_active) {
+        toast('Your FAWN account is active.');
+        loadApp();
+      } else {
+        renderOnboardingState();
+        toast('Still waiting on Unit approval.');
+      }
+    } catch {
+      toast('Could not refresh status.');
     }
   }
 
