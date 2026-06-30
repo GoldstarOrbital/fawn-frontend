@@ -712,8 +712,10 @@
   }
 
   function showRegister() {
-    document.getElementById('login-card').classList.add('hidden');
-    document.getElementById('reg-card').classList.remove('hidden');
+    const ref = sessionStorage.getItem('fawn_ref');
+    const target = new URL('https://goldstarorbital.github.io/fawn-landing/signup.html');
+    if (ref) target.searchParams.set('ref', ref);
+    window.location.href = target.toString();
   }
 
   function showLogin() {
@@ -1022,7 +1024,7 @@
       if (cdEl) cdEl.textContent = '30';
       startNewsAutoRefresh();
     } catch {
-      feed.innerHTML = '<div style="color:var(--muted);font-size:0.9rem;padding:20px 0;text-align:center">Could not reach news service. Backend running on port 8001?</div>';
+      feed.innerHTML = '<div style="color:var(--muted);font-size:0.9rem;padding:20px 0;text-align:center">Could not reach news service. Try again shortly.</div>';
       feed.style.opacity = '1';
     }
 
@@ -1188,7 +1190,7 @@
       else throw new Error();
     } catch {
       bar.style.display = 'block';
-      bar.textContent = '⚠ Cannot reach FAWN server — make sure the backend is running on port 8001';
+      bar.textContent = '⚠ Cannot reach FAWN server — check your connection or try again shortly.';
     }
   }
   setInterval(pingBackend, 30000);
