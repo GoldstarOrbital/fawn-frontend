@@ -229,6 +229,66 @@
     .empty-title { font-size: 0.95rem; font-weight: 600; color: var(--muted); }
     .empty-sub { font-size: 0.82rem; color: #555; max-width: 260px; line-height: 1.6; }
 
+    /* Savings hub */
+    .savings-hero {
+      background: radial-gradient(circle at 18% 12%, rgba(0,200,150,0.22), transparent 30%),
+                  linear-gradient(135deg, rgba(245,178,50,0.14), rgba(0,200,150,0.08) 48%, rgba(255,255,255,0.03));
+      border: 1px solid rgba(0,200,150,0.24);
+      border-radius: 18px; padding: 22px; margin-bottom: 18px;
+      position: relative; overflow: hidden;
+    }
+    .savings-hero::after {
+      content: '$'; position: absolute; right: 22px; top: 8px;
+      font-size: 7rem; font-weight: 900; color: rgba(255,255,255,0.035);
+      pointer-events: none;
+    }
+    .savings-eyebrow { color: var(--green); font-size: 0.72rem; font-weight: 800; letter-spacing: 1.2px; text-transform: uppercase; margin-bottom: 8px; }
+    .savings-title { font-size: 1.45rem; font-weight: 850; letter-spacing: -0.4px; margin-bottom: 8px; max-width: 720px; }
+    .savings-copy { color: var(--muted); font-size: 0.9rem; line-height: 1.65; max-width: 740px; }
+    .savings-layout { display: grid; grid-template-columns: 290px 1fr; gap: 16px; align-items: start; }
+    .savings-panel, .savings-card, .perk-card { background: var(--surface); border: 1px solid var(--border); border-radius: 16px; padding: 18px; }
+    .savings-panel-title { font-size: 0.78rem; color: var(--muted); text-transform: uppercase; letter-spacing: 1px; font-weight: 800; margin-bottom: 10px; }
+    .school-list { display: grid; gap: 8px; max-height: 430px; overflow: auto; padding-right: 4px; }
+    .school-option {
+      width: 100%; border: 1px solid var(--border); background: var(--surface2);
+      color: var(--text); border-radius: 12px; padding: 10px 12px; text-align: left;
+      cursor: pointer; transition: transform 0.15s, border-color 0.15s, background 0.15s;
+    }
+    .school-option:hover, .school-option.active { border-color: var(--green); background: var(--green-faint); transform: translateY(-1px); }
+    .school-name { font-size: 0.86rem; font-weight: 750; }
+    .school-meta { color: var(--muted); font-size: 0.72rem; margin-top: 2px; }
+    .campus-banner {
+      border-radius: 16px; padding: 20px; margin-bottom: 16px;
+      background: linear-gradient(135deg, var(--school-a, #00c896), var(--school-b, #153b2f));
+      color: #fff; min-height: 118px; display: flex; justify-content: space-between;
+      gap: 16px; align-items: flex-end; overflow: hidden; position: relative;
+    }
+    .campus-banner::after {
+      content: attr(data-mark); position: absolute; right: 18px; top: -10px;
+      font-size: 6rem; font-weight: 900; opacity: 0.14;
+    }
+    .campus-banner h2 { font-size: 1.35rem; margin-bottom: 4px; letter-spacing: -0.3px; }
+    .campus-banner p { opacity: 0.78; font-size: 0.86rem; }
+    .save-profile-btn, .perk-link, .status-btn {
+      border: none; border-radius: 999px; background: var(--green); color: #00130f;
+      font-weight: 800; font-size: 0.78rem; padding: 9px 14px; cursor: pointer;
+      text-decoration: none; display: inline-flex; align-items: center; justify-content: center;
+      white-space: nowrap;
+    }
+    .perk-link { background: var(--surface2); color: var(--green); border: 1px solid rgba(0,200,150,0.25); }
+    .status-btn { background: var(--surface2); color: var(--text); border: 1px solid var(--border); }
+    .status-btn.active { background: var(--green); color: #00130f; border-color: var(--green); }
+    .savings-grid, .perk-grid { display: grid; grid-template-columns: repeat(2, minmax(0,1fr)); gap: 12px; }
+    .savings-card:hover, .perk-card:hover { border-color: rgba(0,200,150,0.42); transform: translateY(-1px); transition: transform 0.15s, border-color 0.15s; }
+    .deal-cat, .perk-cat { color: var(--green); font-size: 0.68rem; font-weight: 850; letter-spacing: 0.8px; text-transform: uppercase; margin-bottom: 7px; }
+    .deal-title, .perk-title { font-size: 0.94rem; font-weight: 800; margin-bottom: 5px; line-height: 1.35; }
+    .deal-copy, .perk-copy { color: var(--muted); font-size: 0.8rem; line-height: 1.55; }
+    .perk-head { display:flex; align-items:flex-start; justify-content:space-between; gap:12px; margin-bottom:8px; }
+    .perk-emoji { font-size: 1.35rem; width: 34px; height: 34px; border-radius: 12px; background: var(--surface2); display:flex; align-items:center; justify-content:center; flex-shrink:0; }
+    .perk-source { margin-top: 10px; color: #6f7774; font-size: 0.7rem; line-height: 1.45; }
+    .status-row { display:flex; flex-wrap:wrap; gap:8px; margin: 12px 0 16px; }
+    .location-note { border-left: 3px solid var(--green); padding-left: 12px; color: var(--muted); font-size: 0.82rem; line-height: 1.55; margin-top: 14px; }
+
     /* ── ONBOARDING BANNER ── */
     .onboard-banner {
       background: rgba(0,200,150,0.06); border: 1px solid rgba(0,200,150,0.2);
@@ -394,6 +454,9 @@
       .quick-actions { grid-template-columns: repeat(2, 1fr); }
       .stats-row { grid-template-columns: 1fr 1fr; }
       .balance-amount { font-size: 2.4rem; }
+      .savings-layout { grid-template-columns: 1fr; }
+      .savings-grid, .perk-grid { grid-template-columns: 1fr; }
+      .campus-banner { align-items: flex-start; flex-direction: column; }
     }
   </style>
 </head>
@@ -485,6 +548,16 @@
       <div class="nav-section">Discover</div>
       <div class="nav-item" id="nav-news" onclick="showTab('news')">
         <span class="icon">📰</span> News
+      </div>
+
+      <div class="nav-item" id="nav-campus" onclick="showTab('campus')">
+        <span class="icon">🎓</span> Campus
+      </div>
+      <div class="nav-item" id="nav-perks" onclick="showTab('perks')">
+        <span class="icon">$</span> .edu Perks
+      </div>
+      <div class="nav-item" id="nav-military" onclick="showTab('military')">
+        <span class="icon">*</span> Military
       </div>
 
       <div class="sidebar-spacer"></div>
@@ -676,6 +749,67 @@
         <div class="disclaimer-box hidden" id="news-disc" style="margin-top:16px"></div>
       </div>
 
+      <!-- CAMPUS SAVINGS -->
+      <div class="tab" id="tab-campus">
+        <div class="page-header">
+          <h1>Campus Savings</h1>
+          <p>Local student deals matched to your school and saved to your FAWN profile.</p>
+        </div>
+        <div class="savings-hero">
+          <div class="savings-eyebrow">Location based savings</div>
+          <div class="savings-title">Pick your campus and FAWN turns nearby student discounts into a usable checklist.</div>
+          <div class="savings-copy">Use the school selector to pull dining, transit, tech, wellness, and campus staples from the backend. Save the campus once and it follows you across the app.</div>
+        </div>
+        <div class="savings-layout">
+          <aside class="savings-panel">
+            <div class="savings-panel-title">Schools</div>
+            <div class="school-list" id="school-list">
+              <div style="color:var(--muted);font-size:0.85rem">Loading campuses...</div>
+            </div>
+            <div class="location-note">Tip: set your campus here, then use national .edu perks for the offers that work anywhere.</div>
+          </aside>
+          <section id="campus-detail">
+            <div class="savings-card">
+              <div class="deal-title">Choose a campus</div>
+              <div class="deal-copy">FAWN will load local savings from the launch backend.</div>
+            </div>
+          </section>
+        </div>
+      </div>
+
+      <!-- STUDENT PERKS -->
+      <div class="tab" id="tab-perks">
+        <div class="page-header">
+          <h1>.edu Perks</h1>
+          <p>National student savings you can use with a school email or student verification.</p>
+        </div>
+        <div class="savings-hero">
+          <div class="savings-eyebrow">Further .edu savings</div>
+          <div class="savings-title">The everyday student stack: entertainment, software, shopping, mobility, and calm.</div>
+          <div class="savings-copy">These are launch-ready external offers with verification paths. FAWN keeps them in one place so students can stop hunting through tabs.</div>
+        </div>
+        <div class="perk-grid" id="perks-grid"></div>
+      </div>
+
+      <!-- MILITARY SAVINGS -->
+      <div class="tab" id="tab-military">
+        <div class="page-header">
+          <h1>Military Savings</h1>
+          <p>Cadet, active duty, veteran, and family savings with profile-aware shortcuts.</p>
+        </div>
+        <div class="savings-hero">
+          <div class="savings-eyebrow">Service member savings</div>
+          <div class="savings-title">Military discounts, VA education benefits, travel passes, telecom plans, and verified marketplaces.</div>
+          <div class="savings-copy">Tell FAWN which status fits you, then use this page as the quick launch pad for savings that usually require military or veteran verification.</div>
+        </div>
+        <div class="savings-panel" style="margin-bottom:16px">
+          <div class="savings-panel-title">Profile status</div>
+          <div class="status-row" id="military-status-row"></div>
+          <div class="location-note">Status is saved to your profile so future FAWN releases can prioritize relevant offers.</div>
+        </div>
+        <div class="perk-grid" id="military-grid"></div>
+      </div>
+
     </main>
   </div>
 </div>
@@ -688,6 +822,48 @@
   let token = localStorage.getItem('fawn_token');
   let user = null;
   let allTxns = [];
+  let schoolDirectory = [];
+  let selectedSchoolKey = null;
+  let savingsLoaded = false;
+
+  const SCHOOL_THEMES = {
+    ucla: ['#2774ae', '#ffd100', 'UCLA'],
+    usc: ['#990000', '#ffcc00', 'SC'],
+    nyu: ['#57068c', '#111111', 'NYU'],
+    columbia: ['#75aadb', '#003865', 'CU'],
+    asu: ['#8c1d40', '#ffc627', 'ASU'],
+    ohio_state: ['#bb0000', '#666666', 'OSU'],
+    texas_austin: ['#bf5700', '#333f48', 'UT'],
+    michigan: ['#00274c', '#ffcb05', 'M'],
+    florida: ['#0021a5', '#fa4616', 'UF'],
+    georgia_tech: ['#b3a369', '#003057', 'GT']
+  };
+
+  const EDU_PERKS = [
+    { cat:'Entertainment', emoji:'TV', title:'Amazon Prime Student', copy:'Student Prime trial and discounted membership for eligible students.', url:'https://www.amazon.com/amazonprime/student' },
+    { cat:'Entertainment', emoji:'Music', title:'Spotify Premium Student', copy:'Discounted Spotify Premium Student plan with eligibility verification.', url:'https://www.spotify.com/us/student/' },
+    { cat:'Entertainment', emoji:'Play', title:'YouTube Premium Student', copy:'Student pricing for YouTube Premium and Music Premium where available.', url:'https://www.youtube.com/premium/student' },
+    { cat:'Software', emoji:'Dev', title:'GitHub Student Developer Pack', copy:'Developer tools and cloud credits for verified students.', url:'https://education.github.com/pack' },
+    { cat:'Software', emoji:'365', title:'Microsoft 365 Education', copy:'Free Microsoft 365 education access for eligible school email addresses.', url:'https://www.microsoft.com/en-us/education/products/office' },
+    { cat:'Software', emoji:'AI', title:'Notion for Education', copy:'Free Plus plan access for students and educators with a school email.', url:'https://www.notion.com/product/notion-for-education' },
+    { cat:'Creative', emoji:'Art', title:'Adobe Creative Cloud Students', copy:'Student and teacher pricing for Creative Cloud apps.', url:'https://www.adobe.com/creativecloud/buy/students.html' },
+    { cat:'Creative', emoji:'UI', title:'Figma Education', copy:'Free Figma education plan for verified students and educators.', url:'https://www.figma.com/education/' },
+    { cat:'Shopping', emoji:'Bag', title:'UNiDAYS', copy:'Student verification hub for retail, fashion, tech, and food offers.', url:'https://www.myunidays.com/US/en-US' },
+    { cat:'Delivery', emoji:'Food', title:'DoorDash Student DashPass', copy:'Student-priced DashPass membership for eligible students.', url:'https://www.doordash.com/dashpass/student/' },
+    { cat:'Mobility', emoji:'Ride', title:'Uber One for Students', copy:'Student member pricing for Uber One in eligible markets.', url:'https://www.uber.com/uber-one/student/' },
+    { cat:'Wellness', emoji:'Calm', title:'Headspace Student Plan', copy:'Reduced-price mindfulness subscription for eligible students.', url:'https://www.headspace.com/studentplan' }
+  ];
+
+  const MILITARY_PERKS = [
+    { cat:'Verification', emoji:'ID', title:'ID.me Military Verification', copy:'Reusable verification for active duty, veterans, spouses, dependents, and retirees.', url:'https://www.id.me/individuals/group-discounts/military' },
+    { cat:'Marketplace', emoji:'Shop', title:'GovX', copy:'Military, first responder, and government member marketplace discounts.', url:'https://www.govx.com/' },
+    { cat:'Marketplace', emoji:'PX', title:'Exchange Online Shopping', copy:'Veterans, service members, and eligible families can verify for tax-free Exchange shopping.', url:'https://www.shopmyexchange.com/Veterans' },
+    { cat:'Education', emoji:'VA', title:'GI Bill Comparison Tool', copy:'Compare VA education benefits, Yellow Ribbon participation, and school outcomes.', url:'https://www.va.gov/education/gi-bill-comparison-tool/' },
+    { cat:'Travel', emoji:'Park', title:'National Parks Military Pass', copy:'Free America the Beautiful pass options for current military, dependents, veterans, and Gold Star families.', url:'https://www.nps.gov/planyourvisit/veterans-and-gold-star-families-free-access.htm' },
+    { cat:'Wireless', emoji:'5G', title:'T-Mobile Military Plans', copy:'Military phone plans for eligible service members and families.', url:'https://www.t-mobile.com/cell-phone-plans/military-discount-plans' },
+    { cat:'Wireless', emoji:'VZ', title:'Verizon Military Discount', copy:'Monthly wireless and home internet savings for eligible military and veterans.', url:'https://www.verizon.com/discounts/military/' },
+    { cat:'Wireless', emoji:'ATT', title:'AT&T Military Discount', copy:'Wireless savings for eligible active duty, veterans, spouses, and dependents.', url:'https://www.att.com/offers/discount-program/military-discount/' }
+  ];
 
   // ── BOOT ──
   window.onload = () => {
@@ -793,6 +969,7 @@
                `Good evening, ${user.full_name.split(' ')[0]}`;
 
     maybeShowWelcome();
+    loadSavingsHub();
 
     if (!user.account_active) {
       document.getElementById('onboard-banner').classList.remove('hidden');
@@ -915,6 +1092,135 @@
 
   // ── NEWS ──
   // ── NEWS ──
+  async function loadSavingsHub() {
+    renderEduPerks();
+    renderMilitaryPerks();
+    renderMilitaryStatus();
+    await loadCampusSavings();
+  }
+
+  async function loadCampusSavings() {
+    const listEl = document.getElementById('school-list');
+    if (!listEl) return;
+    try {
+      const directory = await authGet('/deals/schools');
+      schoolDirectory = directory.schools || directory || [];
+      renderSchoolList();
+      const preferred = user?.school || schoolDirectory[0]?.key;
+      if (preferred) await selectSchool(preferred, false);
+      savingsLoaded = true;
+    } catch {
+      listEl.innerHTML = '<div style="color:var(--muted);font-size:0.85rem">Campus savings could not load. Try again after the backend wakes up.</div>';
+    }
+  }
+
+  function renderSchoolList() {
+    const listEl = document.getElementById('school-list');
+    if (!listEl) return;
+    listEl.innerHTML = schoolDirectory.map(s => `
+      <button class="school-option ${s.key === selectedSchoolKey ? 'active' : ''}" onclick="selectSchool('${escHtml(s.key)}', true)">
+        <div class="school-name">${escHtml(s.name)}</div>
+        <div class="school-meta">${escHtml(s.region || 'Student savings map')}</div>
+      </button>
+    `).join('');
+  }
+
+  async function selectSchool(key, persist = true) {
+    selectedSchoolKey = key;
+    renderSchoolList();
+    const detailEl = document.getElementById('campus-detail');
+    if (!detailEl) return;
+    detailEl.innerHTML = '<div class="savings-card"><span class="spinner"></span></div>';
+    try {
+      const school = await authGet(`/deals/schools/${encodeURIComponent(key)}`);
+      renderCampusDetail(school);
+      if (persist) {
+        const location = school.name || key;
+        try {
+          await authPatch('/auth/me', { school: key, location });
+          user = { ...user, school: key, location };
+          toast('Campus saved to your profile');
+        } catch { toast('Campus loaded, but profile save failed'); }
+      }
+    } catch {
+      detailEl.innerHTML = '<div class="savings-card"><div class="deal-title">Could not load this campus</div><div class="deal-copy">Try another school or refresh.</div></div>';
+    }
+  }
+
+  function renderCampusDetail(school) {
+    const theme = SCHOOL_THEMES[school.key] || ['#00c896', '#153b2f', (school.name || 'FAWN').slice(0, 3).toUpperCase()];
+    const categories = school.categories || {};
+    const cards = Object.entries(categories).flatMap(([cat, group]) => {
+      const items = Array.isArray(group) ? group : (group.items || []);
+      return items.map(item => ({
+        cat,
+        title: Array.isArray(item) ? item[0] : (item.title || item.name || 'Campus deal'),
+        copy: Array.isArray(item) ? item[1] : (item.description || item.copy || item.details || 'Check eligibility and show student ID where required.'),
+        tip: group.tip || ''
+      }));
+    });
+    document.getElementById('campus-detail').innerHTML = `
+      <div class="campus-banner" style="--school-a:${theme[0]};--school-b:${theme[1]}" data-mark="${escHtml(theme[2])}">
+        <div>
+          <h2>${escHtml(school.name)}</h2>
+          <p>Local campus savings map</p>
+        </div>
+        <button class="save-profile-btn" onclick="selectSchool('${escHtml(school.key)}', true)">Save campus</button>
+      </div>
+      <div class="savings-grid">
+        ${cards.length ? cards.map(card => `
+          <div class="savings-card">
+            <div class="deal-cat">${escHtml(card.cat.replace(/_/g, ' '))}</div>
+            <div class="deal-title">${escHtml(decodeEntities(card.title))}</div>
+            <div class="deal-copy">${escHtml(decodeEntities(card.copy))}</div>
+            ${card.tip ? `<div class="perk-source">${escHtml(decodeEntities(card.tip))}</div>` : ''}
+          </div>
+        `).join('') : '<div class="savings-card"><div class="deal-title">No deals yet</div><div class="deal-copy">This campus is queued for enrichment.</div></div>'}
+      </div>`;
+  }
+
+  function renderEduPerks() {
+    const el = document.getElementById('perks-grid');
+    if (el) el.innerHTML = EDU_PERKS.map(perkCard).join('');
+  }
+
+  function renderMilitaryPerks() {
+    const el = document.getElementById('military-grid');
+    if (el) el.innerHTML = MILITARY_PERKS.map(perkCard).join('');
+  }
+
+  function perkCard(p) {
+    return `<div class="perk-card">
+      <div class="perk-head">
+        <div>
+          <div class="perk-cat">${escHtml(p.cat)}</div>
+          <div class="perk-title">${escHtml(p.title)}</div>
+        </div>
+        <div class="perk-emoji">${escHtml(p.emoji)}</div>
+      </div>
+      <div class="perk-copy">${escHtml(p.copy)}</div>
+      <div style="margin-top:14px"><a class="perk-link" href="${escHtml(p.url)}" target="_blank" rel="noopener noreferrer">Open offer</a></div>
+      <div class="perk-source">External eligibility and pricing can change. Verify on the provider page before relying on an offer.</div>
+    </div>`;
+  }
+
+  function renderMilitaryStatus() {
+    const row = document.getElementById('military-status-row');
+    if (!row) return;
+    const statuses = [['none','Not military'],['cadet','Cadet / ROTC'],['active','Active duty'],['veteran','Veteran'],['family','Family']];
+    const current = user?.military_status || 'none';
+    row.innerHTML = statuses.map(([value, label]) => `<button class="status-btn ${current === value ? 'active' : ''}" onclick="setMilitaryStatus('${value}')">${label}</button>`).join('');
+  }
+
+  async function setMilitaryStatus(value) {
+    try {
+      await authPatch('/auth/me', { military_status: value });
+      user = { ...user, military_status: value };
+      renderMilitaryStatus();
+      toast('Military savings profile updated');
+    } catch { toast('Could not save military status'); }
+  }
+
   let newsTimer = null;
   let newsCountdown = 30;
   let newsCountdownTimer = null;
@@ -1036,6 +1342,16 @@
   }
 
   // ── TABS ──
+  function decodeEntities(s) {
+    const el = document.createElement('textarea');
+    let value = String(s || '');
+    for (let i = 0; i < 2; i++) {
+      el.innerHTML = value;
+      value = el.value;
+    }
+    return value;
+  }
+
   function showTab(name) {
     const tabEl = document.getElementById(`tab-${name}`);
     const navEl = document.getElementById(`nav-${name}`);
@@ -1045,6 +1361,8 @@
     tabEl.classList.add('active');
     navEl.classList.add('active');
     if (name === 'transactions' && user?.account_active) loadTxns();
+    if ((name === 'campus' || name === 'perks' || name === 'military') && token && !savingsLoaded) loadSavingsHub();
+    if (name === 'military') renderMilitaryStatus();
     if (name === 'news') {
       if (token) { fetchNews(true); startNewsAutoRefresh(); }
     } else {
@@ -1085,6 +1403,17 @@
   async function authPost(path, body) {
     const r = await fetch(API + path, {
       method: 'POST',
+      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+      body: JSON.stringify(body),
+    });
+    const data = await r.json();
+    if (!r.ok) throw new Error(data.detail || `Error ${r.status}`);
+    return data;
+  }
+
+  async function authPatch(path, body) {
+    const r = await fetch(API + path, {
+      method: 'PATCH',
       headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
       body: JSON.stringify(body),
     });
