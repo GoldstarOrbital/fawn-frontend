@@ -328,6 +328,26 @@
     }
     .keyword-add-btn:hover { border-color: var(--green); color: var(--green); }
 
+    .news-control-panel {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: 16px; padding: 16px; margin-bottom: 16px;
+    }
+    .news-query-row { display: grid; grid-template-columns: 1fr auto auto; gap: 8px; align-items: center; }
+    .news-query-input {
+      width: 100%; background: var(--surface2); border: 1px solid var(--border);
+      border-radius: 12px; padding: 11px 14px; color: var(--text);
+      font-size: 0.92rem; outline: none; transition: border-color 0.15s;
+    }
+    .news-query-input:focus { border-color: var(--green); }
+    .news-mode-row { display:flex; gap:8px; flex-wrap:wrap; margin-top:12px; align-items:center; }
+    .news-pill-btn {
+      background: var(--surface2); border: 1px solid var(--border); color: var(--muted);
+      border-radius: 999px; padding: 7px 12px; font-size: 0.76rem; font-weight: 700;
+      cursor:pointer; transition: border-color 0.15s, color 0.15s, background 0.15s;
+    }
+    .news-pill-btn:hover, .news-pill-btn.active { border-color: var(--green); color: var(--green); background: var(--green-faint); }
+    .news-signal { color: var(--muted); font-size: 0.74rem; margin-left:auto; }
+
     .news-fetch-btn {
       display: inline-flex; align-items: center; gap: 8px;
       padding: 11px 24px; background: var(--green); color: #000;
@@ -457,6 +477,8 @@
       .savings-layout { grid-template-columns: 1fr; }
       .savings-grid, .perk-grid { grid-template-columns: 1fr; }
       .campus-banner { align-items: flex-start; flex-direction: column; }
+      .news-query-row { grid-template-columns: 1fr; }
+      .news-signal { margin-left: 0; }
     }
   </style>
 </head>
@@ -705,6 +727,23 @@
         <div class="page-header">
           <h1>Financial News</h1>
           <p>Live summaries from major outlets. Stays right here — no links, no redirects.</p>
+        </div>
+
+        <div class="news-control-panel">
+          <div class="news-query-row">
+            <input class="news-query-input" id="news-query" type="search"
+              placeholder="Describe your live feed: AI banking, Nvidia, student loans, crypto regulation..."
+              onkeydown="if(event.key==='Enter') saveNewsQuery()" maxlength="120" />
+            <button class="keyword-add-btn" onclick="saveNewsQuery()">Save feed</button>
+            <button class="keyword-add-btn" id="news-notify-btn" onclick="toggleNewsNotifications()">Enable alerts</button>
+          </div>
+          <div class="news-mode-row">
+            <button class="news-pill-btn" onclick="setNewsQueryPreset('student loans scholarships FAFSA')">Student money</button>
+            <button class="news-pill-btn" onclick="setNewsQueryPreset('AI banking fintech payments')">AI fintech</button>
+            <button class="news-pill-btn" onclick="setNewsQueryPreset('military benefits veterans education')">Military benefits</button>
+            <button class="news-pill-btn" onclick="clearNewsQuery()">All markets</button>
+            <span class="news-signal" id="news-signal">1s live refresh while this tab is open</span>
+          </div>
         </div>
 
         <!-- Filter chips -->
@@ -970,6 +1009,7 @@
 
     maybeShowWelcome();
     loadSavingsHub();
+    initNewsPreferences();
 
     if (!user.account_active) {
       document.getElementById('onboard-banner').classList.remove('hidden');
@@ -1222,8 +1262,11 @@
   }
 
   let newsTimer = null;
-  let newsCountdown = 30;
+  let newsCountdown = 1;
   let newsCountdownTimer = null;
+  let newsInFlight = false;
+  let newsSeen = new Set(JSON.parse(localStorage.getItem('fawn_news_seen') || '[]'));
+  let newsNotifications = localStorage.getItem('fawn_news_notifications') === '1';
 
   function addKeyword() {
     const input = document.getElementById('keyword-input');
@@ -1243,6 +1286,63 @@
     if (token) fetchNews(true);
   }
 
+  function initNewsPreferences() {
+    const query = localStorage.getItem('fawn_news_query') || '';
+    const input = document.getElementById('news-query');
+    if (input) input.value = query;
+    updateNewsNotifyButton();
+  }
+
+  function getNewsQuery() {
+    return (localStorage.getItem('fawn_news_query') || '').trim();
+  }
+
+  function saveNewsQuery() {
+    const input = document.getElementById('news-query');
+    const query = (input?.value || '').trim();
+    localStorage.setItem('fawn_news_query', query);
+    newsSeen = new Set();
+    localStorage.removeItem('fawn_news_seen');
+    toast(query ? 'News feed saved' : 'Showing all market news');
+    if (token) fetchNews(true);
+  }
+
+  function setNewsQueryPreset(query) {
+    const input = document.getElementById('news-query');
+    if (input) input.value = query;
+    saveNewsQuery();
+  }
+
+  function clearNewsQuery() {
+    const input = document.getElementById('news-query');
+    if (input) input.value = '';
+    saveNewsQuery();
+  }
+
+  async function toggleNewsNotifications() {
+    if (!('Notification' in window)) { toast('Browser notifications are not supported here'); return; }
+    if (!newsNotifications) {
+      const permission = Notification.permission === 'granted' ? 'granted' : await Notification.requestPermission();
+      if (permission !== 'granted') { toast('Notifications were not enabled'); return; }
+      newsNotifications = true;
+      localStorage.setItem('fawn_news_notifications', '1');
+      toast('News alerts enabled');
+    } else {
+      newsNotifications = false;
+      localStorage.removeItem('fawn_news_notifications');
+      toast('News alerts paused');
+    }
+    updateNewsNotifyButton();
+  }
+
+  function updateNewsNotifyButton() {
+    const btn = document.getElementById('news-notify-btn');
+    if (!btn) return;
+    const granted = 'Notification' in window && Notification.permission === 'granted';
+    btn.textContent = newsNotifications && granted ? 'Alerts on' : 'Enable alerts';
+    btn.classList.toggle('active', newsNotifications && granted);
+  }
+
   document.getElementById('topic-row').addEventListener('click', e => {
     const chip = e.target.closest('.chip');
     if (!chip || e.target.classList.contains('chip-remove')) return;
@@ -1253,13 +1353,13 @@
   function startNewsAutoRefresh() {
     clearInterval(newsTimer);
     clearInterval(newsCountdownTimer);
-    newsCountdown = 30;
-    newsTimer = setInterval(() => fetchNews(false), 30000);
+    newsCountdown = 1;
+    newsTimer = setInterval(() => fetchNews(false), 1000);
     newsCountdownTimer = setInterval(() => {
       newsCountdown--;
       const el = document.getElementById('news-countdown');
-      if (el) el.textContent = newsCountdown > 0 ? newsCountdown : 30;
-      if (newsCountdown <= 0) newsCountdown = 30;
+      if (el) el.textContent = newsCountdown > 0 ? newsCountdown : 1;
+      if (newsCountdown <= 0) newsCountdown = 1;
     }, 1000);
   }
 
@@ -1301,22 +1401,32 @@
   }
 
   async function fetchNews(manual = false) {
+    if (newsInFlight && !manual) return;
+    newsInFlight = true;
     const keywords = [...document.querySelectorAll('#topic-row .chip.on')].map(c => c.dataset.t);
+    const query = getNewsQuery();
     const feed = document.getElementById('news-feed');
     const countEl = document.getElementById('news-count');
     const btn = document.getElementById('news-refresh-btn');
+    const signal = document.getElementById('news-signal');
 
     if (manual) {
       feed.style.opacity = '0.4';
-      if (btn) { btn.disabled = true; btn.textContent = '…'; }
+      if (btn) { btn.disabled = true; btn.textContent = '...'; }
     }
 
     try {
-      const params = keywords.map(k => `keywords=${encodeURIComponent(k)}`).join('&');
+      const params = [
+        query ? `q=${encodeURIComponent(query)}` : '',
+        ...keywords.map(k => `keywords=${encodeURIComponent(k)}`),
+        'limit=30'
+      ].filter(Boolean).join('&');
       const d = await authGet(`/news/headlines${params ? '?' + params : ''}`);
       const articles = d.articles || [];
 
-      if (countEl) countEl.textContent = articles.length ? `· ${articles.length} stories` : '';
+      notifyNewArticles(articles, manual);
+      if (countEl) countEl.textContent = articles.length ? `- ${articles.length} stories${query ? ` for "${query}"` : ''}` : '';
+      if (signal) signal.textContent = 'Multiple sources - 1s live refresh';
       feed.innerHTML = renderArticles(articles);
       feed.style.opacity = '1';
 
@@ -1324,17 +1434,34 @@
       disc.textContent = d.disclaimer || '';
       disc.classList.toggle('hidden', !d.disclaimer);
 
-      // Reset countdown and re-sync the interval
-      newsCountdown = 30;
+      newsCountdown = 1;
       const cdEl = document.getElementById('news-countdown');
-      if (cdEl) cdEl.textContent = '30';
-      startNewsAutoRefresh();
+      if (cdEl) cdEl.textContent = '1';
     } catch {
       feed.innerHTML = '<div style="color:var(--muted);font-size:0.9rem;padding:20px 0;text-align:center">Could not reach news service. Try again shortly.</div>';
       feed.style.opacity = '1';
+    } finally {
+      if (btn) { btn.disabled = false; btn.textContent = 'Refresh now'; }
+      newsInFlight = false;
     }
+  }
 
-    if (btn) { btn.disabled = false; btn.textContent = '↻ Now'; }
+  function notifyNewArticles(articles, manual) {
+    const fresh = [];
+    for (const a of articles) {
+      const key = `${a.source || ''}:${a.title || ''}`;
+      if (!a.title || a.title.startsWith('No stories matched') || newsSeen.has(key)) continue;
+      fresh.push(a);
+      newsSeen.add(key);
+    }
+    localStorage.setItem('fawn_news_seen', JSON.stringify([...newsSeen].slice(-200)));
+    if (!fresh.length || manual || !newsNotifications || !('Notification' in window) || Notification.permission !== 'granted') return;
+    const top = fresh[0];
+    new Notification('FAWN news alert', {
+      body: `${top.source || 'News'}: ${top.title}`.slice(0, 180),
+      tag: `fawn-news-${top.title}`,
+      silent: false
+    });
   }
 
   function escHtml(s) {
@@ -1364,6 +1491,7 @@
     if ((name === 'campus' || name === 'perks' || name === 'military') && token && !savingsLoaded) loadSavingsHub();
     if (name === 'military') renderMilitaryStatus();
     if (name === 'news') {
+      initNewsPreferences();
       if (token) { fetchNews(true); startNewsAutoRefresh(); }
     } else {
       stopNewsAutoRefresh();
