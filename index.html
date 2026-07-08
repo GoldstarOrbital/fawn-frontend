@@ -623,6 +623,26 @@
       <button onclick="openSendModal()" style="width:100%;padding:10px;background:var(--green-faint);color:var(--green);font-weight:700;border:1px solid var(--green);border-radius:10px;cursor:pointer;font-size:0.85rem;display:none" id="send-btn">Send USDC</button>
     </div>
 
+    <!-- Premium Membership -->
+    <div style="margin-bottom:28px;padding-bottom:24px;border-bottom:1px solid var(--border)">
+      <div style="font-size:0.8rem;font-weight:700;text-transform:uppercase;color:var(--muted);letter-spacing:1px;margin-bottom:12px">💎 Premium</div>
+      <div style="background:linear-gradient(135deg, var(--green-faint), rgba(0,200,150,0.05));border:1px solid var(--green);border-radius:12px;padding:16px;margin-bottom:12px">
+        <div style="font-weight:600;color:var(--green);margin-bottom:8px">Free tier: $0.50 per transfer</div>
+        <div style="font-size:0.85rem;color:var(--text);margin-bottom:12px">Unlimited transfers, no fees with Premium</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+          <button style="padding:10px;background:var(--green);color:#000;font-weight:700;border:none;border-radius:10px;cursor:pointer;font-size:0.85rem">$5/mo - Premium</button>
+          <button style="padding:10px;background:var(--surface2);color:var(--muted);font-weight:700;border:1px solid var(--border);border-radius:10px;cursor:pointer;font-size:0.85rem">Coming Soon</button>
+        </div>
+      </div>
+      <div style="font-size:0.8rem;color:var(--muted);line-height:1.5">
+        <strong>What's included:</strong><br>
+        ✓ $0 transfer fees (unlimited)<br>
+        ✓ Priority support (coming Q1 2025)<br>
+        ✓ Debit card access (coming Q1 2025)<br>
+        ✓ Advanced analytics & history
+      </div>
+    </div>
+
     <!-- AI & Legal Disclosures -->
     <div style="margin-bottom:28px;padding-bottom:24px;border-bottom:1px solid var(--border)">
       <div style="font-size:0.8rem;font-weight:700;text-transform:uppercase;color:var(--muted);letter-spacing:1px;margin-bottom:12px">AI & Legal</div>
@@ -635,8 +655,12 @@
           <strong>⚠️ No KYC / No Regulated Banking</strong><br>
           <span style="color:var(--muted)">FAWN is a self-custodial USDC wallet. We do not hold your funds. You control your private keys. This is not a bank or regulated financial institution.</span>
         </div>
+        <div style="margin-bottom:12px">
+          <strong>Roadmap</strong><br>
+          <span style="color:var(--muted)">Now: Free accounts, $0.50 transfers (Premium $0) | Q1 2025: Debit cards | Q2 2025: Fiat ramps</span>
+        </div>
         <div>
-          <strong>📋 Disclaimers</strong><br>
+          <strong>Disclaimers</strong><br>
           <span style="color:var(--muted)">• USDC is 1:1 backed by USD reserves<br>
 • Crypto markets are volatile and uninsured<br>
 • Smart contracts carry technical risk<br>
@@ -716,7 +740,7 @@
     <div class="field">
       <label>Amount (USD)</label>
       <input type="number" id="send-amount" placeholder="10.00" step="0.01" min="0" />
-      <div style="font-size:0.75rem;color:var(--muted);margin-top:4px">Fee: $0.01 • Instant delivery</div>
+      <div style="font-size:0.75rem;color:var(--muted);margin-top:4px">Fee: $0.50 (free for Premium) • Instant delivery</div>
     </div>
 
     <div class="field">
