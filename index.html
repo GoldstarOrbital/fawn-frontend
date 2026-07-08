@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>FAWN — Instant Crypto Transfers</title>
-  <meta name="description" content="Instant USDC transfers. Real dollars. No KYC. Send and receive stablecoins instantly with zero bank fees." />
+  <meta name="description" content="Instant USDC transfers. Real dollars. No KYC. Send and receive stablecoins instantly with zero transfer fees." />
   <meta name="theme-color" content="#00c896" />
   <meta property="og:title" content="FAWN — Crypto Transfers Made Simple" />
   <meta property="og:description" content="Instant USDC transfers. Real dollars. No KYC. Send and receive stablecoins instantly." />
@@ -500,12 +500,12 @@
   <!-- LOGIN -->
   <div class="auth-card" id="login-card">
     <h2>Welcome back</h2>
-    <div class="auth-sub">Sign in to your FAWN account</div>
+    <div class="auth-sub">Sign in to your FAWN wallet</div>
     <div class="field"><label>Email</label><input type="email" id="l-email" placeholder="you@example.com" onkeydown="if(event.key==='Enter')login()" /></div>
     <div class="field"><label>Password</label><input type="password" id="l-pass" placeholder="••••••••" onkeydown="if(event.key==='Enter')login()" /></div>
     <button class="btn" id="login-btn" onclick="login()">Sign in</button>
     <div id="login-err" class="error-box hidden"></div>
-    <div class="auth-switch">Don't have an account? <a onclick="showRegister()">Create one free</a></div>
+    <div class="auth-switch">Don't have a wallet? <a onclick="showRegister()">Create one free</a></div>
   </div>
 
   <!-- REGISTER -->
@@ -522,9 +522,9 @@
         I'm a current college student (free tier)
       </label>
     </div>
-    <button class="btn" id="reg-btn" onclick="register()">Create account</button>
+    <button class="btn" id="reg-btn" onclick="register()">Create wallet</button>
     <div id="reg-err" class="error-box hidden"></div>
-    <div class="auth-switch">Already have an account? <a onclick="showLogin()">Sign in</a></div>
+    <div class="auth-switch">Already have a wallet? <a onclick="showLogin()">Sign in</a></div>
   </div>
 </div>
 
@@ -546,7 +546,7 @@
       </div>
       <div style="display:flex;gap:14px;align-items:flex-start">
         <span style="font-size:1.3rem">⚡</span>
-        <div><strong>Live News</strong> — filter real financial headlines by any keyword. Crypto, housing, your favorite stock.</div>
+        <div><strong>Live News</strong> — filter real crypto & market headlines by any keyword. Housing, tech, your favorite stock.</div>
       </div>
       <div style="display:flex;gap:14px;align-items:flex-start">
         <span style="font-size:1.3rem">🎁</span>
@@ -617,7 +617,7 @@
           <p id="greeting-sub">Your USDC wallet and crypto activity at a glance.</p>
         </div>
 
-        <!-- Onboarding banner (shown when account not active) -->
+        <!-- Onboarding banner (shown when wallet not initialized) -->
         <div class="onboard-banner hidden" id="onboard-banner">
           <div class="onboard-icon">🔐</div>
           <div>
@@ -670,7 +670,7 @@
             <div class="qa-icon">💼<span id="acct-check" style="display:none;font-size:0.7rem;vertical-align:super;color:var(--green)"> ✓</span></div>
             <div class="qa-label">Wallet Details</div>
           </div>
-          <div class="qa-btn" onclick="toast('Send money coming soon')">
+          <div class="qa-btn" onclick="toast('Send USDC coming soon')">
             <div class="qa-icon">⬆️</div>
             <div class="qa-label">Send</div>
           </div>
@@ -885,7 +885,7 @@
       <div class="tab" id="tab-brief">
         <div class="page-header">
           <h1>FAWN Daily Brief</h1>
-          <p>Your AI-compiled money &amp; markets rundown. Fresh every morning at 3:30 AM Pacific.</p>
+          <p>Your AI-compiled crypto &amp; markets rundown. Fresh every morning at 3:30 AM Pacific.</p>
         </div>
         <div id="brief-body">
           <div style="color:var(--muted);font-size:0.9rem;padding:20px 0;text-align:center">Loading today's brief…</div>
