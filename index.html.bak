@@ -3,11 +3,11 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>FAWN — Banking for Gen Z Without the Fees</title>
-  <meta name="description" content="Send money to anyone instantly. No monthly fees. No hidden charges. Banking built for students." />
+  <title>FAWN — Instant Crypto Transfers</title>
+  <meta name="description" content="Instant USDC transfers. Real dollars. No KYC. Send and receive stablecoins instantly with zero transfer fees." />
   <meta name="theme-color" content="#00c896" />
-  <meta property="og:title" content="FAWN — Better Banking for Students" />
-  <meta property="og:description" content="Send money to anyone instantly. Zero fees. Better than banks." />
+  <meta property="og:title" content="FAWN — Crypto Transfers Made Simple" />
+  <meta property="og:description" content="Instant USDC transfers. Real dollars. No KYC. Send and receive stablecoins instantly." />
   <meta property="og:type" content="website" />
   <link rel="manifest" href="manifest.json" />
   <style>
@@ -495,23 +495,23 @@
 <!-- ── AUTH ── -->
 <div id="auth-screen">
   <div class="auth-logo">fawn</div>
-  <div class="auth-tagline">Send money to anyone. Zero fees. Better than banks.</div>
+  <div class="auth-tagline">Instant crypto transfers. Real dollars. No KYC.</div>
 
   <!-- LOGIN -->
   <div class="auth-card" id="login-card">
     <h2>Welcome back</h2>
-    <div class="auth-sub">Sign in to your FAWN account</div>
+    <div class="auth-sub">Sign in to your FAWN wallet</div>
     <div class="field"><label>Email</label><input type="email" id="l-email" placeholder="you@example.com" onkeydown="if(event.key==='Enter')login()" /></div>
     <div class="field"><label>Password</label><input type="password" id="l-pass" placeholder="••••••••" onkeydown="if(event.key==='Enter')login()" /></div>
     <button class="btn" id="login-btn" onclick="login()">Sign in</button>
     <div id="login-err" class="error-box hidden"></div>
-    <div class="auth-switch">Don't have an account? <a onclick="showRegister()">Create one free</a></div>
+    <div class="auth-switch">Don't have a wallet? <a onclick="showRegister()">Create one free</a></div>
   </div>
 
   <!-- REGISTER -->
   <div class="auth-card hidden" id="reg-card">
-    <h2>Create your account</h2>
-    <div class="auth-sub">Takes about 60 seconds. Your account is ready to use instantly.</div>
+    <h2>Create your wallet</h2>
+    <div class="auth-sub">Takes about 60 seconds. USDC stablecoin wallet created instantly.</div>
     <div class="field"><label>Full name</label><input type="text" id="r-name" placeholder="Alex Goldsmith" /></div>
     <div class="field"><label>Email</label><input type="email" id="r-email" placeholder="you@example.com" /></div>
     <div class="field"><label>Phone</label><input type="tel" id="r-phone" placeholder="5551234567" /></div>
@@ -522,9 +522,9 @@
         I'm a current college student (free tier)
       </label>
     </div>
-    <button class="btn" id="reg-btn" onclick="register()">Create account</button>
+    <button class="btn" id="reg-btn" onclick="register()">Create wallet</button>
     <div id="reg-err" class="error-box hidden"></div>
-    <div class="auth-switch">Already have an account? <a onclick="showLogin()">Sign in</a></div>
+    <div class="auth-switch">Already have a wallet? <a onclick="showLogin()">Sign in</a></div>
   </div>
 </div>
 
@@ -537,16 +537,16 @@
     <div style="font-size:3rem;margin-bottom:16px">🌿</div>
     <div style="font-size:1.5rem;font-weight:800;margin-bottom:10px">Welcome to FAWN</div>
     <div style="color:var(--muted);font-size:0.95rem;line-height:1.6;margin-bottom:28px">
-      Your account is ready. Here's what you can do:
+      Your USDC wallet is ready. Here's what you can do:
     </div>
     <div style="display:flex;flex-direction:column;gap:12px;margin-bottom:32px;text-align:left">
       <div style="display:flex;gap:14px;align-items:flex-start">
         <span style="font-size:1.3rem">💰</span>
-        <div><strong>Account Address</strong> — tap "Account Details" to get your account address for sending and receiving USDC.</div>
+        <div><strong>Wallet Address</strong> — tap "Wallet Details" to get your wallet address for sending and receiving USDC.</div>
       </div>
       <div style="display:flex;gap:14px;align-items:flex-start">
         <span style="font-size:1.3rem">⚡</span>
-        <div><strong>Live News</strong> — filter real financial & market headlines by any keyword. Housing, tech, your favorite stock.</div>
+        <div><strong>Live News</strong> — filter real crypto & market headlines by any keyword. Housing, tech, your favorite stock.</div>
       </div>
       <div style="display:flex;gap:14px;align-items:flex-start">
         <span style="font-size:1.3rem">🎁</span>
@@ -614,15 +614,15 @@
       <div class="tab active" id="tab-dashboard">
         <div class="page-header">
           <h1 id="greeting">Good morning</h1>
-          <p id="greeting-sub">Your money, your way. Send to friends or their banks. Instant.</p>
+          <p id="greeting-sub">Your USDC wallet and crypto activity at a glance.</p>
         </div>
 
         <!-- Onboarding banner (shown when wallet not initialized) -->
         <div class="onboard-banner hidden" id="onboard-banner">
           <div class="onboard-icon">🔐</div>
           <div>
-            <div class="onboard-title" id="onboard-title">Activate your account</div>
-            <div class="onboard-sub" id="onboard-sub">Verify your identity to activate your account. Full verification takes about 5 minutes and gives you access to instant transfers and full functionality.</div>
+            <div class="onboard-title" id="onboard-title">Activate your USDC wallet</div>
+            <div class="onboard-sub" id="onboard-sub">Verify your identity to activate your USDC wallet. Full verification takes about 5 minutes and gives you access to instant transfers and full functionality.</div>
             <div class="onboard-actions">
               <button class="onboard-action" id="create-wallet-custodial-btn" onclick="createWalletCustodial()">Verify my identity</button>
               <button class="onboard-action secondary" onclick="refreshApplicationStatus()">Check status</button>
@@ -632,7 +632,7 @@
 
         <div class="balance-card">
           <div style="display:flex;justify-content:space-between;align-items:flex-start">
-            <div class="balance-eyebrow">Your Balance</div>
+            <div class="balance-eyebrow">USDC Balance</div>
             <button onclick="loadBalance()" id="balance-refresh-btn" title="Refresh balance" style="background:rgba(0,0,0,0.18);border:none;border-radius:8px;padding:5px 9px;cursor:pointer;font-size:1rem;color:#000;line-height:1;transition:background 0.15s" onmouseover="this.style.background='rgba(0,0,0,0.3)'" onmouseout="this.style.background='rgba(0,0,0,0.18)'">↻</button>
           </div>
           <div class="balance-amount" id="balance-amt">$—</div>
@@ -643,12 +643,12 @@
           </div>
         </div>
 
-        <!-- Account Address Card -->
+        <!-- Wallet Address Card -->
         <div id="acct-details-card" style="display:none;background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:18px 22px;margin-bottom:20px">
-          <div style="font-size:0.7rem;color:var(--muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:14px">Account Details</div>
+          <div style="font-size:0.7rem;color:var(--muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:14px">Wallet Details</div>
           <div style="display:flex;gap:12px;flex-wrap:wrap">
             <div style="flex:1;min-width:140px">
-              <div style="font-size:0.72rem;color:var(--muted);margin-bottom:4px">Account Address</div>
+              <div style="font-size:0.72rem;color:var(--muted);margin-bottom:4px">Wallet Address</div>
               <div style="display:flex;align-items:center;gap:8px">
                 <span id="routing-num" style="font-family:monospace;font-size:0.95rem;letter-spacing:1px">—</span>
                 <button onclick="copyField('routing-num','Wallet address')" style="background:none;border:none;color:var(--muted);cursor:pointer;font-size:0.8rem;padding:2px 6px;border-radius:6px;border:1px solid var(--border)">copy</button>
@@ -662,13 +662,13 @@
               </div>
             </div>
           </div>
-          <div style="font-size:0.7rem;color:var(--muted);margin-top:10px">Use your account address to send and receive USDC stablecoins instantly.</div>
+          <div style="font-size:0.7rem;color:var(--muted);margin-top:10px">Use your wallet address to send and receive USDC stablecoins instantly.</div>
         </div>
 
         <div class="quick-actions">
           <div class="qa-btn" onclick="toggleAcctDetails()">
             <div class="qa-icon">💼<span id="acct-check" style="display:none;font-size:0.7rem;vertical-align:super;color:var(--green)"> ✓</span></div>
-            <div class="qa-label">Account Details</div>
+            <div class="qa-label">Wallet Details</div>
           </div>
           <div class="qa-btn" onclick="toast('Send USDC coming soon')">
             <div class="qa-icon">⬆️</div>
@@ -731,7 +731,7 @@
       <div class="tab" id="tab-transactions">
         <div class="page-header">
           <h1>Transfers</h1>
-          <p>Your complete transfer history.</p>
+          <p>Your complete USDC transfer history.</p>
         </div>
         <div class="tx-search-wrap">
           <span class="tx-search-icon">🔍</span>
@@ -750,7 +750,7 @@
         <div class="news-control-panel">
           <div class="news-query-row">
             <input class="news-query-input" id="news-query" type="search"
-              placeholder="Describe your live feed: student banking, interest rates, tech stocks, student loans..."
+              placeholder="Describe your live feed: AI banking, Nvidia, student loans, crypto regulation..."
               onkeydown="if(event.key==='Enter') saveNewsQuery()" maxlength="120" />
             <button class="keyword-add-btn" onclick="saveNewsQuery()">Save feed</button>
             <button class="keyword-add-btn" id="news-notify-btn" onclick="toggleNewsNotifications()">Enable alerts</button>
@@ -769,7 +769,7 @@
           <div class="chip" data-t="economy">Economy</div>
           <div class="chip" data-t="inflation">Inflation</div>
           <div class="chip" data-t="fed">Fed</div>
-          <div class="chip" data-t="finance">Finance</div>
+          <div class="chip" data-t="crypto">Crypto</div>
           <div class="chip" data-t="stocks">Stocks</div>
           <div class="chip" data-t="housing">Housing</div>
           <div class="chip" data-t="jobs">Jobs</div>
@@ -871,13 +871,13 @@
       <div class="tab" id="tab-investing">
         <div class="page-header">
           <h1>Investing</h1>
-          <p>Buy fractional shares straight from your FAWN account. Brokerage accounts and execution are handled by our partner.</p>
+          <p>Buy fractional shares straight from your USDC wallet. Brokerage accounts and execution are handled by our partner.</p>
         </div>
         <div id="investing-body">
           <div style="color:var(--muted);font-size:0.9rem;padding:20px 0;text-align:center">Loading investing…</div>
         </div>
         <div class="disclaimer-box" style="margin-top:16px">
-          FAWN uses blockchain-based infrastructure to enable instant transfers. Funds are held in USDC, a USD-backed stablecoin issued by Circle. Not FDIC-insured, subject to blockchain risk.
+          USDC is not a bank account. It is a stablecoin on the blockchain, issued by Circle. Not FDIC-insured, subject to blockchain risk.
         </div>
       </div>
 
@@ -885,7 +885,7 @@
       <div class="tab" id="tab-brief">
         <div class="page-header">
           <h1>FAWN Daily Brief</h1>
-          <p>Your AI-compiled financial & markets rundown. Fresh every morning at 3:30 AM Pacific.</p>
+          <p>Your AI-compiled crypto &amp; markets rundown. Fresh every morning at 3:30 AM Pacific.</p>
         </div>
         <div id="brief-body">
           <div style="color:var(--muted);font-size:0.9rem;padding:20px 0;text-align:center">Loading today's brief…</div>
@@ -1060,7 +1060,7 @@
     if (!user.wallet_initialized) {
       document.getElementById('onboard-banner').classList.remove('hidden');
       document.getElementById('balance-amt').textContent = '$0.00';
-      document.getElementById('acct-pill').textContent = 'No account';
+      document.getElementById('acct-pill').textContent = 'No wallet';
       setDashTx([]);
       setStats([]);
     } else {
@@ -1102,11 +1102,11 @@
     try {
       user = await authGet('/auth/me');
       if (user.wallet_initialized) {
-        toast('Your FAWN account is ready.');
+        toast('Your FAWN wallet is initialized.');
         loadApp();
       } else {
         renderOnboardingState();
-        toast('Still waiting on account activation.');
+        toast('Still waiting on wallet initialization.');
       }
     } catch {
       toast('Could not refresh status.');
@@ -1120,9 +1120,9 @@
       // CRYPTO-NATIVE: Load USDC wallet balance instead of bank account
       const d = await authGet('/wallet/balance');
       el.textContent = fmt(d.usdc_balance);
-      // Update account address pill
+      // Update wallet address pill
       const pill = document.getElementById('acct-pill');
-      if (pill) pill.textContent = d.wallet_address ? `${d.wallet_address.slice(0,6)}...${d.wallet_address.slice(-4)}` : 'No account';
+      if (pill) pill.textContent = d.wallet_address ? `${d.wallet_address.slice(0,6)}...${d.wallet_address.slice(-4)}` : 'No wallet';
     } catch (e) {
       el.textContent = '$—';
       const msg = String(e.message || '');
@@ -1880,12 +1880,12 @@
     if (btn) { btn.disabled = true; btn.textContent = 'Creating…'; }
     try {
       const r = await authPost('/wallet/create', { wallet_type: 'fawn_custodial' });
-      toast('Account created! 🎉');
+      toast('Wallet created! 🎉');
       user.wallet_initialized = true;
       setTimeout(() => location.reload(), 1000);
     } catch (e) {
-      toast(String(e.message || 'Failed to create account'));
-      if (btn) { btn.disabled = false; btn.textContent = 'Create account (custodial)'; }
+      toast(String(e.message || 'Failed to create wallet'));
+      if (btn) { btn.disabled = false; btn.textContent = 'Create wallet (custodial)'; }
     }
   }
 
@@ -1901,7 +1901,7 @@
       user.wallet_initialized = true;
       setTimeout(() => location.reload(), 1000);
     } catch (e) {
-      toast(String(e.message || 'Failed to create account'));
+      toast(String(e.message || 'Failed to create wallet'));
       if (btn) { btn.disabled = false; btn.textContent = 'I\'ll control keys'; }
     }
   }
