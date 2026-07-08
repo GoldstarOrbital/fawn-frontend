@@ -623,6 +623,29 @@
       <button onclick="openSendModal()" style="width:100%;padding:10px;background:var(--green-faint);color:var(--green);font-weight:700;border:1px solid var(--green);border-radius:10px;cursor:pointer;font-size:0.85rem;display:none" id="send-btn">Send USDC</button>
     </div>
 
+    <!-- AI & Legal Disclosures -->
+    <div style="margin-bottom:28px;padding-bottom:24px;border-bottom:1px solid var(--border)">
+      <div style="font-size:0.8rem;font-weight:700;text-transform:uppercase;color:var(--muted);letter-spacing:1px;margin-bottom:12px">AI & Legal</div>
+      <div style="background:var(--surface2);border:1px solid var(--border);border-radius:12px;padding:14px;font-size:0.85rem;line-height:1.6;color:var(--text)">
+        <div style="margin-bottom:12px">
+          <strong>🤖 AI Development</strong><br>
+          <span style="color:var(--muted)">This application was built with AI assistance. Multiple AI models (Claude Opus, Sonnet, Haiku) contributed to the architecture, smart contracts, backend APIs, and frontend.</span>
+        </div>
+        <div style="margin-bottom:12px">
+          <strong>⚠️ No KYC / No Regulated Banking</strong><br>
+          <span style="color:var(--muted)">FAWN is a self-custodial USDC wallet. We do not hold your funds. You control your private keys. This is not a bank or regulated financial institution.</span>
+        </div>
+        <div>
+          <strong>📋 Disclaimers</strong><br>
+          <span style="color:var(--muted)">• USDC is 1:1 backed by USD reserves<br>
+• Crypto markets are volatile and uninsured<br>
+• Smart contracts carry technical risk<br>
+• You are responsible for your private keys<br>
+• No customer support (self-service only)</span>
+        </div>
+      </div>
+    </div>
+
     <!-- UI Customization -->
     <div style="margin-bottom:28px;padding-bottom:24px;border-bottom:1px solid var(--border)">
       <div style="font-size:0.8rem;font-weight:700;text-transform:uppercase;color:var(--muted);letter-spacing:1px;margin-bottom:12px">Appearance</div>
@@ -2648,5 +2671,12 @@
     navigator.serviceWorker.register('sw.js').catch(() => {});
   }
 </script>
+
+<!-- AI & Legal Footer Disclosure -->
+<footer style="background:var(--surface);border-top:1px solid var(--border);padding:16px 20px;margin-top:32px;font-size:0.75rem;color:var(--muted);line-height:1.5;text-align:center;width:100%">
+  <div><strong style="color:var(--text)">🤖 Built with AI</strong> — FAWN was developed using Claude AI (Opus, Sonnet, Haiku models). Smart contracts, backend APIs, and frontend are AI-assisted.</div>
+  <div style="margin-top:8px">⚠️ Non-custodial • No KYC • Not regulated • You hold your keys • Crypto markets are volatile</div>
+</footer>
+
 </body>
 </html>
