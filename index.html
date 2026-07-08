@@ -3,11 +3,11 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>FAWN — Banking That Makes Sense</title>
-  <meta name="description" content="Instant USDC crypto transfers backed by real dollars. $0.01 per transaction. No KYC required." />
+  <title>FAWN — Instant Crypto Transfers</title>
+  <meta name="description" content="Instant USDC transfers. Real dollars. No KYC. Send and receive stablecoins instantly with zero bank fees." />
   <meta name="theme-color" content="#00c896" />
-  <meta property="og:title" content="FAWN — Banking for Gen Z" />
-  <meta property="og:description" content="Flat-fee banking. No monthly fees. Live financial news powered by AI." />
+  <meta property="og:title" content="FAWN — Crypto Transfers Made Simple" />
+  <meta property="og:description" content="Instant USDC transfers. Real dollars. No KYC. Send and receive stablecoins instantly." />
   <meta property="og:type" content="website" />
   <link rel="manifest" href="manifest.json" />
   <style>
@@ -510,8 +510,8 @@
 
   <!-- REGISTER -->
   <div class="auth-card hidden" id="reg-card">
-    <h2>Create your account</h2>
-    <div class="auth-sub">Takes about 60 seconds. No KYC required.</div>
+    <h2>Create your wallet</h2>
+    <div class="auth-sub">Takes about 60 seconds. USDC stablecoin wallet created instantly.</div>
     <div class="field"><label>Full name</label><input type="text" id="r-name" placeholder="Alex Goldsmith" /></div>
     <div class="field"><label>Email</label><input type="email" id="r-email" placeholder="you@example.com" /></div>
     <div class="field"><label>Phone</label><input type="tel" id="r-phone" placeholder="5551234567" /></div>
@@ -541,8 +541,8 @@
     </div>
     <div style="display:flex;flex-direction:column;gap:12px;margin-bottom:32px;text-align:left">
       <div style="display:flex;gap:14px;align-items:flex-start">
-        <span style="font-size:1.3rem">🏦</span>
-        <div><strong>Account Info</strong> — tap "Account Info" to get your routing and account numbers for direct deposits.</div>
+        <span style="font-size:1.3rem">💰</span>
+        <div><strong>Wallet Address</strong> — tap "Wallet Details" to get your wallet address for sending and receiving USDC.</div>
       </div>
       <div style="display:flex;gap:14px;align-items:flex-start">
         <span style="font-size:1.3rem">⚡</span>
@@ -614,18 +614,18 @@
       <div class="tab active" id="tab-dashboard">
         <div class="page-header">
           <h1 id="greeting">Good morning</h1>
-          <p id="greeting-sub">Here's what's happening with your money.</p>
+          <p id="greeting-sub">Your USDC wallet and crypto activity at a glance.</p>
         </div>
 
-        <!-- Onboarding banner (shown when no stablecoin wallet) -->
+        <!-- Onboarding banner (shown when account not active) -->
         <div class="onboard-banner hidden" id="onboard-banner">
-          <div class="onboard-icon">💰</div>
+          <div class="onboard-icon">🔐</div>
           <div>
-            <div class="onboard-title" id="onboard-title">Create your USDC wallet</div>
-            <div class="onboard-sub" id="onboard-sub">One-tap setup for your stablecoin wallet. Choose custodial (FAWN holds keys) or non-custodial (you control keys). No KYC required.</div>
+            <div class="onboard-title" id="onboard-title">Activate your USDC wallet</div>
+            <div class="onboard-sub" id="onboard-sub">Verify your identity to activate your USDC wallet. Full verification takes about 5 minutes and gives you access to instant transfers and full functionality.</div>
             <div class="onboard-actions">
-              <button class="onboard-action" id="create-wallet-custodial-btn" onclick="createWalletCustodial()">Create wallet (custodial)</button>
-              <button class="onboard-action secondary" onclick="createWalletNonCustodial()">I'll control keys</button>
+              <button class="onboard-action" id="create-wallet-custodial-btn" onclick="createWalletCustodial()">Verify my identity</button>
+              <button class="onboard-action secondary" onclick="refreshApplicationStatus()">Check status</button>
             </div>
           </div>
         </div>
@@ -648,27 +648,27 @@
           <div style="font-size:0.7rem;color:var(--muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:14px">Wallet Details</div>
           <div style="display:flex;gap:12px;flex-wrap:wrap">
             <div style="flex:1;min-width:140px">
-              <div style="font-size:0.72rem;color:var(--muted);margin-bottom:4px">Routing Number</div>
+              <div style="font-size:0.72rem;color:var(--muted);margin-bottom:4px">Wallet Address</div>
               <div style="display:flex;align-items:center;gap:8px">
                 <span id="routing-num" style="font-family:monospace;font-size:0.95rem;letter-spacing:1px">—</span>
-                <button onclick="copyField('routing-num','Routing number')" style="background:none;border:none;color:var(--muted);cursor:pointer;font-size:0.8rem;padding:2px 6px;border-radius:6px;border:1px solid var(--border)">copy</button>
+                <button onclick="copyField('routing-num','Wallet address')" style="background:none;border:none;color:var(--muted);cursor:pointer;font-size:0.8rem;padding:2px 6px;border-radius:6px;border:1px solid var(--border)">copy</button>
               </div>
             </div>
             <div style="flex:1;min-width:140px">
-              <div style="font-size:0.72rem;color:var(--muted);margin-bottom:4px">Account Number</div>
+              <div style="font-size:0.72rem;color:var(--muted);margin-bottom:4px">Network</div>
               <div style="display:flex;align-items:center;gap:8px">
                 <span id="acct-num" style="font-family:monospace;font-size:0.95rem;letter-spacing:1px">—</span>
-                <button onclick="copyField('acct-num','Account number')" style="background:none;border:none;color:var(--muted);cursor:pointer;font-size:0.8rem;padding:2px 6px;border-radius:6px;border:1px solid var(--border)">copy</button>
+                <button onclick="copyField('acct-num','Network')" style="background:none;border:none;color:var(--muted);cursor:pointer;font-size:0.8rem;padding:2px 6px;border-radius:6px;border:1px solid var(--border)">copy</button>
               </div>
             </div>
           </div>
-          <div style="font-size:0.7rem;color:var(--muted);margin-top:10px">Use these to receive direct deposits or ACH transfers.</div>
+          <div style="font-size:0.7rem;color:var(--muted);margin-top:10px">Use your wallet address to send and receive USDC stablecoins instantly.</div>
         </div>
 
         <div class="quick-actions">
           <div class="qa-btn" onclick="toggleAcctDetails()">
-            <div class="qa-icon">🏦<span id="acct-check" style="display:none;font-size:0.7rem;vertical-align:super;color:var(--green)"> ✓</span></div>
-            <div class="qa-label">Account Info</div>
+            <div class="qa-icon">💼<span id="acct-check" style="display:none;font-size:0.7rem;vertical-align:super;color:var(--green)"> ✓</span></div>
+            <div class="qa-label">Wallet Details</div>
           </div>
           <div class="qa-btn" onclick="toast('Send money coming soon')">
             <div class="qa-icon">⬆️</div>
@@ -730,8 +730,8 @@
       <!-- TRANSACTIONS -->
       <div class="tab" id="tab-transactions">
         <div class="page-header">
-          <h1>Transactions</h1>
-          <p>Your complete transaction history.</p>
+          <h1>Transfers</h1>
+          <p>Your complete USDC transfer history.</p>
         </div>
         <div class="tx-search-wrap">
           <span class="tx-search-icon">🔍</span>
@@ -871,7 +871,7 @@
       <div class="tab" id="tab-investing">
         <div class="page-header">
           <h1>Investing</h1>
-          <p>Buy fractional shares straight from your FAWN cash. Brokerage accounts and execution are handled by our brokerage partner.</p>
+          <p>Buy fractional shares straight from your USDC wallet. Brokerage accounts and execution are handled by our partner.</p>
         </div>
         <div id="investing-body">
           <div style="color:var(--muted);font-size:0.9rem;padding:20px 0;text-align:center">Loading investing…</div>
