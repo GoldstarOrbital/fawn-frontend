@@ -574,10 +574,16 @@
       <div class="nav-item" id="nav-transactions" onclick="showTab('transactions')">
         <span class="icon">↕️</span> Transactions
       </div>
+      <div class="nav-item" id="nav-investing" onclick="showTab('investing')">
+        <span class="icon">📈</span> Investing
+      </div>
 
       <div class="nav-section">Discover</div>
       <div class="nav-item" id="nav-news" onclick="showTab('news')">
         <span class="icon">📰</span> News
+      </div>
+      <div class="nav-item" id="nav-brief" onclick="showTab('brief')">
+        <span class="icon">🎧</span> Daily Brief
       </div>
 
       <div class="nav-item" id="nav-campus" onclick="showTab('campus')">
@@ -859,6 +865,32 @@
           <div class="location-note">Status is saved to your profile so future FAWN releases can prioritize relevant offers.</div>
         </div>
         <div class="perk-grid" id="military-grid"></div>
+      </div>
+
+      <!-- INVESTING -->
+      <div class="tab" id="tab-investing">
+        <div class="page-header">
+          <h1>Investing</h1>
+          <p>Buy fractional shares straight from your FAWN cash. Brokerage accounts and execution are handled by our brokerage partner.</p>
+        </div>
+        <div id="investing-body">
+          <div style="color:var(--muted);font-size:0.9rem;padding:20px 0;text-align:center">Loading investing…</div>
+        </div>
+        <div class="disclaimer-box" style="margin-top:16px">
+          Investing involves risk, including possible loss of principal. This is not financial advice. Not FDIC-insured, not a deposit, and not guaranteed. Brokerage services are provided by our brokerage partner.
+        </div>
+      </div>
+
+      <!-- DAILY BRIEF -->
+      <div class="tab" id="tab-brief">
+        <div class="page-header">
+          <h1>FAWN Daily Brief</h1>
+          <p>Your AI-compiled money &amp; markets rundown. Fresh every morning at 3:30 AM Pacific.</p>
+        </div>
+        <div id="brief-body">
+          <div style="color:var(--muted);font-size:0.9rem;padding:20px 0;text-align:center">Loading today's brief…</div>
+        </div>
+        <div class="disclaimer-box" id="brief-disc" style="margin-top:16px;display:none"></div>
       </div>
 
     </main>
@@ -1561,6 +1593,8 @@
     if (name === 'transactions' && user?.account_active) loadTxns();
     if ((name === 'campus' || name === 'perks' || name === 'military') && token && !savingsLoaded) loadSavingsHub();
     if (name === 'military') renderMilitaryStatus();
+    if (name === 'investing' && token) loadInvesting();
+    if (name === 'brief') loadBrief();
     if (name === 'news') {
       initNewsPreferences();
       if (token) { fetchNews(true); startNewsAutoRefresh(); }
@@ -1670,6 +1704,167 @@
   function copyField(id, label) {
     const text = document.getElementById(id).textContent;
     navigator.clipboard.writeText(text).then(() => toast(`${label} copied!`)).catch(() => toast('Copy failed'));
+  }
+
+  // ── INVESTING (brokerage via partner) ──
+  const _esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+
+  async function loadInvesting() {
+    const body = document.getElementById('investing-body');
+    body.innerHTML = '<div style="color:var(--muted);font-size:0.9rem;padding:20px 0;text-align:center">Loading investing…</div>';
+    try {
+      const account = await authGet('/investing/account');
+      renderInvestingAccount(body, account);
+      loadPositions();
+    } catch (e) {
+      const m = String(e.message || '');
+      if (/503|available/i.test(m)) return renderInvestingComingSoon(body);
+      if (/404|no investing account/i.test(m)) return renderInvestingOnboard(body);
+      body.innerHTML = `<div class="disclaimer-box">Couldn't load investing. ${_esc(m)}</div>`;
+    }
+  }
+
+  function renderInvestingComingSoon(body) {
+    body.innerHTML = `
+      <div style="background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:28px;text-align:center">
+        <div style="font-size:2rem;margin-bottom:8px">📈</div>
+        <div style="font-weight:700;font-size:1.05rem;margin-bottom:6px">Investing is coming soon</div>
+        <div style="color:var(--muted);font-size:0.9rem;max-width:420px;margin:0 auto">We're finishing our brokerage integration. You'll be able to buy fractional shares straight from your FAWN cash — no separate app.</div>
+      </div>`;
+  }
+
+  function renderInvestingOnboard(body) {
+    body.innerHTML = `
+      <div style="background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:24px">
+        <div style="font-weight:700;font-size:1.05rem;margin-bottom:8px">Open your investing account</div>
+        <div style="color:var(--muted);font-size:0.9rem;margin-bottom:16px">One-tap setup using the identity you already verified with FAWN. Brokerage accounts are provided by our brokerage partner.</div>
+        <label style="display:flex;gap:10px;align-items:flex-start;font-size:0.82rem;color:var(--muted);margin-bottom:16px;cursor:pointer">
+          <input type="checkbox" id="invest-agree" style="margin-top:3px" />
+          <span>I agree to the brokerage customer, margin, and account agreements, and understand investing involves risk of loss.</span>
+        </label>
+        <button class="qa-btn" style="width:100%;justify-content:center" id="invest-open-btn" onclick="openInvestingAccount()">Open investing account</button>
+      </div>`;
+  }
+
+  async function openInvestingAccount() {
+    if (!document.getElementById('invest-agree')?.checked) { toast('Please accept the agreements first'); return; }
+    const btn = document.getElementById('invest-open-btn');
+    if (btn) { btn.disabled = true; btn.textContent = 'Opening…'; }
+    try {
+      const now = new Date().toISOString();
+      const agreements = [
+        { agreement: 'customer_agreement', signed_at: now },
+        { agreement: 'margin_agreement', signed_at: now },
+        { agreement: 'account_agreement', signed_at: now },
+      ];
+      await authPost('/investing/account', { agreements });
+      toast('Investing account created 🎉');
+      loadInvesting();
+    } catch (e) {
+      const m = String(e.message || '');
+      if (/503|available/i.test(m)) return renderInvestingComingSoon(document.getElementById('investing-body'));
+      toast(m || 'Could not open account');
+      if (btn) { btn.disabled = false; btn.textContent = 'Open investing account'; }
+    }
+  }
+
+  function renderInvestingAccount(body, a) {
+    body.innerHTML = `
+      <div class="balance-card" style="margin-bottom:18px">
+        <div class="balance-eyebrow">Portfolio Value</div>
+        <div class="balance-amount">${fmt(a.equity)}</div>
+        <div class="balance-pills">
+          <div class="balance-pill">Cash ${fmt(a.cash)}</div>
+          <div class="balance-pill">Buying power ${fmt(a.buying_power)}</div>
+          <div class="balance-pill">${_esc(a.status || '')}</div>
+        </div>
+      </div>
+      <div style="background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:20px;margin-bottom:18px">
+        <div style="font-size:0.7rem;color:var(--muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:12px">Place an order</div>
+        <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center">
+          <input id="invest-symbol" placeholder="Symbol (e.g. AAPL)" maxlength="6" style="flex:1;min-width:120px;text-transform:uppercase;background:var(--bg);border:1px solid var(--border);border-radius:10px;padding:11px 12px;color:var(--text);font-size:0.95rem" />
+          <input id="invest-amount" type="number" min="1" step="1" placeholder="$ amount" style="width:120px;background:var(--bg);border:1px solid var(--border);border-radius:10px;padding:11px 12px;color:var(--text);font-size:0.95rem" />
+          <div style="display:flex;gap:8px">
+            <button class="qa-btn" onclick="placeInvestOrder('buy')">Buy</button>
+            <button class="qa-btn" style="background:var(--surface);border:1px solid var(--border);color:var(--text)" onclick="placeInvestOrder('sell')">Sell</button>
+          </div>
+        </div>
+        <div style="font-size:0.72rem;color:var(--muted);margin-top:10px">Dollar-based market orders — fractional shares supported.</div>
+      </div>
+      <div style="font-size:0.7rem;color:var(--muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:10px">Your positions</div>
+      <div id="invest-positions"><div style="color:var(--muted);font-size:0.85rem">Loading positions…</div></div>`;
+  }
+
+  async function placeInvestOrder(side) {
+    const symbol = (document.getElementById('invest-symbol')?.value || '').trim().toUpperCase().replace(/[^A-Z.]/g, '');
+    const amount = parseFloat(document.getElementById('invest-amount')?.value || '');
+    if (!symbol) { toast('Enter a symbol'); return; }
+    if (!amount || amount <= 0) { toast('Enter a dollar amount'); return; }
+    if (!confirm(`${side === 'buy' ? 'Buy' : 'Sell'} $${amount} of ${symbol}?`)) return;
+    try {
+      const r = await authPost('/investing/orders', { symbol, side, notional: amount });
+      toast(`${side === 'buy' ? 'Bought' : 'Sold'} — order ${r.status}`);
+      setTimeout(loadInvesting, 800);
+    } catch (e) {
+      toast(String(e.message || 'Order failed'));
+    }
+  }
+
+  async function loadPositions() {
+    const el = document.getElementById('invest-positions');
+    if (!el) return;
+    try {
+      const d = await authGet('/investing/positions');
+      const ps = d.positions || [];
+      if (!ps.length) { el.innerHTML = '<div style="color:var(--muted);font-size:0.85rem">No positions yet — place your first order above.</div>'; return; }
+      el.innerHTML = ps.map(p => {
+        const up = Number(p.unrealized_pl || 0);
+        const col = up >= 0 ? 'var(--green)' : '#ff6b6b';
+        return `<div style="display:flex;justify-content:space-between;align-items:center;background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:12px 16px;margin-bottom:8px">
+          <div><div style="font-weight:700">${_esc(p.symbol)}</div><div style="font-size:0.72rem;color:var(--muted)">${Number(p.qty).toFixed(4)} sh · avg ${fmt(p.avg_entry_price)}</div></div>
+          <div style="text-align:right"><div style="font-weight:700">${fmt(p.market_value)}</div><div style="font-size:0.72rem;color:${col}">${up >= 0 ? '+' : ''}${fmt(up)}</div></div>
+        </div>`;
+      }).join('');
+    } catch {
+      el.innerHTML = '<div style="color:var(--muted);font-size:0.85rem">Couldn\'t load positions.</div>';
+    }
+  }
+
+  // ── DAILY BRIEF (AI podcast) ──
+  async function loadBrief() {
+    const body = document.getElementById('brief-body');
+    const disc = document.getElementById('brief-disc');
+    body.innerHTML = '<div style="color:var(--muted);font-size:0.9rem;padding:20px 0;text-align:center">Loading today\'s brief…</div>';
+    try {
+      const r = await fetch(API + '/podcast/latest');
+      if (r.status === 404) {
+        body.innerHTML = `<div style="background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:28px;text-align:center">
+          <div style="font-size:2rem;margin-bottom:8px">🎧</div>
+          <div style="font-weight:700;margin-bottom:6px">No brief yet</div>
+          <div style="color:var(--muted);font-size:0.9rem">The first FAWN Daily Brief drops at 3:30 AM Pacific. Check back in the morning.</div>
+        </div>`;
+        if (disc) disc.style.display = 'none';
+        return;
+      }
+      if (!r.ok) throw new Error('Error ' + r.status);
+      const e = await r.json();
+      const mins = Math.max(1, Math.round((e.est_duration_seconds || 0) / 60));
+      const audio = e.audio_available && e.audio_url
+        ? `<audio controls preload="none" style="width:100%;margin:14px 0" src="${API}${_esc(e.audio_url)}"></audio>`
+        : '<div style="font-size:0.8rem;color:var(--muted);margin:12px 0">Audio is still rendering — transcript below.</div>';
+      body.innerHTML = `
+        <div style="background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:22px">
+          <div style="font-size:0.72rem;color:var(--green);text-transform:uppercase;letter-spacing:1px;font-weight:700;margin-bottom:6px">${_esc(e.episode_date)} · ~${mins} min</div>
+          <div style="font-weight:800;font-size:1.15rem;margin-bottom:4px">${_esc(e.title)}</div>
+          ${audio}
+          <div style="font-size:0.7rem;color:var(--muted);text-transform:uppercase;letter-spacing:1px;margin:14px 0 8px">Transcript</div>
+          <div style="font-size:0.92rem;line-height:1.6;color:var(--text);white-space:pre-wrap;max-height:420px;overflow:auto;padding-right:6px">${_esc(e.script)}</div>
+        </div>`;
+      if (disc && e.disclaimer) { disc.textContent = e.disclaimer; disc.style.display = 'block'; }
+    } catch (e) {
+      body.innerHTML = '<div class="disclaimer-box">Couldn\'t load the brief right now. Please try again later.</div>';
+      if (disc) disc.style.display = 'none';
+    }
   }
 
   // ── AUTO-REFRESH balance every 60s while app is open ──
