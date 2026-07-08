@@ -26,6 +26,36 @@
       --sidebar-w: 220px;
     }
 
+    /* Light Mode Theme */
+    :root[data-theme="light"] {
+      --green: #00b878;
+      --green-dark: #009563;
+      --green-faint: rgba(0,184,120,0.1);
+      --accent: #00b878;
+      --bg: #f8f9fa;
+      --surface: #ffffff;
+      --surface2: #f0f2f5;
+      --border: #e0e3e8;
+      --text: #1a1a1a;
+      --muted: #666;
+      --red: #d32f2f;
+    }
+
+    /* Forest Mode (slightly warmer dark) */
+    :root[data-theme="forest"] {
+      --green: #26d07c;
+      --green-dark: #1fa566;
+      --green-faint: rgba(38,208,124,0.1);
+      --accent: #26d07c;
+      --bg: #0f1419;
+      --surface: #151a22;
+      --surface2: #1e2530;
+      --border: #2a3543;
+      --text: #e8eef7;
+      --muted: #7a8492;
+      --red: #ff5252;
+    }
+
     * { box-sizing: border-box; margin: 0; padding: 0; }
     html { scroll-behavior: smooth; }
     body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; }
@@ -592,10 +622,21 @@
     <!-- UI Customization -->
     <div style="margin-bottom:28px;padding-bottom:24px;border-bottom:1px solid var(--border)">
       <div style="font-size:0.8rem;font-weight:700;text-transform:uppercase;color:var(--muted);letter-spacing:1px;margin-bottom:12px">Appearance</div>
-      <label style="display:flex;align-items:center;gap:10px;cursor:pointer;margin-bottom:12px">
-        <input type="checkbox" id="dark-mode-toggle" onchange="toggleDarkMode()" style="width:18px;height:18px;accent-color:var(--green);cursor:pointer" />
-        <span>Dark mode (currently on)</span>
-      </label>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+        <button onclick="setTheme('dark')" id="theme-dark" style="padding:12px;background:var(--surface2);border:2px solid var(--border);border-radius:10px;cursor:pointer;font-weight:600;color:var(--text);transition:all 0.2s">
+          🌙 Dark
+        </button>
+        <button onclick="setTheme('light')" id="theme-light" style="padding:12px;background:var(--surface2);border:2px solid var(--border);border-radius:10px;cursor:pointer;font-weight:600;color:var(--text);transition:all 0.2s">
+          ☀️ Light
+        </button>
+        <button onclick="setTheme('forest')" id="theme-forest" style="padding:12px;background:var(--surface2);border:2px solid var(--border);border-radius:10px;cursor:pointer;font-weight:600;color:var(--text);transition:all 0.2s">
+          🌲 Forest
+        </button>
+        <button onclick="setTheme('auto')" id="theme-auto" style="padding:12px;background:var(--surface2);border:2px solid var(--border);border-radius:10px;cursor:pointer;font-weight:600;color:var(--text);transition:all 0.2s">
+          ⚙️ Auto
+        </button>
+      </div>
+      <div style="font-size:0.75rem;color:var(--muted);margin-top:12px">Auto follows your system settings</div>
     </div>
 
     <!-- Connected Accounts -->
@@ -1089,6 +1130,9 @@
 
   // ── BOOT ──
   window.onload = () => {
+    // Load saved theme preference
+    loadThemePreference();
+
     // Pull ?ref= from URL and stash it
     const urlRef = new URLSearchParams(window.location.search).get('ref');
     if (urlRef) {
@@ -2308,6 +2352,7 @@
     const modal = document.getElementById('settings-modal');
     if (modal) modal.style.display = 'flex';
     updateSettingsDisplay();
+    updateThemeButtonStates();
   }
 
   function closeSettings() {
@@ -2460,18 +2505,40 @@
   }
 
   // ── UI CUSTOMIZATION ──
-  function toggleDarkMode() {
-    const isDark = document.documentElement.style.colorScheme === 'dark';
-    if (isDark) {
-      document.documentElement.style.colorScheme = 'light';
-      localStorage.setItem('fawn_theme', 'light');
-      // Update CSS variables for light mode (TODO: add light mode styles)
-      toast('Light mode coming soon');
-      document.documentElement.style.colorScheme = 'dark'; // Revert for now
+  function setTheme(theme) {
+    const root = document.documentElement;
+
+    if (theme === 'auto') {
+      root.removeAttribute('data-theme');
+      localStorage.setItem('fawn_theme', 'auto');
     } else {
-      document.documentElement.style.colorScheme = 'dark';
-      localStorage.setItem('fawn_theme', 'dark');
+      root.setAttribute('data-theme', theme);
+      localStorage.setItem('fawn_theme', theme);
     }
+
+    updateThemeButtonStates();
+    toast(`✨ Theme: ${theme.charAt(0).toUpperCase() + theme.slice(1)}`);
+  }
+
+  function loadThemePreference() {
+    const saved = localStorage.getItem('fawn_theme') || 'auto';
+    setTheme(saved);
+  }
+
+  function updateThemeButtonStates() {
+    const currentTheme = document.documentElement.getAttribute('data-theme') || 'auto';
+    ['dark', 'light', 'forest', 'auto'].forEach(theme => {
+      const btn = document.getElementById(`theme-${theme}`);
+      if (btn) {
+        if (theme === currentTheme) {
+          btn.style.borderColor = 'var(--green)';
+          btn.style.color = 'var(--green)';
+        } else {
+          btn.style.borderColor = 'var(--border)';
+          btn.style.color = 'var(--text)';
+        }
+      }
+    });
   }
 
   // Close modals when clicking outside
