@@ -973,10 +973,8 @@
   }
 
   function showRegister() {
-    const ref = sessionStorage.getItem('fawn_ref');
-    const target = new URL('https://goldstarorbital.github.io/fawn-landing/signup.html');
-    if (ref) target.searchParams.set('ref', ref);
-    window.location.href = target.toString();
+    document.getElementById('login-card').classList.add('hidden');
+    document.getElementById('reg-card').classList.remove('hidden');
   }
 
   function showLogin() {
