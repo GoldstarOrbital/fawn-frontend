@@ -1642,7 +1642,17 @@
       body: JSON.stringify(body),
     });
     const data = await r.json();
-    if (!r.ok) throw new Error(data.detail || `Error ${r.status}`);
+    if (!r.ok) {
+      let msg = `Error ${r.status}`;
+      if (data.detail) {
+        if (Array.isArray(data.detail)) {
+          msg = data.detail.map(e => e.msg || e).join('; ');
+        } else {
+          msg = data.detail;
+        }
+      }
+      throw new Error(msg);
+    }
     return data;
   }
 
@@ -1660,6 +1670,17 @@
       body: JSON.stringify(body),
     });
     const data = await r.json();
+    if (!r.ok) {
+      let msg = `Error ${r.status}`;
+      if (data.detail) {
+        if (Array.isArray(data.detail)) {
+          msg = data.detail.map(e => e.msg || e).join('; ');
+        } else {
+          msg = data.detail;
+        }
+      }
+      throw new Error(msg);
+    }
     if (!r.ok) throw new Error(data.detail || `Error ${r.status}`);
     return data;
   }
