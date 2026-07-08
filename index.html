@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>FAWN — Banking That Makes Sense</title>
-  <meta name="description" content="Flat-fee banking for Gen Z. $0.01 per transaction, FDIC-insured, live financial news." />
+  <meta name="description" content="Instant USDC crypto transfers backed by real dollars. $0.01 per transaction. No KYC required." />
   <meta name="theme-color" content="#00c896" />
   <meta property="og:title" content="FAWN — Banking for Gen Z" />
   <meta property="og:description" content="Flat-fee banking. No monthly fees. Live financial news powered by AI." />
@@ -495,7 +495,7 @@
 <!-- ── AUTH ── -->
 <div id="auth-screen">
   <div class="auth-logo">fawn</div>
-  <div class="auth-tagline">Banking that makes sense. Finally.</div>
+  <div class="auth-tagline">Instant crypto transfers. Real dollars. No KYC.</div>
 
   <!-- LOGIN -->
   <div class="auth-card" id="login-card">
@@ -511,7 +511,7 @@
   <!-- REGISTER -->
   <div class="auth-card hidden" id="reg-card">
     <h2>Create your account</h2>
-    <div class="auth-sub">Takes about 60 seconds. No credit check.</div>
+    <div class="auth-sub">Takes about 60 seconds. No KYC required.</div>
     <div class="field"><label>Full name</label><input type="text" id="r-name" placeholder="Alex Goldsmith" /></div>
     <div class="field"><label>Email</label><input type="email" id="r-email" placeholder="you@example.com" /></div>
     <div class="field"><label>Phone</label><input type="tel" id="r-phone" placeholder="5551234567" /></div>
@@ -537,7 +537,7 @@
     <div style="font-size:3rem;margin-bottom:16px">🌿</div>
     <div style="font-size:1.5rem;font-weight:800;margin-bottom:10px">Welcome to FAWN</div>
     <div style="color:var(--muted);font-size:0.95rem;line-height:1.6;margin-bottom:28px">
-      Your FDIC-insured account is ready. Here's what you can do:
+      Your USDC wallet is ready. Here's what you can do:
     </div>
     <div style="display:flex;flex-direction:column;gap:12px;margin-bottom:32px;text-align:left">
       <div style="display:flex;gap:14px;align-items:flex-start">
@@ -877,7 +877,7 @@
           <div style="color:var(--muted);font-size:0.9rem;padding:20px 0;text-align:center">Loading investing…</div>
         </div>
         <div class="disclaimer-box" style="margin-top:16px">
-          Investing involves risk, including possible loss of principal. This is not financial advice. Not FDIC-insured, not a deposit, and not guaranteed. Brokerage services are provided by our brokerage partner.
+          USDC is not a bank account. It is a blockchain-based stablecoin issued by Circle, regulated by NYDFS. This is not financial advice. Not FDIC-insured, not a deposit account, and subject to smart contract risk.
         </div>
       </div>
 
@@ -1073,20 +1073,8 @@
   }
 
   function renderOnboardingState() {
-    const title = document.getElementById('onboard-title');
-    const sub = document.getElementById('onboard-sub');
-    const btn = document.getElementById('unit-form-btn');
-    if (!title || !sub || !btn) return;
-
-    if (user?.application_pending || unitApplicationStarted) {
-      title.textContent = 'Banking application under review';
-      sub.textContent = 'Thanks. Unit is reviewing your secure application. Refresh status after you finish the hosted form, or check back shortly.';
-      btn.textContent = 'Resume secure application';
-    } else {
-      title.textContent = 'Complete your secure banking application';
-      sub.textContent = 'FAWN uses Unit for hosted identity verification and account opening. Your SSN and address are entered with Unit, not stored by FAWN.';
-      btn.textContent = 'Start secure application';
-    }
+    // CRYPTO-NATIVE: No more Unit banking application flow. Wallet creation is self-service.
+    // Keeping this function as a no-op to avoid breaking old code that calls it.
   }
 
   async function startUnitApplication() {
