@@ -1259,8 +1259,14 @@
       document.getElementById('acct-pill').textContent = 'No account';
       setDashTx([]);
       setStats([]);
+      // Enable create wallet buttons
+      const btn = document.getElementById('create-wallet-custodial-btn');
+      if (btn) { btn.disabled = false; btn.textContent = 'Create wallet (instant)'; }
     } else {
       document.getElementById('onboard-banner').classList.add('hidden');
+      // Disable create wallet buttons if wallet already exists
+      const btn = document.getElementById('create-wallet-custodial-btn');
+      if (btn) { btn.disabled = true; btn.textContent = 'Wallet created ✓'; }
       loadBalance();
       loadTxns();
       loadReferral();
@@ -2261,7 +2267,18 @@
       }
       toast('Wallet created! 🎉');
       user.wallet_initialized = true;
-      setTimeout(() => location.reload(), 1000);
+
+      // Hide onboarding banner immediately
+      const banner = document.getElementById('onboard-banner');
+      if (banner) banner.classList.add('hidden');
+
+      // Load wallet data into UI
+      loadBalance();
+      loadTxns();
+      loadReferral();
+      startAutoRefresh();
+
+      setTimeout(() => location.reload(), 1500);
     } catch (e) {
       toast(String(e.message || 'Failed to create wallet'));
       if (btn) { btn.disabled = false; btn.textContent = 'Create wallet'; }
@@ -2303,9 +2320,13 @@
       `;
       document.body.appendChild(seedModal);
       user.wallet_initialized = true;
+
+      // Hide onboarding banner immediately
+      const banner = document.getElementById('onboard-banner');
+      if (banner) banner.classList.add('hidden');
     } catch (e) {
-      toast(String(e.message || 'Failed to create account'));
-      if (btn) { btn.disabled = false; btn.textContent = 'I\'ll control keys'; }
+      toast(String(e.message || 'Failed to create wallet'));
+      if (btn) { btn.disabled = false; btn.textContent = 'Create wallet'; }
     }
   }
 
