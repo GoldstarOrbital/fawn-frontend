@@ -601,7 +601,8 @@
     <!-- Wallet Section -->
     <div style="margin-bottom:28px;padding-bottom:24px;border-bottom:1px solid var(--border)">
       <div style="font-size:0.8rem;font-weight:700;text-transform:uppercase;color:var(--muted);letter-spacing:1px;margin-bottom:12px">Wallet</div>
-      <div id="wallet-info" style="background:var(--surface2);border:1px solid var(--border);border-radius:12px;padding:14px;margin-bottom:12px;font-size:0.85rem">
+
+      <div id="wallet-info" style="background:var(--surface2);border:1px solid var(--border);border-radius:12px;padding:14px;margin-bottom:12px;font-size:0.85rem;display:none">
         <div style="display:flex;justify-content:space-between;margin-bottom:8px">
           <div style="color:var(--muted)">Address</div>
           <div style="font-family:monospace;font-size:0.75rem" id="settings-wallet-addr">—</div>
@@ -615,8 +616,11 @@
           <div id="settings-wallet-type" style="font-size:0.8rem">—</div>
         </div>
       </div>
-      <button onclick="downloadSeedPhrase()" style="width:100%;padding:10px;background:var(--green);color:#000;font-weight:700;border:none;border-radius:10px;cursor:pointer;font-size:0.85rem;margin-bottom:8px">View Seed Phrase</button>
-      <button onclick="openSendModal()" style="width:100%;padding:10px;background:var(--green-faint);color:var(--green);font-weight:700;border:1px solid var(--green);border-radius:10px;cursor:pointer;font-size:0.85rem">Send USDC</button>
+
+      <button id="create-wallet-btn" onclick="createWalletFromSettings()" style="width:100%;padding:12px;background:var(--green);color:#000;font-weight:700;border:none;border-radius:10px;cursor:pointer;font-size:0.9rem;margin-bottom:8px;display:none">Create Wallet</button>
+
+      <button onclick="downloadSeedPhrase()" style="width:100%;padding:10px;background:var(--green);color:#000;font-weight:700;border:none;border-radius:10px;cursor:pointer;font-size:0.85rem;margin-bottom:8px;display:none" id="seed-btn">View Seed Phrase</button>
+      <button onclick="openSendModal()" style="width:100%;padding:10px;background:var(--green-faint);color:var(--green);font-weight:700;border:1px solid var(--green);border-radius:10px;cursor:pointer;font-size:0.85rem;display:none" id="send-btn">Send USDC</button>
     </div>
 
     <!-- UI Customization -->
@@ -2383,19 +2387,27 @@
   pingBackend();
 
   // ── SETTINGS & WALLET MANAGEMENT ──
-  function loadSavedWalletData() {
-    // Load saved wallet address and seed phrase on app start
-    const savedAddr = localStorage.getItem('fawn_wallet_address');
-    const savedSeed = localStorage.getItem('fawn_seed_phrase');
-    const savedType = localStorage.getItem('fawn_wallet_type');
-
-    // Populate receive modal with saved address (even before API call)
-    const receiveAddr = document.getElementById('receive-address');
-    if (receiveAddr && savedAddr) {
-      receiveAddr.value = savedAddr;
+  async function loadSavedWalletData() {
+    try {
+      // Fetch from User profile (persists across devices)
+      const userProfile = await authGet('/auth/me');
+      if (userProfile?.crypto_wallet_address) {
+        const addr = userProfile.crypto_wallet_address;
+        localStorage.setItem('fawn_wallet_address', addr);
+        localStorage.setItem('fawn_wallet_type', userProfile.wallet_type || 'fawn_custodial');
+        const receiveAddr = document.getElementById('receive-address');
+        if (receiveAddr) receiveAddr.value = addr;
+        console.log(`[wallet] Loaded wallet from profile: ✓ address ${addr?.slice(0, 8)}...`);
+      }
+    } catch (e) {
+      // Fallback to localStorage if API fails
+      const savedAddr = localStorage.getItem('fawn_wallet_address');
+      if (savedAddr) {
+        const receiveAddr = document.getElementById('receive-address');
+        if (receiveAddr) receiveAddr.value = savedAddr;
+        console.log(`[wallet] Loaded from localStorage (offline): ${savedAddr?.slice(0, 8)}...`);
+      }
     }
-
-    console.log(`[wallet] Loaded saved wallet data: ${savedAddr ? '✓ address' : '✗ no address'} ${savedSeed ? '✓ seed' : ''} (${savedType})`);
   }
 
   function openSettings() {
@@ -2411,26 +2423,49 @@
   }
 
   async function updateSettingsDisplay() {
-    if (!user?.wallet_initialized) return;
     try {
-      const balance = await authGet('/wallet/balance');
-      const addr = balance.wallet_address;
-      // Save to localStorage for offline access
-      if (addr) localStorage.setItem('fawn_wallet_address', addr);
+      const userProfile = await authGet('/auth/me');
+      const walletAddr = userProfile?.crypto_wallet_address;
+      const walletType = userProfile?.wallet_type;
 
-      document.getElementById('settings-wallet-addr').textContent = addr?.slice(0, 8) + '...' + addr?.slice(-6) || '—';
-      document.getElementById('settings-wallet-balance').textContent = '$' + (balance.usdc_balance || 0).toFixed(2);
-      document.getElementById('settings-wallet-type').textContent = balance.wallet_type === 'fawn_custodial' ? 'FAWN Custodial' : 'Non-Custodial';
-      document.getElementById('receive-address').value = addr || '';
-      generateQRCode(addr);
-    } catch (e) {
-      console.log('Failed to update settings display:', e);
-      // Fallback: use localStorage address if API fails
-      const savedAddr = localStorage.getItem('fawn_wallet_address');
-      if (savedAddr) {
-        document.getElementById('receive-address').value = savedAddr;
-        generateQRCode(savedAddr);
+      if (walletAddr) {
+        document.getElementById('wallet-info').style.display = 'block';
+        document.getElementById('create-wallet-btn').style.display = 'none';
+        document.getElementById('seed-btn').style.display = 'block';
+        document.getElementById('send-btn').style.display = 'block';
+        document.getElementById('settings-wallet-addr').textContent = walletAddr.slice(0, 8) + '...' + walletAddr.slice(-6);
+        document.getElementById('settings-wallet-type').textContent = walletType === 'fawn_custodial' ? 'FAWN Custodial' : 'Non-Custodial';
+        const balance = await authGet('/wallet/balance');
+        document.getElementById('settings-wallet-balance').textContent = '$' + (balance?.usdc_balance || 0).toFixed(2);
+        localStorage.setItem('fawn_wallet_address', walletAddr);
+        document.getElementById('receive-address').value = walletAddr;
+      } else {
+        document.getElementById('wallet-info').style.display = 'none';
+        document.getElementById('create-wallet-btn').style.display = 'block';
+        document.getElementById('seed-btn').style.display = 'none';
+        document.getElementById('send-btn').style.display = 'none';
       }
+    } catch (e) {
+      console.log('Failed to load wallet:', e);
+    }
+  }
+
+  async function createWalletFromSettings() {
+    const btn = document.getElementById('create-wallet-btn');
+    btn.disabled = true;
+    btn.textContent = 'Creating...';
+    try {
+      const result = await authPost('/wallet/create', { wallet_type: 'fawn_custodial' });
+      if (result?.wallet_address) {
+        localStorage.setItem('fawn_wallet_address', result.wallet_address);
+        await updateSettingsDisplay();
+        toast('✓ Wallet created!');
+      }
+    } catch (e) {
+      toast('✗ Error: ' + (e.detail || e.message));
+    } finally {
+      btn.disabled = false;
+      btn.textContent = 'Create Wallet';
     }
   }
 
