@@ -617,35 +617,35 @@
           <p id="greeting-sub">Here's what's happening with your money.</p>
         </div>
 
-        <!-- Onboarding banner (shown when no Unit account) -->
+        <!-- Onboarding banner (shown when no stablecoin wallet) -->
         <div class="onboard-banner hidden" id="onboard-banner">
-          <div class="onboard-icon">🏦</div>
+          <div class="onboard-icon">💰</div>
           <div>
-            <div class="onboard-title" id="onboard-title">Complete your secure banking application</div>
-            <div class="onboard-sub" id="onboard-sub">FAWN uses Unit for hosted identity verification and account opening. Your SSN and address are entered with Unit, not stored by FAWN.</div>
+            <div class="onboard-title" id="onboard-title">Create your USDC wallet</div>
+            <div class="onboard-sub" id="onboard-sub">One-tap setup for your stablecoin wallet. Choose custodial (FAWN holds keys) or non-custodial (you control keys). No KYC required.</div>
             <div class="onboard-actions">
-              <button class="onboard-action" id="unit-form-btn" onclick="startUnitApplication()">Start secure application</button>
-              <button class="onboard-action secondary" onclick="refreshApplicationStatus()">Refresh status</button>
+              <button class="onboard-action" id="create-wallet-custodial-btn" onclick="createWalletCustodial()">Create wallet (custodial)</button>
+              <button class="onboard-action secondary" onclick="createWalletNonCustodial()">I'll control keys</button>
             </div>
           </div>
         </div>
 
         <div class="balance-card">
           <div style="display:flex;justify-content:space-between;align-items:flex-start">
-            <div class="balance-eyebrow">Available Balance</div>
+            <div class="balance-eyebrow">USDC Balance</div>
             <button onclick="loadBalance()" id="balance-refresh-btn" title="Refresh balance" style="background:rgba(0,0,0,0.18);border:none;border-radius:8px;padding:5px 9px;cursor:pointer;font-size:1rem;color:#000;line-height:1;transition:background 0.15s" onmouseover="this.style.background='rgba(0,0,0,0.3)'" onmouseout="this.style.background='rgba(0,0,0,0.18)'">↻</button>
           </div>
           <div class="balance-amount" id="balance-amt">$—</div>
           <div class="balance-pills">
-            <div class="balance-pill">✓ FDIC Insured</div>
-            <div class="balance-pill">✓ Fully Liquid</div>
+            <div class="balance-pill">✓ Instant Transfers</div>
+            <div class="balance-pill">✓ $0.01 Flat Fee</div>
             <div class="balance-pill" id="acct-pill">Loading…</div>
           </div>
         </div>
 
-        <!-- Account Details Card -->
+        <!-- Wallet Address Card -->
         <div id="acct-details-card" style="display:none;background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:18px 22px;margin-bottom:20px">
-          <div style="font-size:0.7rem;color:var(--muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:14px">Account Details</div>
+          <div style="font-size:0.7rem;color:var(--muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:14px">Wallet Details</div>
           <div style="display:flex;gap:12px;flex-wrap:wrap">
             <div style="flex:1;min-width:140px">
               <div style="font-size:0.72rem;color:var(--muted);margin-bottom:4px">Routing Number</div>
@@ -1056,18 +1056,15 @@
     loadSavingsHub();
     initNewsPreferences();
 
-    if (!user.account_active) {
+    // CRYPTO-NATIVE: Check wallet instead of account_active
+    if (!user.wallet_initialized) {
       document.getElementById('onboard-banner').classList.remove('hidden');
-      renderOnboardingState();
       document.getElementById('balance-amt').textContent = '$0.00';
-      document.getElementById('acct-pill').textContent = 'Account pending';
+      document.getElementById('acct-pill').textContent = 'No wallet';
       setDashTx([]);
       setStats([]);
     } else {
-      localStorage.removeItem('fawn_unit_application_started');
-      unitApplicationStarted = false;
       document.getElementById('onboard-banner').classList.add('hidden');
-      document.getElementById('acct-pill').textContent = 'Account active';
       loadBalance();
       loadTxns();
       loadReferral();
@@ -1132,9 +1129,19 @@
     const el = document.getElementById('balance-amt');
     el.innerHTML = '<span class="spinner"></span>';
     try {
-      const d = await authGet('/accounts/balance');
-      el.textContent = fmt(d.available);
-    } catch { el.textContent = '$—'; }
+      // CRYPTO-NATIVE: Load USDC wallet balance instead of bank account
+      const d = await authGet('/wallet/balance');
+      el.textContent = fmt(d.usdc_balance);
+      // Update wallet address pill
+      const pill = document.getElementById('acct-pill');
+      if (pill) pill.textContent = d.wallet_address ? `${d.wallet_address.slice(0,6)}...${d.wallet_address.slice(-4)}` : 'No wallet';
+    } catch (e) {
+      el.textContent = '$—';
+      const msg = String(e.message || '');
+      if (/404|No stablecoin wallet/.test(msg)) {
+        document.getElementById('onboard-banner').classList.remove('hidden');
+      }
+    }
   }
 
   async function loadTxns() {
@@ -1143,14 +1150,25 @@
     if (fullEl) fullEl.innerHTML = '<div style="padding:32px;text-align:center"><span class="spinner"></span></div>';
     if (dashEl) dashEl.innerHTML = '<div style="padding:32px;text-align:center"><span class="spinner"></span></div>';
     try {
-      const d = await authGet('/transactions/?limit=50');
-      allTxns = d.transactions || [];
+      // CRYPTO-NATIVE: Load USDC transfers instead of bank transactions
+      const d = await authGet('/transfers/history?limit=50');
+      // Convert crypto transfers to tx format
+      allTxns = (d || []).map(t => ({
+        id: t.transfer_id,
+        type: t.type,
+        amount: t.type === 'send' ? -1 * (t.amount + t.fee) : t.amount,
+        description: t.type === 'send' ? `Sent to ${t.counterparty.slice(0,6)}...${t.counterparty.slice(-4)}` : `Received from ${t.counterparty.slice(0,6)}...`,
+        category: 'transfer',
+        date: t.created_at ? t.created_at.split('T')[0] : '',
+        status: t.status,
+        memo: t.memo,
+      }));
       setDashTx(allTxns.slice(0, 5));
       setFullTx(allTxns);
       setStats(allTxns);
-      loadSpendingChart();
-    } catch {
-      if (fullEl) fullEl.innerHTML = emptyState('Could not load transactions', 'Backend may be offline.');
+      // Skip spending chart for crypto (no categories)
+    } catch (e) {
+      if (fullEl) fullEl.innerHTML = emptyState('No transfers yet', 'Send USDC to get started.');
       if (dashEl) dashEl.innerHTML = '';
     }
   }
@@ -1864,6 +1882,39 @@
     } catch (e) {
       body.innerHTML = '<div class="disclaimer-box">Couldn\'t load the brief right now. Please try again later.</div>';
       if (disc) disc.style.display = 'none';
+    }
+  }
+
+  // ── CRYPTO WALLET CREATION (CRYPTO-NATIVE ARCHITECTURE) ──
+
+  async function createWalletCustodial() {
+    const btn = document.getElementById('create-wallet-custodial-btn');
+    if (btn) { btn.disabled = true; btn.textContent = 'Creating…'; }
+    try {
+      const r = await authPost('/wallet/create', { wallet_type: 'fawn_custodial' });
+      toast('Wallet created! 🎉');
+      user.wallet_initialized = true;
+      setTimeout(() => location.reload(), 1000);
+    } catch (e) {
+      toast(String(e.message || 'Failed to create wallet'));
+      if (btn) { btn.disabled = false; btn.textContent = 'Create wallet (custodial)'; }
+    }
+  }
+
+  async function createWalletNonCustodial() {
+    const btn = event.target;
+    if (btn) { btn.disabled = true; btn.textContent = 'Creating…'; }
+    try {
+      const r = await authPost('/wallet/create', { wallet_type: 'non_custodial' });
+      // Show seed phrase (CRITICAL: user must save this)
+      const seed = r.seed_phrase;
+      const msg = `🔑 SAVE THIS SEED PHRASE — you need it to recover your wallet!\n\n${seed}\n\nYou won't be able to see it again. Store it safely offline.`;
+      alert(msg);
+      user.wallet_initialized = true;
+      setTimeout(() => location.reload(), 1000);
+    } catch (e) {
+      toast(String(e.message || 'Failed to create wallet'));
+      if (btn) { btn.disabled = false; btn.textContent = 'I\'ll control keys'; }
     }
   }
 
