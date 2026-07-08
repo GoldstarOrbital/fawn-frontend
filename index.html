@@ -513,13 +513,13 @@
   <div class="auth-card hidden" id="reg-card">
     <h2>Create your account</h2>
     <div class="auth-sub">Takes about 60 seconds. Your account is ready to use instantly.</div>
-    <div class="field"><label>Full name</label><input type="text" id="r-name" placeholder="Alex Goldsmith" /></div>
-    <div class="field"><label>Email</label><input type="email" id="r-email" placeholder="you@example.com" /></div>
-    <div class="field"><label>Phone</label><input type="tel" id="r-phone" placeholder="5551234567" /></div>
-    <div class="field"><label>Password</label><input type="password" id="r-pass" placeholder="Create a password" /></div>
+    <div class="field"><label>Full name</label><input type="text" id="r-name" placeholder="Alex Goldsmith" required /></div>
+    <div class="field"><label>Email</label><input type="email" id="r-email" placeholder="you@example.com" required /></div>
+    <div class="field"><label>Phone <span style="color:var(--muted);font-size:0.75rem">(optional)</span></label><input type="tel" id="r-phone" placeholder="(optional) 555-123-4567" /></div>
+    <div class="field"><label>Password</label><input type="password" id="r-pass" placeholder="At least 8 characters" required /></div>
     <div class="field">
       <label class="checkbox-row">
-        <input type="checkbox" id="r-student" />
+        <input type="checkbox" id="r-student" checked />
         I'm a current college student (free tier)
       </label>
     </div>
@@ -1004,9 +1004,22 @@
     btn.disabled = true; btn.textContent = 'Creating account…';
     clearErr('reg-err');
     try {
+      // Client-side validation
+      const fullName = val('r-name');
+      const email = val('r-email');
+      const password = val('r-pass');
+
+      if (!fullName) throw new Error('Full name is required');
+      if (!email) throw new Error('Email is required');
+      if (!email.includes('@')) throw new Error('Please enter a valid email address');
+      if (!password) throw new Error('Password is required');
+      if (password.length < 8) throw new Error('Password must be at least 8 characters');
+
       const r = await post('/auth/register', {
-        full_name: val('r-name'), email: val('r-email'),
-        phone: val('r-phone'), password: val('r-pass'),
+        full_name: fullName,
+        email: email,
+        phone: val('r-phone'),
+        password: password,
         is_student: document.getElementById('r-student').checked,
       });
       token = r.access_token;
