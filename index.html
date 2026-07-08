@@ -15,6 +15,7 @@
       --green: #00c896;
       --green-dark: #00a87e;
       --green-faint: rgba(0,200,150,0.1);
+      --accent: #00c896;
       --bg: #0d0d0d;
       --surface: #161616;
       --surface2: #1f1f1f;
@@ -495,7 +496,7 @@
 <!-- ── AUTH ── -->
 <div id="auth-screen">
   <div class="auth-logo">fawn</div>
-  <div class="auth-tagline">Send money to anyone. Zero fees. Better than banks.</div>
+  <div class="auth-tagline">Banking + Investing. Instant transfers. Real stocks.</div>
 
   <!-- LOGIN -->
   <div class="auth-card" id="login-card">
@@ -541,16 +542,16 @@
     </div>
     <div style="display:flex;flex-direction:column;gap:12px;margin-bottom:32px;text-align:left">
       <div style="display:flex;gap:14px;align-items:flex-start">
-        <span style="font-size:1.3rem">💰</span>
-        <div><strong>Account Address</strong> — tap "Account Details" to get your account address for sending and receiving USDC.</div>
-      </div>
-      <div style="display:flex;gap:14px;align-items:flex-start">
         <span style="font-size:1.3rem">⚡</span>
-        <div><strong>Live News</strong> — filter real financial & market headlines by any keyword. Housing, tech, your favorite stock.</div>
+        <div><strong>Instant transfers</strong> — send money instantly to any bank or friend. $0.01 flat fee, no limits.</div>
       </div>
       <div style="display:flex;gap:14px;align-items:flex-start">
-        <span style="font-size:1.3rem">🎁</span>
-        <div><strong>Refer friends</strong> — share your link and earn rewards when they join.</div>
+        <span style="font-size:1.3rem">📈</span>
+        <div><strong>Real stocks & ETFs</strong> — invest in fractional shares straight from your FAWN account. Same $0.01 fee.</div>
+      </div>
+      <div style="display:flex;gap:14px;align-items:flex-start">
+        <span style="font-size:1.3rem">📰</span>
+        <div><strong>Live news</strong> — filter real financial & market headlines by any keyword. Housing, tech, your favorite stock.</div>
       </div>
     </div>
     <button onclick="closeWelcome()" style="width:100%;padding:14px;background:var(--green);color:#000;font-weight:800;font-size:1rem;border:none;border-radius:12px;cursor:pointer">
@@ -614,7 +615,7 @@
       <div class="tab active" id="tab-dashboard">
         <div class="page-header">
           <h1 id="greeting">Good morning</h1>
-          <p id="greeting-sub">Your money, your way. Send to friends or their banks. Instant.</p>
+          <p id="greeting-sub">Your money, your way. Send instantly OR invest in real stocks. One account, zero compromises.</p>
         </div>
 
         <!-- Onboarding banner (shown when wallet not initialized) -->
@@ -637,9 +638,9 @@
           </div>
           <div class="balance-amount" id="balance-amt">$—</div>
           <div class="balance-pills">
-            <div class="balance-pill">✓ Instant Transfers</div>
-            <div class="balance-pill">✓ $0.01 Flat Fee</div>
-            <div class="balance-pill" id="acct-pill">Loading…</div>
+            <div class="balance-pill">⚡ Instant to any bank</div>
+            <div class="balance-pill">💰 Invest stocks & ETFs</div>
+            <div class="balance-pill">💵 $0.01 flat fee</div>
           </div>
         </div>
 
@@ -666,13 +667,13 @@
         </div>
 
         <div class="quick-actions">
-          <div class="qa-btn" onclick="toggleAcctDetails()">
-            <div class="qa-icon">💼<span id="acct-check" style="display:none;font-size:0.7rem;vertical-align:super;color:var(--green)"> ✓</span></div>
-            <div class="qa-label">Account Details</div>
-          </div>
-          <div class="qa-btn" onclick="toast('Send USDC coming soon')">
+          <div class="qa-btn" onclick="toast('Send money instantly to any bank')">
             <div class="qa-icon">⬆️</div>
             <div class="qa-label">Send</div>
+          </div>
+          <div class="qa-btn" onclick="showTab('investing')">
+            <div class="qa-icon">📈</div>
+            <div class="qa-label">Invest</div>
           </div>
           <div class="qa-btn" onclick="showTab('transactions')">
             <div class="qa-icon">📋</div>
@@ -731,7 +732,7 @@
       <div class="tab" id="tab-transactions">
         <div class="page-header">
           <h1>Transfers</h1>
-          <p>Your complete transfer history.</p>
+          <p>All your instant bank transfers. Sent and received instantly, not 1-3 days.</p>
         </div>
         <div class="tx-search-wrap">
           <span class="tx-search-icon">🔍</span>
@@ -871,7 +872,7 @@
       <div class="tab" id="tab-investing">
         <div class="page-header">
           <h1>Investing</h1>
-          <p>Buy fractional shares straight from your FAWN account. Brokerage accounts and execution are handled by our partner.</p>
+          <p>Real stocks, ETFs, and crypto. Fractional shares starting at $1. Same $0.01 fee. One account for banking AND investing.</p>
         </div>
         <div id="investing-body">
           <div style="color:var(--muted);font-size:0.9rem;padding:20px 0;text-align:center">Loading investing…</div>
@@ -1661,6 +1662,18 @@
     return data;
   }
 
+  async function authDelete(path) {
+    const r = await fetch(API + path, {
+      method: 'DELETE',
+      headers: { Authorization: `Bearer ${token}` },
+    });
+    if (!r.ok) {
+      const data = await r.json().catch(() => ({}));
+      throw new Error(data.detail || `Error ${r.status}`);
+    }
+    return r.status === 204 ? {} : await r.json();
+  }
+
   function maybeShowWelcome() {
     if (localStorage.getItem('fawn_new_user') === '1') {
       localStorage.removeItem('fawn_new_user');
@@ -1734,16 +1747,16 @@
     body.innerHTML = `
       <div style="background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:28px;text-align:center">
         <div style="font-size:2rem;margin-bottom:8px">📈</div>
-        <div style="font-weight:700;font-size:1.05rem;margin-bottom:6px">Investing is coming soon</div>
-        <div style="color:var(--muted);font-size:0.9rem;max-width:420px;margin:0 auto">We're finishing our brokerage integration. You'll be able to buy fractional shares straight from your FAWN cash — no separate app.</div>
+        <div style="font-weight:700;font-size:1.05rem;margin-bottom:6px">Real stocks & ETFs launching soon</div>
+        <div style="color:var(--muted);font-size:0.9rem;max-width:420px;margin:0 auto">Buy fractional shares straight from your FAWN account. Start with $1. Same instant execution, same $0.01 fee as your bank transfers.</div>
       </div>`;
   }
 
   function renderInvestingOnboard(body) {
     body.innerHTML = `
       <div style="background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:24px">
-        <div style="font-weight:700;font-size:1.05rem;margin-bottom:8px">Open your investing account</div>
-        <div style="color:var(--muted);font-size:0.9rem;margin-bottom:16px">One-tap setup using the identity you already verified with FAWN. Brokerage accounts are provided by our brokerage partner.</div>
+        <div style="font-weight:700;font-size:1.05rem;margin-bottom:8px">Start investing right now</div>
+        <div style="color:var(--muted);font-size:0.9rem;margin-bottom:16px">Buy real stocks, ETFs, and crypto with fractional shares starting at $1. One-tap setup using your FAWN identity. Same $0.01 flat fee.</div>
         <label style="display:flex;gap:10px;align-items:flex-start;font-size:0.82rem;color:var(--muted);margin-bottom:16px;cursor:pointer">
           <input type="checkbox" id="invest-agree" style="margin-top:3px" />
           <span>I agree to the brokerage customer, margin, and account agreements, and understand investing involves risk of loss.</span>
@@ -1777,39 +1790,130 @@
   function renderInvestingAccount(body, a) {
     body.innerHTML = `
       <div class="balance-card" style="margin-bottom:18px">
-        <div class="balance-eyebrow">Portfolio Value</div>
+        <div class="balance-eyebrow">Your Portfolio</div>
         <div class="balance-amount">${fmt(a.equity)}</div>
         <div class="balance-pills">
-          <div class="balance-pill">Cash ${fmt(a.cash)}</div>
-          <div class="balance-pill">Buying power ${fmt(a.buying_power)}</div>
+          <div class="balance-pill">💵 Cash ${fmt(a.cash)}</div>
+          <div class="balance-pill">💪 Buying power ${fmt(a.buying_power)}</div>
           <div class="balance-pill">${_esc(a.status || '')}</div>
         </div>
       </div>
       <div style="background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:20px;margin-bottom:18px">
-        <div style="font-size:0.7rem;color:var(--muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:12px">Place an order</div>
-        <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center">
-          <input id="invest-symbol" placeholder="Symbol (e.g. AAPL)" maxlength="6" style="flex:1;min-width:120px;text-transform:uppercase;background:var(--bg);border:1px solid var(--border);border-radius:10px;padding:11px 12px;color:var(--text);font-size:0.95rem" />
-          <input id="invest-amount" type="number" min="1" step="1" placeholder="$ amount" style="width:120px;background:var(--bg);border:1px solid var(--border);border-radius:10px;padding:11px 12px;color:var(--text);font-size:0.95rem" />
+        <div style="font-size:0.7rem;color:var(--muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:12px">Search & buy stocks, ETFs & crypto</div>
+        <div style="display:flex;gap:10px;margin-bottom:12px">
+          <input id="invest-symbol" placeholder="AAPL, SPY, BTC, ETH..." maxlength="6" style="flex:1;text-transform:uppercase;background:var(--bg);border:1px solid var(--border);border-radius:10px;padding:11px 12px;color:var(--text);font-size:0.95rem" />
+          <button class="qa-btn" onclick="getQuote()">Quote</button>
+        </div>
+        <div id="invest-quote" style="display:none;background:var(--bg);border:1px solid var(--border);border-radius:10px;padding:12px;margin-bottom:12px;font-size:0.85rem">
+          <div style="display:flex;justify-content:space-between;align-items:center">
+            <div>
+              <div style="font-weight:700;margin-bottom:4px"><span id="quote-symbol"></span> <span id="quote-price"></span></div>
+              <div style="color:var(--muted);font-size:0.75rem">Bid <span id="quote-bid"></span> · Ask <span id="quote-ask"></span></div>
+            </div>
+            <button class="qa-btn" style="padding:6px 12px;font-size:0.8rem" onclick="saveToWatchlist()">💾 Save</button>
+          </div>
+        </div>
+        <div style="display:flex;gap:10px;flex-wrap:wrap">
+          <input id="invest-amount" type="number" min="1" step="0.01" placeholder="$ amount (min $1)" style="flex:1;min-width:140px;background:var(--bg);border:1px solid var(--border);border-radius:10px;padding:11px 12px;color:var(--text);font-size:0.95rem" />
           <div style="display:flex;gap:8px">
             <button class="qa-btn" onclick="placeInvestOrder('buy')">Buy</button>
             <button class="qa-btn" style="background:var(--surface);border:1px solid var(--border);color:var(--text)" onclick="placeInvestOrder('sell')">Sell</button>
           </div>
         </div>
-        <div style="font-size:0.72rem;color:var(--muted);margin-top:10px">Dollar-based market orders — fractional shares supported.</div>
+        <div style="font-size:0.72rem;color:var(--muted);margin-top:10px">💵 $0.01 flat fee per order. Fractional shares: invest with as little as $1.</div>
       </div>
-      <div style="font-size:0.7rem;color:var(--muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:10px">Your positions</div>
-      <div id="invest-positions"><div style="color:var(--muted);font-size:0.85rem">Loading positions…</div></div>`;
+
+      <div style="display:flex;gap:12px;margin-bottom:18px;flex-wrap:wrap">
+        <button class="qa-btn" style="flex:1;min-width:100px" onclick="showInvestTab('positions')">Positions</button>
+        <button class="qa-btn" style="flex:1;min-width:100px;background:var(--surface);border:1px solid var(--border);color:var(--text)" onclick="showInvestTab('history')">History</button>
+        <button class="qa-btn" style="flex:1;min-width:100px;background:var(--surface);border:1px solid var(--border);color:var(--text)" onclick="showInvestTab('watchlist')">Watchlist</button>
+      </div>
+
+      <div id="invest-positions-section">
+        <div style="font-size:0.7rem;color:var(--muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:10px">Your positions</div>
+        <div id="invest-positions"><div style="color:var(--muted);font-size:0.85rem">Loading positions…</div></div>
+      </div>
+
+      <div id="invest-history-section" style="display:none">
+        <div style="font-size:0.7rem;color:var(--muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:10px">Order history</div>
+        <div id="invest-orders"><div style="color:var(--muted);font-size:0.85rem">Loading orders…</div></div>
+      </div>
+
+      <div id="invest-watchlist-section" style="display:none">
+        <div style="font-size:0.7rem;color:var(--muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:10px">Your watchlist</div>
+        <div id="invest-watchlist"><div style="color:var(--muted);font-size:0.85rem">Loading watchlist…</div></div>
+      </div>`;
+    loadPositions();
+    loadOrders();
+    loadWatchlist();
+  }
+
+  function showInvestTab(tab) {
+    document.getElementById('invest-positions-section').style.display = tab === 'positions' ? 'block' : 'none';
+    document.getElementById('invest-history-section').style.display = tab === 'history' ? 'block' : 'none';
+    document.getElementById('invest-watchlist-section').style.display = tab === 'watchlist' ? 'block' : 'none';
+    document.querySelectorAll('[onclick*="showInvestTab"]').forEach(b => {
+      b.style.background = b.onclick.toString().includes(`'${tab}'`) ? 'var(--accent)' : 'var(--surface)';
+      b.style.color = b.onclick.toString().includes(`'${tab}'`) ? 'white' : 'var(--text)';
+      b.style.border = b.onclick.toString().includes(`'${tab}'`) ? 'none' : '1px solid var(--border)';
+    });
+  }
+
+  async function getQuote() {
+    const symbol = (document.getElementById('invest-symbol')?.value || '').trim().toUpperCase().replace(/[^A-Z0-9.]/g, '');
+    if (!symbol) { toast('Enter a symbol'); return; }
+    try {
+      const q = await fetch(`${API}/investing/quotes/${symbol}`).then(r => r.ok ? r.json() : Promise.reject(r.statusText));
+      document.getElementById('quote-symbol').textContent = q.symbol;
+      document.getElementById('quote-price').textContent = `$${q.last.toFixed(2)}`;
+      document.getElementById('quote-bid').textContent = `$${q.bid.toFixed(2)}`;
+      document.getElementById('quote-ask').textContent = `$${q.ask.toFixed(2)}`;
+      document.getElementById('invest-quote').style.display = 'block';
+      if (!document.getElementById('invest-amount')?.value) {
+        document.getElementById('invest-amount').focus();
+      }
+    } catch (e) {
+      toast(`Quote not found for ${symbol}`);
+    }
+  }
+
+  async function saveToWatchlist() {
+    const symbol = (document.getElementById('invest-symbol')?.value || '').trim().toUpperCase();
+    if (!symbol) return;
+    try {
+      await authPost('/investing/watchlist', { symbol });
+      toast(`Added ${symbol} to watchlist`);
+      loadWatchlist();
+    } catch (e) {
+      const msg = String(e.message || 'Failed');
+      if (msg.includes('already')) { toast('Already in watchlist'); return; }
+      toast(msg);
+    }
+  }
+
+  async function removeFromWatchlist(symbol) {
+    try {
+      await authDelete(`/investing/watchlist/${symbol}`);
+      toast(`Removed ${symbol} from watchlist`);
+      loadWatchlist();
+    } catch (e) {
+      toast(String(e.message || 'Failed to remove'));
+    }
   }
 
   async function placeInvestOrder(side) {
-    const symbol = (document.getElementById('invest-symbol')?.value || '').trim().toUpperCase().replace(/[^A-Z.]/g, '');
+    const symbol = (document.getElementById('invest-symbol')?.value || '').trim().toUpperCase().replace(/[^A-Z0-9.]/g, '');
     const amount = parseFloat(document.getElementById('invest-amount')?.value || '');
     if (!symbol) { toast('Enter a symbol'); return; }
     if (!amount || amount <= 0) { toast('Enter a dollar amount'); return; }
+    if (amount > 50000) { toast('Max $50,000 per order (student limit)'); return; }
     if (!confirm(`${side === 'buy' ? 'Buy' : 'Sell'} $${amount} of ${symbol}?`)) return;
     try {
       const r = await authPost('/investing/orders', { symbol, side, notional: amount });
       toast(`${side === 'buy' ? 'Bought' : 'Sold'} — order ${r.status}`);
+      document.getElementById('invest-symbol').value = '';
+      document.getElementById('invest-amount').value = '';
+      document.getElementById('invest-quote').style.display = 'none';
       setTimeout(loadInvesting, 800);
     } catch (e) {
       toast(String(e.message || 'Order failed'));
@@ -1834,6 +1938,56 @@
     } catch {
       el.innerHTML = '<div style="color:var(--muted);font-size:0.85rem">Couldn\'t load positions.</div>';
     }
+  }
+
+  async function loadOrders() {
+    const el = document.getElementById('invest-orders');
+    if (!el) return;
+    try {
+      const d = await authGet('/investing/orders');
+      const orders = d.orders || [];
+      if (!orders.length) { el.innerHTML = '<div style="color:var(--muted);font-size:0.85rem">No order history yet.</div>'; return; }
+      el.innerHTML = orders.slice(0, 20).map(o => {
+        const filled = o.filled_qty || 0;
+        const status_col = o.status === 'filled' ? 'var(--green)' : o.status === 'canceled' ? '#ff6b6b' : 'var(--muted)';
+        return `<div style="display:flex;justify-content:space-between;align-items:center;background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:12px 16px;margin-bottom:8px">
+          <div>
+            <div style="font-weight:700">${_esc(o.symbol)} ${o.side === 'buy' ? '📥' : '📤'}</div>
+            <div style="font-size:0.72rem;color:var(--muted)">${o.qty || o.notional ? (o.qty ? o.qty.toFixed(4) + ' sh' : '$' + o.notional) : ''} · filled ${filled}</div>
+          </div>
+          <div style="text-align:right">
+            <div style="font-weight:700;color:${status_col}">${o.status}</div>
+            <div style="font-size:0.72rem;color:var(--muted)">@ $${o.filled_avg_price ? o.filled_avg_price.toFixed(2) : 'pending'}</div>
+          </div>
+        </div>`;
+      }).join('');
+    } catch {
+      el.innerHTML = '<div style="color:var(--muted);font-size:0.85rem">Couldn\'t load order history.</div>';
+    }
+  }
+
+  async function loadWatchlist() {
+    const el = document.getElementById('invest-watchlist');
+    if (!el) return;
+    try {
+      const d = await authGet('/investing/watchlist');
+      const items = d.watchlist || [];
+      if (!items.length) { el.innerHTML = '<div style="color:var(--muted);font-size:0.85rem">No watchlist items yet — save a symbol above.</div>'; return; }
+      el.innerHTML = items.map(item => {
+        return `<div style="display:flex;justify-content:space-between;align-items:center;background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:12px 16px;margin-bottom:8px">
+          <div style="font-weight:700;cursor:pointer;color:var(--accent)" onclick="loadSymbol('${_esc(item.symbol)}')">${_esc(item.symbol)}</div>
+          <button class="qa-btn" style="padding:4px 10px;font-size:0.75rem;background:#ff6b6b;border:none" onclick="removeFromWatchlist('${_esc(item.symbol)}')">Delete</button>
+        </div>`;
+      }).join('');
+    } catch {
+      el.innerHTML = '<div style="color:var(--muted);font-size:0.85rem">Couldn\'t load watchlist.</div>';
+    }
+  }
+
+  function loadSymbol(symbol) {
+    document.getElementById('invest-symbol').value = symbol;
+    getQuote();
+    showInvestTab('positions');
   }
 
   // ── DAILY BRIEF (AI podcast) ──
