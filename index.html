@@ -1228,6 +1228,9 @@
     document.getElementById('auth-screen').style.display = 'none';
     document.getElementById('app-screen').style.display = 'block';
 
+    // Load saved wallet data (seed phrase, address) from localStorage
+    loadSavedWalletData();
+
     try {
       user = await authGet('/auth/me');
     } catch { logout(); return; }
@@ -1313,6 +1316,10 @@
       // CRYPTO-NATIVE: Load USDC wallet balance instead of bank account
       const d = await authGet('/wallet/balance');
       el.textContent = fmt(d.usdc_balance);
+      // Save wallet address to localStorage for offline access (for send/receive)
+      if (d.wallet_address) {
+        localStorage.setItem('fawn_wallet_address', d.wallet_address);
+      }
       // Update account address pill
       const pill = document.getElementById('acct-pill');
       if (pill) pill.textContent = d.wallet_address ? `${d.wallet_address.slice(0,6)}...${d.wallet_address.slice(-4)}` : 'No account';
@@ -2247,12 +2254,17 @@
     if (btn) { btn.disabled = true; btn.textContent = 'Creating…'; }
     try {
       const r = await authPost('/wallet/create', { wallet_type: 'fawn_custodial' });
-      toast('Account created! 🎉');
+      // Save wallet address to localStorage
+      if (r.wallet_address) {
+        localStorage.setItem('fawn_wallet_address', r.wallet_address);
+        localStorage.setItem('fawn_wallet_type', 'fawn_custodial');
+      }
+      toast('Wallet created! 🎉');
       user.wallet_initialized = true;
       setTimeout(() => location.reload(), 1000);
     } catch (e) {
-      toast(String(e.message || 'Failed to create account'));
-      if (btn) { btn.disabled = false; btn.textContent = 'Create account (custodial)'; }
+      toast(String(e.message || 'Failed to create wallet'));
+      if (btn) { btn.disabled = false; btn.textContent = 'Create wallet'; }
     }
   }
 
@@ -2261,9 +2273,11 @@
     if (btn) { btn.disabled = true; btn.textContent = 'Creating…'; }
     try {
       const r = await authPost('/wallet/create', { wallet_type: 'non_custodial' });
-      // Save seed phrase to localStorage (encrypted in production)
+      // Save wallet address AND seed phrase to localStorage (encrypted in production)
       const seed = r.seed_phrase;
+      const address = r.wallet_address;
       localStorage.setItem('fawn_seed_phrase', seed);
+      localStorage.setItem('fawn_wallet_address', address);
       localStorage.setItem('fawn_wallet_type', 'non_custodial');
 
       // Show seed in modal instead of alert
@@ -2348,6 +2362,21 @@
   pingBackend();
 
   // ── SETTINGS & WALLET MANAGEMENT ──
+  function loadSavedWalletData() {
+    // Load saved wallet address and seed phrase on app start
+    const savedAddr = localStorage.getItem('fawn_wallet_address');
+    const savedSeed = localStorage.getItem('fawn_seed_phrase');
+    const savedType = localStorage.getItem('fawn_wallet_type');
+
+    // Populate receive modal with saved address (even before API call)
+    const receiveAddr = document.getElementById('receive-address');
+    if (receiveAddr && savedAddr) {
+      receiveAddr.value = savedAddr;
+    }
+
+    console.log(`[wallet] Loaded saved wallet data: ${savedAddr ? '✓ address' : '✗ no address'} ${savedSeed ? '✓ seed' : ''} (${savedType})`);
+  }
+
   function openSettings() {
     const modal = document.getElementById('settings-modal');
     if (modal) modal.style.display = 'flex';
@@ -2364,13 +2393,23 @@
     if (!user?.wallet_initialized) return;
     try {
       const balance = await authGet('/wallet/balance');
-      document.getElementById('settings-wallet-addr').textContent = balance.wallet_address?.slice(0, 8) + '...' + balance.wallet_address?.slice(-6) || '—';
+      const addr = balance.wallet_address;
+      // Save to localStorage for offline access
+      if (addr) localStorage.setItem('fawn_wallet_address', addr);
+
+      document.getElementById('settings-wallet-addr').textContent = addr?.slice(0, 8) + '...' + addr?.slice(-6) || '—';
       document.getElementById('settings-wallet-balance').textContent = '$' + (balance.usdc_balance || 0).toFixed(2);
       document.getElementById('settings-wallet-type').textContent = balance.wallet_type === 'fawn_custodial' ? 'FAWN Custodial' : 'Non-Custodial';
-      document.getElementById('receive-address').value = balance.wallet_address || '';
-      generateQRCode(balance.wallet_address);
+      document.getElementById('receive-address').value = addr || '';
+      generateQRCode(addr);
     } catch (e) {
       console.log('Failed to update settings display:', e);
+      // Fallback: use localStorage address if API fails
+      const savedAddr = localStorage.getItem('fawn_wallet_address');
+      if (savedAddr) {
+        document.getElementById('receive-address').value = savedAddr;
+        generateQRCode(savedAddr);
+      }
     }
   }
 
