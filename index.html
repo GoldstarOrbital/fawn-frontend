@@ -2560,6 +2560,12 @@
   function openReceiveModal() {
     document.getElementById('receive-modal').style.display = 'flex';
     updateSettingsDisplay();
+
+    // Populate wallet address and generate QR code
+    if (walletAddress) {
+      document.getElementById('receive-address').value = walletAddress;
+      generateQRCode(walletAddress);
+    }
   }
 
   function closeReceiveModal() {
@@ -2621,29 +2627,24 @@
   // ── QR CODE GENERATION ──
   function generateQRCode(address) {
     if (!address) return;
-    const qrCanvas = document.getElementById('qr-code');
-    if (!qrCanvas) return;
+    const container = document.getElementById('receive-qr');
+    if (!container) return;
 
-    // Simple QR code using a public service (fallback to text if unavailable)
+    // Generate QR code using public service
     const qrSize = 200;
-    qrCanvas.innerHTML = '';
-
-    // Create a simple encoded version for the QR
     const encodedAddr = encodeURIComponent(address);
     const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=${qrSize}x${qrSize}&data=${encodedAddr}`;
 
-    // Create an image element instead of trying to render SVG
+    // Clear and create image element
+    container.innerHTML = '';
     const img = document.createElement('img');
     img.src = qrUrl;
     img.style.width = '200px';
     img.style.height = '200px';
     img.style.borderRadius = '8px';
+    img.alt = 'USDC Wallet Address QR Code';
 
-    const container = document.getElementById('qr-code');
-    if (container) {
-      container.innerHTML = '';
-      container.appendChild(img);
-    }
+    container.appendChild(img);
   }
 
   // ── UI CUSTOMIZATION ──
