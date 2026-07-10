@@ -520,6 +520,7 @@
       .news-signal { margin-left: 0; }
     }
   </style>
+  <script async src="https://cdn.ramp.network/flash/ramp.js"></script>
 </head>
 <body>
 
@@ -789,6 +790,27 @@
   </div>
 </div>
 
+<!-- ── ADD FUNDS MODAL ── -->
+<div id="add-funds-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.7);z-index:1000;align-items:center;justify-content:center;padding:24px">
+  <div style="background:var(--surface);border:1px solid var(--border);border-radius:24px;padding:32px;max-width:500px;width:100%;position:relative">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:24px">
+      <div style="font-size:1.3rem;font-weight:800">Add Funds</div>
+      <button onclick="closeAddFundsModal()" style="background:none;border:none;font-size:1.5rem;cursor:pointer;color:var(--muted)">✕</button>
+    </div>
+
+    <div style="background:rgba(0,200,150,0.1);border:1px solid rgba(0,200,150,0.3);border-radius:12px;padding:12px;font-size:0.8rem;color:var(--text);margin-bottom:20px">
+      <div style="font-weight:600;margin-bottom:4px">💳 Deposit from your bank</div>
+      <div>Pay with your debit card or bank account. USDC arrives instantly to your FAWN wallet.</div>
+    </div>
+
+    <div id="ramp-container" style="min-height:300px;border-radius:12px;overflow:hidden;border:1px solid var(--border)"></div>
+
+    <div style="font-size:0.75rem;color:var(--muted);text-align:center;margin-top:16px">
+      Powered by Ramp Network • 150+ countries supported
+    </div>
+  </div>
+</div>
+
 <!-- ── APP ── -->
 <div id="app-screen">
   <div class="shell">
@@ -896,6 +918,10 @@
         </div>
 
         <div class="quick-actions">
+          <div class="qa-btn" onclick="openAddFundsModal()">
+            <div class="qa-icon">💳</div>
+            <div class="qa-label">Add Funds</div>
+          </div>
           <div class="qa-btn" onclick="openSendModal()">
             <div class="qa-icon">⬆️</div>
             <div class="qa-label">Send</div>
@@ -907,10 +933,6 @@
           <div class="qa-btn" onclick="showTab('investing')">
             <div class="qa-icon">📈</div>
             <div class="qa-label">Invest</div>
-          </div>
-          <div class="qa-btn" onclick="showTab('transactions')">
-            <div class="qa-icon">📋</div>
-            <div class="qa-label">History</div>
           </div>
         </div>
 
@@ -2572,6 +2594,33 @@
     document.getElementById('receive-modal').style.display = 'none';
   }
 
+  function openAddFundsModal() {
+    document.getElementById('add-funds-modal').style.display = 'flex';
+
+    // Initialize Ramp widget
+    if (walletAddress && typeof window.Ramp !== 'undefined') {
+      const container = document.getElementById('ramp-container');
+      if (container) {
+        container.innerHTML = '';
+        // Wait for Ramp SDK to be ready
+        setTimeout(() => {
+          if (window.Ramp && window.Ramp.showWebWidget) {
+            window.Ramp.showWebWidget({
+              hostAppName: 'FAWN',
+              swapAsset: 'USDC',
+              userAddress: walletAddress,
+              containerNode: container
+            });
+          }
+        }, 100);
+      }
+    }
+  }
+
+  function closeAddFundsModal() {
+    document.getElementById('add-funds-modal').style.display = 'none';
+  }
+
   async function sendUSTC() {
     const address = document.getElementById('send-address').value.trim();
     const amount = parseFloat(document.getElementById('send-amount').value) || 0;
@@ -2689,6 +2738,7 @@
     if (e.target.id === 'settings-modal') closeSettings();
     if (e.target.id === 'send-modal') closeSendModal();
     if (e.target.id === 'receive-modal') closeReceiveModal();
+    if (e.target.id === 'add-funds-modal') closeAddFundsModal();
   });
 
   // Register service worker for PWA install support
