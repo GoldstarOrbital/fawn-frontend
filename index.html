@@ -2597,8 +2597,15 @@
   function openAddFundsModal() {
     document.getElementById('add-funds-modal').style.display = 'flex';
 
+    // Get wallet address from localStorage or user profile
+    const walletAddr = localStorage.getItem('fawn_wallet_address');
+    if (!walletAddr) {
+      document.getElementById('ramp-container').innerHTML = '<div style="padding:20px;color:var(--muted);text-align:center">Please create a wallet first before adding funds.</div>';
+      return;
+    }
+
     // Initialize Ramp widget
-    if (walletAddress && typeof window.Ramp !== 'undefined') {
+    if (typeof window.Ramp !== 'undefined') {
       const container = document.getElementById('ramp-container');
       if (container) {
         container.innerHTML = '';
@@ -2608,7 +2615,7 @@
             window.Ramp.showWebWidget({
               hostAppName: 'FAWN',
               swapAsset: 'USDC',
-              userAddress: walletAddress,
+              userAddress: walletAddr,
               containerNode: container
             });
           }
