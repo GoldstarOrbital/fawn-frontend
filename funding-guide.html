@@ -1,296 +1,769 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>FAWN Funding Guide — How to Add Money to Your Wallet</title>
-  <style>
-    * { margin: 0; padding: 0; box-sizing: border-box; }
-    :root {
-      --green: #00c896;
-      --bg: #0d0d0d;
-      --surface: #161616;
-      --text: #f0f0f0;
-      --muted: #888;
-      --border: #2a2a2a;
-    }
-    @media (prefers-color-scheme: light) {
-      :root {
-        --green: #00b878;
-        --bg: #f8f9fa;
-        --surface: #ffffff;
-        --text: #1a1a1a;
-        --muted: #666;
-        --border: #e0e3e8;
-      }
-    }
-    body {
-      background: var(--bg);
-      color: var(--text);
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-      line-height: 1.6;
-      padding: 20px;
-    }
-    .container { max-width: 900px; margin: 0 auto; }
-    h1 { font-size: 2.5rem; margin-bottom: 12px; color: var(--green); }
-    h2 { font-size: 1.8rem; margin: 32px 0 16px; color: var(--green); border-bottom: 2px solid var(--green); padding-bottom: 8px; }
-    h3 { font-size: 1.2rem; margin: 20px 0 12px; }
-    p { margin-bottom: 12px; color: var(--text); }
-    .method {
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: 12px;
-      padding: 20px;
-      margin-bottom: 20px;
-    }
-    .method h3 { margin-top: 0; color: var(--green); }
-    .badge { display: inline-block; padding: 4px 12px; background: var(--green); color: #000; border-radius: 20px; font-size: 0.8rem; font-weight: 700; margin-bottom: 8px; }
-    .pros { background: rgba(0,200,150,0.1); border-left: 4px solid var(--green); padding: 12px; margin: 12px 0; border-radius: 4px; }
-    .pros strong { color: var(--green); }
-    table { width: 100%; border-collapse: collapse; margin: 20px 0; }
-    th, td { padding: 12px; text-align: left; border-bottom: 1px solid var(--border); }
-    th { background: var(--surface); font-weight: 700; color: var(--green); }
-    a { color: var(--green); text-decoration: none; }
-    a:hover { text-decoration: underline; }
-    .step { margin-bottom: 16px; }
-    .step strong { display: block; color: var(--green); margin-bottom: 4px; }
-    .faq { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 16px; margin-bottom: 16px; }
-    .faq strong { display: block; margin-bottom: 8px; color: var(--green); }
-    .footer { margin-top: 40px; padding-top: 20px; border-top: 1px solid var(--border); text-align: center; color: var(--muted); font-size: 0.9rem; }
-    .back-btn { display: inline-block; margin-bottom: 20px; padding: 10px 20px; background: var(--surface); border: 1px solid var(--border); border-radius: 8px; color: var(--text); text-decoration: none; font-weight: 600; }
-    .back-btn:hover { background: var(--border); }
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FAWN Funding Guide - Get USDC into Your Wallet</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.15);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 40px 30px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            font-weight: 700;
+        }
+
+        .header p {
+            font-size: 1.1em;
+            opacity: 0.95;
+        }
+
+        .content {
+            padding: 40px 30px;
+        }
+
+        .intro-section {
+            background: #f9f9f9;
+            padding: 20px;
+            border-radius: 12px;
+            margin-bottom: 40px;
+            border-left: 4px solid #667eea;
+        }
+
+        .intro-section p {
+            line-height: 1.8;
+            color: #333;
+            font-size: 1em;
+        }
+
+        .methods-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 30px;
+            margin: 40px 0;
+        }
+
+        .method-card {
+            background: #f9f9f9;
+            border: 2px solid #e0e0e0;
+            border-radius: 12px;
+            padding: 30px;
+            transition: all 0.3s ease;
+            position: relative;
+        }
+
+        .method-card:hover {
+            border-color: #667eea;
+            box-shadow: 0 10px 30px rgba(102, 126, 234, 0.15);
+            transform: translateY(-5px);
+        }
+
+        .method-number {
+            display: inline-block;
+            background: #667eea;
+            color: white;
+            width: 45px;
+            height: 45px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5em;
+            font-weight: 700;
+            margin-bottom: 15px;
+        }
+
+        .method-card h2 {
+            color: #333;
+            font-size: 1.4em;
+            margin: 15px 0;
+        }
+
+        .method-description {
+            color: #666;
+            line-height: 1.7;
+            margin: 15px 0;
+        }
+
+        .method-steps {
+            background: white;
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+            padding: 15px;
+            margin: 20px 0;
+            font-size: 0.95em;
+        }
+
+        .method-steps ol {
+            margin-left: 20px;
+            color: #555;
+            line-height: 1.8;
+        }
+
+        .method-steps li {
+            margin: 10px 0;
+        }
+
+        .step-icon {
+            font-size: 2em;
+            margin: 15px 0;
+            text-align: center;
+        }
+
+        .ascii-diagram {
+            background: #f5f5f5;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            padding: 15px;
+            margin: 20px 0;
+            font-family: 'Courier New', monospace;
+            font-size: 0.85em;
+            overflow-x: auto;
+            line-height: 1.4;
+            color: #333;
+        }
+
+        .success-box {
+            background: #e8f5e9;
+            border-left: 4px solid #4caf50;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 20px 0;
+            color: #2e7d32;
+            font-size: 0.95em;
+        }
+
+        .warning-box {
+            background: #fff3e0;
+            border-left: 4px solid #ff9800;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 20px 0;
+            color: #e65100;
+            font-size: 0.95em;
+        }
+
+        .info-box {
+            background: #e3f2fd;
+            border-left: 4px solid #2196f3;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 20px 0;
+            color: #0d47a1;
+            font-size: 0.95em;
+        }
+
+        .cta-section {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            border-radius: 12px;
+            text-align: center;
+            margin: 40px 0;
+        }
+
+        .cta-section h3 {
+            font-size: 1.5em;
+            margin-bottom: 15px;
+        }
+
+        .cta-button {
+            background: white;
+            color: #667eea;
+            padding: 12px 30px;
+            border: none;
+            border-radius: 8px;
+            font-size: 1em;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: inline-block;
+            margin-top: 15px;
+        }
+
+        .cta-button:hover {
+            transform: scale(1.05);
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+        }
+
+        .faq-section {
+            margin-top: 50px;
+            padding-top: 40px;
+            border-top: 2px solid #e0e0e0;
+        }
+
+        .faq-section h2 {
+            color: #333;
+            font-size: 2em;
+            margin-bottom: 30px;
+            text-align: center;
+        }
+
+        .faq-item {
+            margin: 20px 0;
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+            overflow: hidden;
+        }
+
+        .faq-question {
+            background: #f5f5f5;
+            padding: 20px;
+            cursor: pointer;
+            font-weight: 600;
+            color: #333;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: background 0.3s ease;
+        }
+
+        .faq-question:hover {
+            background: #efefef;
+        }
+
+        .faq-toggle {
+            font-size: 1.5em;
+            color: #667eea;
+            transition: transform 0.3s ease;
+        }
+
+        .faq-item.active .faq-toggle {
+            transform: rotate(180deg);
+        }
+
+        .faq-answer {
+            padding: 0 20px;
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.3s ease, padding 0.3s ease;
+            color: #666;
+            line-height: 1.8;
+        }
+
+        .faq-item.active .faq-answer {
+            padding: 20px;
+            max-height: 500px;
+        }
+
+        .comparison-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 30px 0;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .comparison-table thead {
+            background: #667eea;
+            color: white;
+        }
+
+        .comparison-table th {
+            padding: 15px;
+            text-align: left;
+            font-weight: 600;
+        }
+
+        .comparison-table td {
+            padding: 15px;
+            border-bottom: 1px solid #e0e0e0;
+        }
+
+        .comparison-table tbody tr:last-child td {
+            border-bottom: none;
+        }
+
+        .comparison-table tbody tr:nth-child(even) {
+            background: #f9f9f9;
+        }
+
+        .checkmark {
+            color: #4caf50;
+            font-weight: bold;
+        }
+
+        .footer {
+            background: #f5f5f5;
+            padding: 30px;
+            text-align: center;
+            border-top: 1px solid #e0e0e0;
+            color: #999;
+            font-size: 0.9em;
+        }
+
+        .fee-callout {
+            background: #f0f4ff;
+            border: 2px solid #667eea;
+            border-radius: 8px;
+            padding: 20px;
+            margin: 20px 0;
+            text-align: center;
+        }
+
+        .fee-callout strong {
+            font-size: 1.3em;
+            color: #667eea;
+        }
+
+        .tips-list {
+            list-style: none;
+            margin: 15px 0;
+        }
+
+        .tips-list li {
+            padding: 10px 0;
+            padding-left: 30px;
+            position: relative;
+            color: #555;
+            line-height: 1.6;
+        }
+
+        .tips-list li:before {
+            content: "✓";
+            position: absolute;
+            left: 0;
+            color: #667eea;
+            font-weight: bold;
+            font-size: 1.2em;
+        }
+
+        @media (max-width: 768px) {
+            .header h1 {
+                font-size: 1.8em;
+            }
+
+            .methods-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .comparison-table {
+                font-size: 0.9em;
+            }
+
+            .comparison-table th,
+            .comparison-table td {
+                padding: 10px;
+            }
+        }
+
+        .highlight {
+            background: #fff59d;
+            padding: 2px 4px;
+            border-radius: 3px;
+        }
+    </style>
 </head>
 <body>
-  <div class="container">
-    <a href="index.html" class="back-btn">← Back to FAWN</a>
+    <div class="container">
+        <div class="header">
+            <h1>💰 Fund Your FAWN Wallet</h1>
+            <p>Get USDC into your wallet in minutes</p>
+        </div>
 
-    <h1>💰 How to Fund Your FAWN Wallet</h1>
-    <p style="font-size: 1.1rem; color: var(--muted); margin-bottom: 32px;">
-      Five ways to get USDC into your wallet — from completely free to instant deposits from your bank.
-    </p>
+        <div class="content">
+            <!-- Intro Section -->
+            <div class="intro-section">
+                <p>
+                    Welcome to FAWN! Now that you've created your USDC wallet, it's time to add funds. We've made it simple with three easy methods. Pick what works best for you, and you'll be sending money instantly to friends in no time.
+                </p>
+                <div class="fee-callout">
+                    <p><strong>💡 Only $0.01 per transfer</strong></p>
+                    <p>Once you fund your wallet, every transfer to a friend costs just one penny. No hidden fees, no surprises.</p>
+                </div>
+            </div>
 
-    <!-- METHOD 1: RAMP.NETWORK -->
-    <div class="method">
-      <span class="badge">⚡ FASTEST</span>
-      <h3>Method 1: Add Funds (Ramp.network)</h3>
-      <p>Deposit from your debit card or bank account instantly. USDC arrives in minutes.</p>
-      <div class="pros">
-        <strong>✅ Pros:</strong> Instant, easy (debit card), 150+ countries, multiple payment methods
-      </div>
-      <div class="pros">
-        <strong>⚠️ Cons:</strong> Fees apply (varies by region), requires KYC for larger amounts
-      </div>
-      <div class="step">
-        <strong>How to use:</strong>
-        1. Click "Add Funds" on your FAWN dashboard<br>
-        2. Select your country and payment method<br>
-        3. Enter the amount in your local currency<br>
-        4. Ramp converts to USDC automatically<br>
-        5. USDC appears in your wallet within minutes
-      </div>
-      <p><strong>Best for:</strong> When you need money right now and have a bank card.</p>
+            <!-- Three Funding Methods -->
+            <h2 style="text-align: center; color: #333; font-size: 2em; margin: 40px 0 30px 0;">Three Simple Ways to Fund</h2>
+
+            <div class="methods-grid">
+                <!-- Method 1: Receive from Friend -->
+                <div class="method-card">
+                    <div class="method-number">1</div>
+                    <h2>Ask a Friend</h2>
+                    <p class="method-description">The easiest way to get started. Have a friend with USDC send it to your FAWN wallet address.</p>
+
+                    <div class="step-icon">👥 → 💸</div>
+
+                    <div class="method-steps">
+                        <ol>
+                            <li><strong>Copy your wallet address</strong> from FAWN (look for "Copy Address" button in the dashboard)</li>
+                            <li><strong>Share it with a friend</strong> via text, email, or messenger</li>
+                            <li><strong>Your friend sends you USDC</strong> to that address from any wallet (Coinbase, Kraken, MetaMask, etc.)</li>
+                            <li><strong>Funds appear instantly</strong> in your FAWN balance</li>
+                        </ol>
+                    </div>
+
+                    <div class="ascii-diagram">Your Address:
+0x742d...5f8c
+
+Friend's Wallet    FAWN Transfer    Your Wallet
+   [USDC]  ────────────────────→   [USDC] ✓
+                    Instant!</div>
+
+                    <div class="success-box">
+                        <strong>✓ Best for:</strong> Quick setup, borrowing from friends, study group payments
+                    </div>
+
+                    <div class="info-box">
+                        <strong>💡 Pro Tip:</strong> Your wallet address never changes, so you can give it to friends once and they can send you money anytime.
+                    </div>
+                </div>
+
+                <!-- Method 2: Ramp.network -->
+                <div class="method-card">
+                    <div class="method-number">2</div>
+                    <h2>Use Ramp.network</h2>
+                    <p class="method-description">Buy USDC directly with your debit card or bank account. The fastest on-ramp for new users.</p>
+
+                    <div class="step-icon">💳 → 🌐 → 💰</div>
+
+                    <div class="method-steps">
+                        <ol>
+                            <li><strong>Tap "Fund Wallet"</strong> on your FAWN dashboard (under "Add Funds")</li>
+                            <li><strong>Select Ramp as your method</strong> and enter your desired amount</li>
+                            <li><strong>Complete the Ramp checkout</strong> — you'll pay with debit card, Apple Pay, or bank transfer</li>
+                            <li><strong>Ramp converts your payment to USDC</strong> and sends it to your FAWN address</li>
+                            <li><strong>FAWN balance updates</strong> (5-30 minutes depending on payment method)</li>
+                        </ol>
+                    </div>
+
+                    <div class="ascii-diagram">Your Bank/Card
+      |
+      v
+   Ramp
+  (PayPal, Stripe, etc.)
+      |
+      v
+    USDC
+      |
+      v
+Your FAWN Wallet ✓</div>
+
+                    <div class="success-box">
+                        <strong>✓ Best for:</strong> First-time funding, preferred payment method (credit/debit), international users
+                    </div>
+
+                    <div class="info-box">
+                        <strong>💡 Pro Tip:</strong> Ramp accepts many payment methods (PayPal, Google Pay, bank transfer). Check if your country/state is supported.
+                    </div>
+
+                    <div class="warning-box">
+                        <strong>⚠️ Note:</strong> Ramp charges a small fee (usually 2-3% of the amount). You pay this to Ramp, not to FAWN. Compare with other on-ramps if you're funding a large amount.
+                    </div>
+                </div>
+
+                <!-- Method 3: Transfer from Existing Wallet -->
+                <div class="method-card">
+                    <div class="method-number">3</div>
+                    <h2>Transfer from Your Wallet</h2>
+                    <p class="method-description">Already own crypto? Send USDC from your personal wallet (MetaMask, Coinbase, Kraken, etc.) directly to FAWN.</p>
+
+                    <div class="step-icon">🔐 → 📤 → 🎯</div>
+
+                    <div class="method-steps">
+                        <ol>
+                            <li><strong>Go to your wallet app</strong> (MetaMask, Coinbase Wallet, Trust Wallet, etc.)</li>
+                            <li><strong>Find "Send" or "Transfer"</strong> option</li>
+                            <li><strong>Paste your FAWN wallet address</strong> (from FAWN dashboard)</li>
+                            <li><strong>Select USDC</strong> as the coin to send</li>
+                            <li><strong>Enter the amount</strong> and confirm the transaction</li>
+                            <li><strong>Pay network gas fees</strong> (usually $0.50–$3 depending on network congestion)</li>
+                            <li><strong>FAWN receives your USDC</strong> within seconds to a few minutes</li>
+                        </ol>
+                    </div>
+
+                    <div class="ascii-diagram">Your MetaMask/Coinbase
+    [USDC: $100]
+         |
+    [Send USDC]
+         |
+    Paste Address
+  0x742d...5f8c
+         |
+    Confirm
+         |
+    [Pay Gas ~$2]
+         |
+Your FAWN Wallet
+    [USDC: $100] ✓</div>
+
+                    <div class="success-box">
+                        <strong>✓ Best for:</strong> Experienced crypto users, large transfers, avoiding on-ramp fees
+                    </div>
+
+                    <div class="warning-box">
+                        <strong>⚠️ Important:</strong> Make sure you're sending USDC (not USD Coin on a wrong network). Double-check your FAWN address before confirming. You cannot undo a transfer if sent to the wrong address.
+                    </div>
+
+                    <div class="info-box">
+                        <strong>💡 Pro Tip:</strong> Use Polygon or Ethereum mainnet. Gas is cheapest on Polygon (~$0.50 avg). Avoid Avalanche/Arbitrum — they're less commonly supported. Your FAWN address works on all chains, but Polygon is preferred.
+                    </div>
+                </div>
+            </div>
+
+            <!-- Comparison Table -->
+            <div style="margin-top: 50px;">
+                <h2 style="text-align: center; color: #333; margin-bottom: 20px;">Quick Comparison</h2>
+                <table class="comparison-table">
+                    <thead>
+                        <tr>
+                            <th>Method</th>
+                            <th>Speed</th>
+                            <th>Fees</th>
+                            <th>Best For</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><strong>Ask a Friend</strong></td>
+                            <td><span class="checkmark">Instant</span></td>
+                            <td>None*</td>
+                            <td>Quick onboarding</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Ramp.network</strong></td>
+                            <td>5–30 min</td>
+                            <td>2–3% (Ramp's fee)</td>
+                            <td>No crypto experience</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Own Wallet</strong></td>
+                            <td>Seconds–5 min</td>
+                            <td>~$0.50–$3 (gas)</td>
+                            <td>Experienced users</td>
+                        </tr>
+                    </tbody>
+                </table>
+                <p style="font-size: 0.85em; color: #999; margin-top: 10px;">*Your friend pays their wallet's transfer fee (if any), not you.</p>
+            </div>
+
+            <!-- CTA Section -->
+            <div class="cta-section">
+                <h3>Ready to get started?</h3>
+                <p>Head back to your dashboard and tap "Fund Your Wallet" to get USDC in your account.</p>
+                <button class="cta-button" onclick="window.location.href='index.html'">Go to Dashboard</button>
+            </div>
+
+            <!-- FAQ Section -->
+            <div class="faq-section">
+                <h2>❓ Frequently Asked Questions</h2>
+
+                <div class="faq-item">
+                    <div class="faq-question">
+                        <span>Is my FAWN wallet safe?</span>
+                        <span class="faq-toggle">▼</span>
+                    </div>
+                    <div class="faq-answer">
+                        <p>Yes. FAWN uses industry-standard encryption and security practices:</p>
+                        <ul class="tips-list">
+                            <li><strong>Custodial wallets</strong> (recommended for beginners): FAWN holds your private key, encrypted and securely stored. You access via your password/PIN. It's like a bank account.</li>
+                            <li><strong>Non-custodial wallets</strong> (for advanced users): You hold your own seed phrase and private key. FAWN never sees it. Maximum security if you protect your seed phrase.</li>
+                        </ul>
+                        <p style="margin-top: 15px;">In both cases, your USDC is backed by real stablecoins held in reserve. FAWN cannot spend your money or disappear with funds.</p>
+                    </div>
+                </div>
+
+                <div class="faq-item">
+                    <div class="faq-question">
+                        <span>What if I lose my seed phrase?</span>
+                        <span class="faq-toggle">▼</span>
+                    </div>
+                    <div class="faq-answer">
+                        <p><strong>If you have a custodial wallet (FAWN holds your key):</strong></p>
+                        <ul class="tips-list">
+                            <li>No problem. You don't need to manage a seed phrase. Just keep your password safe.</li>
+                            <li>If you forget your password, you can reset it like any other app (email/SMS verification).</li>
+                        </ul>
+                        <p style="margin-top: 15px;"><strong>If you have a non-custodial wallet (you hold your seed phrase):</strong></p>
+                        <ul class="tips-list">
+                            <li>Your seed phrase is your only backup. If you lose it, you lose access to those funds.</li>
+                            <li><strong>Best practice:</strong> Write it down on paper and store in a safe place (not on your phone, not in your email). A metal seed phrase backup kit (~$10) is even safer.</li>
+                            <li>FAWN cannot recover a lost seed phrase — nobody can. So guard it like you'd guard cash.</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="faq-item">
+                    <div class="faq-question">
+                        <span>Can I recover my wallet if something goes wrong?</span>
+                        <span class="faq-toggle">▼</span>
+                    </div>
+                    <div class="faq-answer">
+                        <p><strong>Custodial wallet:</strong></p>
+                        <ul class="tips-list">
+                            <li>If your password is compromised, reset it immediately via email/phone verification (like Instagram or Gmail).</li>
+                            <li>FAWN support can help you regain access to your account if you verify your identity.</li>
+                        </ul>
+                        <p style="margin-top: 15px;"><strong>Non-custodial wallet:</strong></p>
+                        <ul class="tips-list">
+                            <li>If you have your seed phrase backed up: you can restore your wallet on any device (MetaMask, Trust Wallet, etc.), even if FAWN goes down.</li>
+                            <li>If you lost your seed phrase: your funds are unrecoverable. This is why seed phrase security is critical.</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="faq-item">
+                    <div class="faq-question">
+                        <span>What if I send money to the wrong address by mistake?</span>
+                        <span class="faq-toggle">▼</span>
+                    </div>
+                    <div class="faq-answer">
+                        <p><strong>Crypto transactions cannot be reversed.</strong> Once a transfer is confirmed, it's permanent. Here's how to avoid it:</p>
+                        <ul class="tips-list">
+                            <li>Always <span class="highlight">copy and paste</span> addresses (never type them by hand).</li>
+                            <li>Double-check the first and last 4 characters of the address match what you expect.</li>
+                            <li>If sending a large amount, test with a small amount first ($1–$5) and wait for it to arrive before sending the rest.</li>
+                            <li>When others send you money, share your address via app notification or contact app (not random links or public posts).</li>
+                        </ul>
+                        <p style="margin-top: 15px;">If you accidentally send to the wrong address, contact FAWN support with proof. We'll try to help, but the funds may be unrecoverable.</p>
+                    </div>
+                </div>
+
+                <div class="faq-item">
+                    <div class="faq-question">
+                        <span>Do I need to pay taxes on USDC in my wallet?</span>
+                        <span class="faq-toggle">▼</span>
+                    </div>
+                    <div class="faq-answer">
+                        <p>Tax laws vary by country and your specific situation. Here's the general rule:</p>
+                        <ul class="tips-list">
+                            <li><strong>Just holding USDC:</strong> Typically no tax. It's like holding cash.</li>
+                            <li><strong>Converting USDC to another cryptocurrency:</strong> This might be a taxable event (like selling stock). Consult a tax professional.</li>
+                            <li><strong>Getting paid in USDC for work:</strong> Yes, this is taxable income. Report it like any other payment.</li>
+                            <li><strong>Sending USDC to friends:</strong> Not a taxable event (it's a transfer, not income).</li>
+                        </ul>
+                        <p style="margin-top: 15px;"><strong>Bottom line:</strong> When in doubt, ask a tax professional. FAWN can provide transaction history exports for tax filing.</p>
+                    </div>
+                </div>
+
+                <div class="faq-item">
+                    <div class="faq-question">
+                        <span>How does FAWN make money if it only charges $0.01?</span>
+                        <span class="faq-toggle">▼</span>
+                    </div>
+                    <div class="faq-answer">
+                        <p>Great question. The $0.01 per transfer model works because:</p>
+                        <ul class="tips-list">
+                            <li><strong>Volume:</strong> College students make tons of small transfers (splitting rent, Venmo to friends, etc.). At scale, $0.01 × millions of transfers = real revenue.</li>
+                            <li><strong>Low infrastructure costs:</strong> FAWN runs on blockchain/stablecoins, not legacy banking. No expensive compliance, no middlemen.</li>
+                            <li><strong>Future revenue:</strong> Investing features (buy fractional stocks/crypto), international transfers, and subscription perks.</li>
+                        </ul>
+                        <p style="margin-top: 15px;">This model lets us stay cheap for you and sustainable for us.</p>
+                    </div>
+                </div>
+
+                <div class="faq-item">
+                    <div class="faq-question">
+                        <span>Can I withdraw USDC from FAWN back to my bank account?</span>
+                        <span class="faq-toggle">▼</span>
+                    </div>
+                    <div class="faq-answer">
+                        <p><strong>Not yet.</strong> Right now, FAWN is a crypto-first app. You can:</p>
+                        <ul class="tips-list">
+                            <li>Transfer USDC to any wallet address (MetaMask, Coinbase, Kraken, etc.)</li>
+                            <li>From your personal wallet, sell USDC for USD and withdraw to your bank account.</li>
+                        </ul>
+                        <p style="margin-top: 15px;"><strong>Coming soon:</strong> Direct bank withdrawal (off-ramp) to make this a one-click process.</p>
+                    </div>
+                </div>
+
+                <div class="faq-item">
+                    <div class="faq-question">
+                        <span>What happens if FAWN shuts down?</span>
+                        <span class="faq-toggle">▼</span>
+                    </div>
+                    <div class="faq-answer">
+                        <p><strong>Your USDC is always yours.</strong></p>
+                        <ul class="tips-list">
+                            <li><strong>Custodial wallet:</strong> If FAWN ever shuts down, you can prove ownership and recover your funds with your password/ID verification.</li>
+                            <li><strong>Non-custodial wallet:</strong> Your seed phrase lets you access your funds on any platform (MetaMask, Trust Wallet, etc.), independent of FAWN. FAWN is just the interface.</li>
+                        </ul>
+                        <p style="margin-top: 15px;">USDC is a real stablecoin backed by Circle. It exists on the blockchain regardless of whether FAWN is around. Your money is always recoverable.</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Footer Info -->
+            <div style="background: #f0f4ff; border-left: 4px solid #667eea; padding: 20px; border-radius: 8px; margin-top: 40px;">
+                <h3 style="color: #667eea; margin-bottom: 10px;">Need Help?</h3>
+                <p style="color: #555; line-height: 1.6;">
+                    Can't find what you're looking for? Check our <a href="#" style="color: #667eea; text-decoration: none;">Help Center</a> or reach out to us at
+                    <a href="mailto:help@getfawn.com" style="color: #667eea; text-decoration: none;">help@getfawn.com</a>. We're here to help!
+                </p>
+            </div>
+        </div>
+
+        <div class="footer">
+            <p>
+                FAWN © 2026 | Crypto-native payments for Gen Z.
+                <br>
+                USDC is a stablecoin issued by Circle on multiple blockchains. FAWN is not a bank — we're a crypto wallet app.
+                <br>
+                <a href="#" style="color: #999;">Privacy Policy</a> • <a href="#" style="color: #999;">Terms of Service</a>
+            </p>
+        </div>
     </div>
 
-    <!-- METHOD 2: RECEIVE FROM A FRIEND -->
-    <div class="method">
-      <span class="badge">✨ INSTANT</span>
-      <h3>Method 2: Receive From a Friend</h3>
-      <p>Have a friend send you USDC from their wallet. Zero fees (except $0.50 sender fee).</p>
-      <div class="pros">
-        <strong>✅ Pros:</strong> Instant transfer, $0.50 flat fee, no KYC required
-      </div>
-      <div class="pros">
-        <strong>⚠️ Cons:</strong> Need a friend with a crypto wallet, they pay the fee
-      </div>
-      <div class="step">
-        <strong>How to use:</strong>
-        1. Click "Receive" on your FAWN dashboard<br>
-        2. Share your wallet address or QR code<br>
-        3. Friend sends USDC to your address<br>
-        4. Money appears instantly in your account
-      </div>
-      <p><strong>Best for:</strong> Splitting bills, peer-to-peer transfers.</p>
-    </div>
+    <script>
+        // FAQ Toggle Functionality
+        document.querySelectorAll('.faq-question').forEach(question => {
+            question.addEventListener('click', function() {
+                const faqItem = this.parentElement;
+                faqItem.classList.toggle('active');
+            });
+        });
 
-    <!-- METHOD 3: CRYPTO AIRDROPS (FREE) -->
-    <div class="method">
-      <span class="badge">🎁 100% FREE</span>
-      <h3>Method 3: Crypto Airdrops</h3>
-      <p>Participate in community programs and earn free tokens. No KYC for most airdrops.</p>
-      <div class="pros">
-        <strong>✅ Pros:</strong> Completely free, $300M+ in airdrops available, builds community connections
-      </div>
-      <div class="pros">
-        <strong>⚠️ Cons:</strong> Requires time/effort, payouts vary, some are scams
-      </div>
-      <div class="step">
-        <strong>How to use:</strong>
-        1. Visit <a href="https://alphadrops.net/airdrops" target="_blank">AlphaDrops</a> or <a href="https://galxe.com" target="_blank">Galxe</a><br>
-        2. Join verified airdrops matching your interests<br>
-        3. Complete tasks (follow social, join Discord, test features)<br>
-        4. Receive free tokens directly to your wallet
-      </div>
-      <div style="margin-top: 12px; padding: 12px; background: rgba(0,200,150,0.1); border-radius: 8px;">
-        <strong>Popular platforms:</strong><br>
-        • <a href="https://alphadrops.net">AlphaDrops</a> — Tracks $300M+ in active airdrops<br>
-        • <a href="https://galxe.com">Galxe</a> & <a href="https://zealy.io">Zealy</a> — Quest-based rewards<br>
-        • <a href="https://layer3.xyz">Layer3</a> — DeFi education + airdrops<br>
-      </div>
-      <p><strong>Best for:</strong> Patient users who want free money and enjoy learning about crypto.</p>
-    </div>
+        // Smooth scroll
+        document.querySelectorAll('a[href="#"]').forEach(link => {
+            link.addEventListener('click', function(e) {
+                e.preventDefault();
+            });
+        });
 
-    <!-- METHOD 4: TESTNET FAUCETS (DEV) -->
-    <div class="method">
-      <span class="badge">💻 FOR DEVELOPERS</span>
-      <h3>Method 4: Testnet Faucets</h3>
-      <p>Get free test tokens on testnets (Sepolia, Amoy, etc.) to test transactions safely.</p>
-      <div class="pros">
-        <strong>✅ Pros:</strong> Completely free, instant, no KYC, unlimited claims
-      </div>
-      <div class="pros">
-        <strong>⚠️ Cons:</strong> Test tokens only (not real money), testnet-only
-      </div>
-      <div class="step">
-        <strong>How to use:</strong>
-        1. Visit <a href="https://www.alchemy.com/faucets" target="_blank">Alchemy Faucets</a> or <a href="https://moralis.com/faucets/" target="_blank">Moralis</a><br>
-        2. Connect your wallet<br>
-        3. Request test tokens (instant)<br>
-        4. Test transactions without real money
-      </div>
-      <div style="margin-top: 12px; padding: 12px; background: rgba(0,200,150,0.1); border-radius: 8px;">
-        <strong>Popular faucets:</strong><br>
-        • <a href="https://www.alchemy.com/faucets">Alchemy</a> — Ethereum, Arbitrum, Optimism<br>
-        • <a href="https://moralis.com/faucets/">Moralis</a> — Polygon, Arbitrum Sepolia<br>
-        • <a href="https://learnweb3.io/faucets/">LearnWeb3</a> — Multi-chain educational<br>
-      </div>
-      <p><strong>Best for:</strong> Developers testing smart contracts and learning blockchain.</p>
-    </div>
-
-    <!-- METHOD 5: MAINNET FAUCETS (PASSIVE) -->
-    <div class="method">
-      <span class="badge">📈 PASSIVE INCOME</span>
-      <h3>Method 5: Mainnet Faucets (Slow Accumulation)</h3>
-      <p>Claim small amounts repeatedly from mainnet faucets. Adds up over weeks/months.</p>
-      <div class="pros">
-        <strong>✅ Pros:</strong> Completely free, real money, hands-off after setup
-      </div>
-      <div class="pros">
-        <strong>⚠️ Cons:</strong> Very slow (cents per day), need to claim regularly
-      </div>
-      <div class="step">
-        <strong>How to use:</strong>
-        1. Visit <a href="https://www.faucetpay.io" target="_blank">FaucetPay</a><br>
-        2. Create an account and link your wallet<br>
-        3. Claim from faucets (multiple times daily if you want)<br>
-        4. Rewards accumulate in your account<br>
-        5. Withdraw to your FAWN wallet when you hit $1+
-      </div>
-      <div style="margin-top: 12px; padding: 12px; background: rgba(0,200,150,0.1); border-radius: 8px;">
-        <strong>Popular faucets:</strong><br>
-        • <a href="https://www.faucetpay.io">FaucetPay</a> — Aggregates 50+ faucets<br>
-        • <a href="https://www.freedoge.co.in">FreeDoge</a> — Dogecoin faucet<br>
-        • <a href="https://www.cointiply.com">Cointiply</a> — Multiple coins, tasks+faucet<br>
-      </div>
-      <p><strong>Best for:</strong> Patient savers who want completely free, hands-off crypto accumulation.</p>
-    </div>
-
-    <!-- COMPARISON TABLE -->
-    <h2>Quick Comparison</h2>
-    <table>
-      <tr>
-        <th>Method</th>
-        <th>Cost</th>
-        <th>KYC</th>
-        <th>Speed</th>
-        <th>Amount</th>
-      </tr>
-      <tr>
-        <td><strong>Add Funds (Ramp)</strong></td>
-        <td>Fees apply</td>
-        <td>Yes</td>
-        <td>⚡ Minutes</td>
-        <td>$10–$10,000</td>
-      </tr>
-      <tr>
-        <td><strong>Receive from Friend</strong></td>
-        <td>$0.50 sender fee</td>
-        <td>No</td>
-        <td>⚡ Instant</td>
-        <td>Any</td>
-      </tr>
-      <tr>
-        <td><strong>Airdrops</strong></td>
-        <td>FREE</td>
-        <td>No</td>
-        <td>📅 Days–Weeks</td>
-        <td>$5–$500+</td>
-      </tr>
-      <tr>
-        <td><strong>Testnet Faucets</strong></td>
-        <td>FREE</td>
-        <td>No</td>
-        <td>⚡ Instant</td>
-        <td>Test only</td>
-      </tr>
-      <tr>
-        <td><strong>Mainnet Faucets</strong></td>
-        <td>FREE</td>
-        <td>No</td>
-        <td>📅 Weeks–Months</td>
-        <td>Cents/day</td>
-      </tr>
-    </table>
-
-    <!-- FAQ -->
-    <h2>Frequently Asked Questions</h2>
-
-    <div class="faq">
-      <strong>Q: Is my wallet safe?</strong>
-      <p style="margin: 0;">Yes. FAWN is a self-custodial wallet. You control your private keys. We never hold your funds. Your seed phrase is encrypted and stored locally on your device.</p>
-    </div>
-
-    <div class="faq">
-      <strong>Q: Can I recover my wallet if I lose my phone?</strong>
-      <p style="margin: 0;">Yes! As long as you save your 12-word seed phrase when you create your wallet, you can restore it on any device. The seed phrase is the only thing you need—save it somewhere safe (write it down, don't screenshot).</p>
-    </div>
-
-    <div class="faq">
-      <strong>Q: What happens if I lose my seed phrase?</strong>
-      <p style="margin: 0;">If you lose your seed phrase AND your phone/device, your wallet is gone forever. There's no "forgot password" option—your seed phrase is the only way to restore it. This is why we emphasize writing it down physically.</p>
-    </div>
-
-    <div class="faq">
-      <strong>Q: Are airdrops safe?</strong>
-      <p style="margin: 0;">Most are safe, but some are scams. Only join airdrops listed on trusted platforms like AlphaDrops, Galxe, or Zealy. Never give anyone your private key. Legitimate airdrops only ask for your wallet address (which is public anyway).</p>
-    </div>
-
-    <div class="faq">
-      <strong>Q: Can I use my regular bank account to add funds?</strong>
-      <p style="margin: 0;">Yes, through Ramp.network! Click "Add Funds" and select bank transfer (if available in your country). It's slightly slower than debit card but still completes within minutes to hours.</p>
-    </div>
-
-    <div class="faq">
-      <strong>Q: Which method should I use?</strong>
-      <p style="margin: 0;"><strong>Quick answer:</strong> Use Add Funds (Ramp) for immediate needs, or Airdrops/Faucets for free money. If you're just testing, use Testnet Faucets.</p>
-    </div>
-
-    <h2>Getting Started</h2>
-    <div class="method">
-      <strong>Next Steps:</strong>
-      <ol style="margin-left: 20px;">
-        <li style="margin-bottom: 8px;"><a href="index.html">Go back to FAWN</a> and click "Add Funds" on your dashboard</li>
-        <li style="margin-bottom: 8px;">Choose one of the 5 methods above based on your situation</li>
-        <li style="margin-bottom: 8px;">For Ramp: Enter your amount and payment method</li>
-        <li style="margin-bottom: 8px;">For Airdrops: Visit AlphaDrops and find an airdrop that interests you</li>
-        <li style="margin-bottom: 8px;">Watch your USDC balance grow! 🚀</li>
-      </ol>
-    </div>
-
-    <div class="footer">
-      <p>💚 FAWN — Self-custodial USDC wallet. No KYC, no bank. Just you and your money.</p>
-      <p style="margin-top: 12px; font-size: 0.8rem;">Last updated: 2026 | All links are for educational purposes</p>
-    </div>
-  </div>
+        // Add copy-to-clipboard functionality for demo
+        document.querySelectorAll('.ascii-diagram').forEach(diagram => {
+            diagram.style.cursor = 'pointer';
+            diagram.title = 'Click to copy';
+            diagram.addEventListener('click', function() {
+                const text = this.textContent;
+                navigator.clipboard.writeText(text).then(() => {
+                    const originalText = this.textContent;
+                    this.textContent = '✓ Copied!';
+                    setTimeout(() => {
+                        this.textContent = originalText;
+                    }, 2000);
+                });
+            });
+        });
+    </script>
 </body>
 </html>
