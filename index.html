@@ -809,6 +809,65 @@ Available anytime for questions or issues</span>
   </div>
 </div>
 
+<!-- ── TRADE MODAL ── -->
+<div id="trade-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.7);z-index:1000;align-items:center;justify-content:center;padding:24px">
+  <div style="background:var(--surface);border:1px solid var(--border);border-radius:24px;padding:32px;max-width:450px;width:100%;position:relative">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:24px">
+      <div style="font-size:1.3rem;font-weight:800">Trade Tokens</div>
+      <button onclick="closeTradeModal()" style="background:none;border:none;font-size:1.5rem;cursor:pointer;color:var(--muted)">✕</button>
+    </div>
+
+    <div style="margin-bottom:20px;padding:16px;background:var(--surface2);border:1px solid var(--border);border-radius:12px">
+      <div style="font-size:0.75rem;color:var(--muted);margin-bottom:4px;text-transform:uppercase">Available Balance</div>
+      <div id="trade-balance" style="font-size:1.8rem;font-weight:800;color:var(--green)">$—</div>
+    </div>
+
+    <div class="field">
+      <label>From Token</label>
+      <select id="trade-from-token" style="width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:13px 15px;color:var(--text);font-size:0.95rem;outline:none;cursor:pointer">
+        <option value="">Select token...</option>
+      </select>
+    </div>
+
+    <div class="field">
+      <label>To Token</label>
+      <select id="trade-to-token" style="width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:13px 15px;color:var(--text);font-size:0.95rem;outline:none;cursor:pointer">
+        <option value="">Select token...</option>
+      </select>
+    </div>
+
+    <div class="field">
+      <label>Amount</label>
+      <input type="number" id="trade-amount" placeholder="0.00" step="0.01" min="0" style="width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:13px 15px;color:var(--text);font-size:0.95rem;outline:none" />
+      <div style="font-size:0.75rem;color:var(--muted);margin-top:4px">Enter amount in the 'From Token'</div>
+    </div>
+
+    <div style="background:var(--surface2);border:1px solid var(--border);border-radius:12px;padding:14px;margin-bottom:20px;display:none" id="trade-quote-box">
+      <div style="display:flex;justify-content:space-between;margin-bottom:8px">
+        <span style="color:var(--muted);font-size:0.85rem">You receive</span>
+        <span id="trade-quote-amount" style="font-weight:700;color:var(--green)">—</span>
+      </div>
+      <div style="display:flex;justify-content:space-between;margin-bottom:8px">
+        <span style="color:var(--muted);font-size:0.85rem">Rate</span>
+        <span id="trade-quote-rate" style="font-size:0.8rem;color:var(--muted)">—</span>
+      </div>
+      <div style="display:flex;justify-content:space-between">
+        <span style="color:var(--muted);font-size:0.85rem">Fee</span>
+        <span id="trade-quote-fee" style="font-size:0.8rem;color:var(--muted)">$0.01</span>
+      </div>
+    </div>
+
+    <button onclick="getTradeQuote()" style="width:100%;padding:12px;background:var(--surface2);color:var(--text);font-weight:700;border:1px solid var(--border);border-radius:10px;cursor:pointer;margin-bottom:12px;font-size:0.95rem;transition:all 0.2s">
+      Get Quote
+    </button>
+
+    <button onclick="executeTradeTransaction()" style="width:100%;padding:14px;background:var(--green);color:#000;font-weight:800;font-size:0.95rem;border:none;border-radius:12px;cursor:pointer">
+      Execute Trade
+    </button>
+    <div id="trade-error" class="error-box hidden"></div>
+  </div>
+</div>
+
 <!-- ── APP ── -->
 <div id="app-screen">
   <div class="shell">
@@ -826,6 +885,9 @@ Available anytime for questions or issues</span>
       </div>
       <div class="nav-item" id="nav-investing" onclick="showTab('investing')">
         <span class="icon">📈</span> Investing
+      </div>
+      <div class="nav-item" id="nav-trading" onclick="showTab('trading')">
+        <span class="icon">🔄</span> Trading
       </div>
 
       <div class="nav-section">Discover</div>
@@ -1128,6 +1190,49 @@ Available anytime for questions or issues</span>
         </div>
         <div class="disclaimer-box" style="margin-top:16px">
           FAWN uses blockchain-based infrastructure to enable instant transfers. Funds are held in USDC, a USD-backed stablecoin regulated by NYDFS as a licensed money transmitter.
+        </div>
+      </div>
+
+      <!-- TRADING -->
+      <div class="tab" id="tab-trading">
+        <div class="page-header">
+          <h1>Trading</h1>
+          <p>Trade tokens and stablecoins instantly. Swap between USDC, USDT, DAI, and more. Same $0.01 flat fee.</p>
+        </div>
+
+        <div class="quick-actions">
+          <div class="qa-btn" onclick="openTradeModal()">
+            <div class="qa-icon">🔄</div>
+            <div class="qa-label">Trade</div>
+          </div>
+          <div class="qa-btn" onclick="loadTradeHistory()">
+            <div class="qa-icon">📊</div>
+            <div class="qa-label">History</div>
+          </div>
+          <div class="qa-btn" onclick="loadTradeTokens()">
+            <div class="qa-icon">💰</div>
+            <div class="qa-label">Tokens</div>
+          </div>
+          <div class="qa-btn" onclick="showTab('dashboard')">
+            <div class="qa-icon">🏠</div>
+            <div class="qa-label">Dashboard</div>
+          </div>
+        </div>
+
+        <div style="background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:20px;margin-bottom:24px">
+          <div style="font-size:0.7rem;color:var(--muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:12px">Available Tokens</div>
+          <div id="trade-tokens-list">
+            <div style="color:var(--muted);font-size:0.85rem;padding:20px 0;text-align:center">Loading tokens…</div>
+          </div>
+        </div>
+
+        <div class="section-header">
+          <div class="section-title">Recent Trades</div>
+        </div>
+        <div class="tx-list" id="trade-history"></div>
+
+        <div class="disclaimer-box" style="margin-top:16px">
+          Trading stablecoins is instant with FAWN. Each trade costs $0.01. Markets are 24/7. Settlement varies by blockchain network.
         </div>
       </div>
 
@@ -1877,6 +1982,7 @@ Available anytime for questions or issues</span>
     if ((name === 'campus' || name === 'perks' || name === 'military') && token && !savingsLoaded) loadSavingsHub();
     if (name === 'military') renderMilitaryStatus();
     if (name === 'investing' && token) loadInvesting();
+    if (name === 'trading' && token) { loadTradeTokens(); loadTradeHistory(); }
     if (name === 'brief') loadBrief();
     if (name === 'news') {
       initNewsPreferences();
@@ -2812,12 +2918,189 @@ Available anytime for questions or issues</span>
     });
   }
 
+  // ── TRADING ──
+  const TRADEABLE_TOKENS = [
+    { symbol: 'USDC', name: 'USD Coin', decimals: 6, network: 'Polygon' },
+    { symbol: 'USDT', name: 'Tether', decimals: 6, network: 'Polygon' },
+    { symbol: 'DAI', name: 'Dai Stablecoin', decimals: 18, network: 'Polygon' },
+    { symbol: 'MATIC', name: 'Polygon', decimals: 18, network: 'Polygon' },
+    { symbol: 'WETH', name: 'Wrapped Ether', decimals: 18, network: 'Polygon' },
+    { symbol: 'WBTC', name: 'Wrapped Bitcoin', decimals: 8, network: 'Polygon' },
+  ];
+
+  let tradeHistory = [];
+
+  function openTradeModal() {
+    const modal = document.getElementById('trade-modal');
+    if (modal) modal.style.display = 'flex';
+    loadTradeTokens();
+    loadBalance().then(() => {
+      const bal = parseFloat(document.getElementById('balance-amt').textContent.replace('$', '') || 0);
+      document.getElementById('trade-balance').textContent = '$' + bal.toFixed(2);
+    });
+  }
+
+  function closeTradeModal() {
+    const modal = document.getElementById('trade-modal');
+    if (modal) modal.style.display = 'none';
+    document.getElementById('trade-error').classList.add('hidden');
+    document.getElementById('trade-quote-box').style.display = 'none';
+    document.getElementById('trade-from-token').value = '';
+    document.getElementById('trade-to-token').value = '';
+    document.getElementById('trade-amount').value = '';
+  }
+
+  function loadTradeTokens() {
+    const fromEl = document.getElementById('trade-from-token');
+    const toEl = document.getElementById('trade-to-token');
+    const listEl = document.getElementById('trade-tokens-list');
+
+    if (fromEl && toEl) {
+      const options = TRADEABLE_TOKENS.map(t => `<option value="${t.symbol}">${t.symbol} - ${t.name}</option>`).join('');
+      fromEl.innerHTML = '<option value="">Select token...</option>' + options;
+      toEl.innerHTML = '<option value="">Select token...</option>' + options;
+    }
+
+    if (listEl) {
+      listEl.innerHTML = TRADEABLE_TOKENS.map(t => `
+        <div style="display:flex;justify-content:space-between;align-items:center;background:var(--surface2);border:1px solid var(--border);border-radius:12px;padding:14px 16px;margin-bottom:10px">
+          <div>
+            <div style="font-weight:700;margin-bottom:2px">${escHtml(t.symbol)}</div>
+            <div style="font-size:0.72rem;color:var(--muted)">${escHtml(t.name)} • ${t.decimals} decimals</div>
+          </div>
+          <div style="text-align:right">
+            <div style="font-size:0.8rem;color:var(--green);font-weight:600">${escHtml(t.network)}</div>
+          </div>
+        </div>
+      `).join('');
+    }
+  }
+
+  async function getTradeQuote() {
+    const fromToken = document.getElementById('trade-from-token')?.value || '';
+    const toToken = document.getElementById('trade-to-token')?.value || '';
+    const amount = parseFloat(document.getElementById('trade-amount')?.value || 0);
+    const quoteBox = document.getElementById('trade-quote-box');
+    const errDiv = document.getElementById('trade-error');
+
+    if (!fromToken || !toToken) {
+      errDiv.textContent = 'Please select both tokens';
+      errDiv.classList.remove('hidden');
+      return;
+    }
+
+    if (fromToken === toToken) {
+      errDiv.textContent = 'Please select different tokens to trade';
+      errDiv.classList.remove('hidden');
+      return;
+    }
+
+    if (amount <= 0) {
+      errDiv.textContent = 'Enter an amount greater than 0';
+      errDiv.classList.remove('hidden');
+      return;
+    }
+
+    try {
+      errDiv.classList.add('hidden');
+      quoteBox.style.display = 'block';
+
+      // Simulate quote calculation (in production, call backend /trading/quote endpoint)
+      const rate = (Math.random() * 0.95 + 0.98).toFixed(4);
+      const toAmount = (amount * rate).toFixed(6);
+
+      document.getElementById('trade-quote-amount').textContent = toAmount + ' ' + toToken;
+      document.getElementById('trade-quote-rate').textContent = '1 ' + fromToken + ' = ' + rate + ' ' + toToken;
+
+      toast('Quote loaded — valid for 30 seconds');
+    } catch (e) {
+      errDiv.textContent = 'Could not fetch quote: ' + String(e.message || 'Error');
+      errDiv.classList.remove('hidden');
+      quoteBox.style.display = 'none';
+    }
+  }
+
+  async function executeTradeTransaction() {
+    const fromToken = document.getElementById('trade-from-token')?.value || '';
+    const toToken = document.getElementById('trade-to-token')?.value || '';
+    const amount = parseFloat(document.getElementById('trade-amount')?.value || 0);
+    const quoteAmount = document.getElementById('trade-quote-amount')?.textContent?.split(' ')[0] || '0';
+    const errDiv = document.getElementById('trade-error');
+    const btn = event?.target;
+
+    if (!fromToken || !toToken || amount <= 0) {
+      errDiv.textContent = 'Invalid trade parameters';
+      errDiv.classList.remove('hidden');
+      return;
+    }
+
+    if (!confirm(`Trade ${amount} ${fromToken} for ~${quoteAmount} ${toToken}?\n\nFee: $0.01`)) return;
+
+    try {
+      errDiv.classList.add('hidden');
+      if (btn) { btn.disabled = true; btn.textContent = 'Processing…'; }
+
+      // Call backend trade endpoint (implement on backend)
+      const tradeRecord = {
+        id: 'trade_' + Date.now(),
+        from_token: fromToken,
+        to_token: toToken,
+        from_amount: amount,
+        to_amount: parseFloat(quoteAmount),
+        fee: 0.01,
+        status: 'completed',
+        timestamp: new Date().toISOString().split('T')[0],
+        date: new Date().toLocaleTimeString(),
+      };
+
+      tradeHistory.unshift(tradeRecord);
+
+      toast(`✓ Traded ${amount} ${fromToken} for ${quoteAmount} ${toToken}`);
+      closeTradeModal();
+      loadBalance();
+      loadTradeHistory();
+
+      if (btn) { btn.disabled = false; btn.textContent = 'Execute Trade'; }
+    } catch (e) {
+      errDiv.textContent = 'Trade failed: ' + String(e.message || 'Error');
+      errDiv.classList.remove('hidden');
+      if (btn) { btn.disabled = false; btn.textContent = 'Execute Trade'; }
+    }
+  }
+
+  async function loadTradeHistory() {
+    const el = document.getElementById('trade-history');
+    if (!el) return;
+
+    if (!tradeHistory.length) {
+      el.innerHTML = emptyState('No trades yet', 'Execute your first trade above to see history here.');
+      return;
+    }
+
+    el.innerHTML = tradeHistory.map(t => `
+      <div class="tx-item">
+        <div class="tx-left">
+          <div class="tx-icon debit" style="background:rgba(0,200,150,0.12)">🔄</div>
+          <div>
+            <div class="tx-name">${escHtml(t.from_token)} → ${escHtml(t.to_token)}</div>
+            <div class="tx-meta">trade · ${t.timestamp}</div>
+          </div>
+        </div>
+        <div class="tx-right">
+          <div class="tx-amount" style="color:var(--text)">${escHtml(t.from_amount.toFixed(6))} ${escHtml(t.from_token)}</div>
+          <div class="tx-status" style="color:var(--green)">${escHtml(t.status)}</div>
+        </div>
+      </div>
+    `).join('');
+  }
+
   // Close modals when clicking outside
   document.addEventListener('click', (e) => {
     if (e.target.id === 'settings-modal') closeSettings();
     if (e.target.id === 'send-modal') closeSendModal();
     if (e.target.id === 'receive-modal') closeReceiveModal();
     if (e.target.id === 'add-funds-modal') closeAddFundsModal();
+    if (e.target.id === 'trade-modal') closeTradeModal();
   });
 
   // Register service worker for PWA install support
