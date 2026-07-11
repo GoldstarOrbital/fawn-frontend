@@ -2645,34 +2645,41 @@
       if (attempts < 30) {
         setTimeout(initRamp, 200);
       } else {
-        // Fallback: Show direct link to Ramp
+        // Fallback: Show manual instructions with wallet address
         console.log('[Ramp] Widget unavailable, showing fallback');
+        const copied = false;
         container.innerHTML = `
           <div style="padding:20px;text-align:center">
-            <div style="margin-bottom:16px;color:var(--text);font-size:0.95rem">
-              💳 Add funds from your bank or debit card
+            <div style="margin-bottom:16px;color:var(--text);font-size:0.95rem;font-weight:600">
+              💳 Manual Funding Instructions
             </div>
-            <div style="background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:12px;margin-bottom:16px;font-family:monospace;font-size:0.8rem;word-break:break-all;color:var(--text)">
-              Wallet: ${walletAddr}
+            <div style="background:rgba(0,200,150,0.1);border:1px solid var(--green);border-radius:8px;padding:16px;margin-bottom:16px;text-align:left;font-size:0.9rem">
+              <div style="margin-bottom:12px">
+                <strong>Step 1:</strong> Visit <a href="https://ramp.network" target="_blank" style="color:var(--green);text-decoration:underline">ramp.network</a> in a new tab
+              </div>
+              <div style="margin-bottom:12px">
+                <strong>Step 2:</strong> Select "Buy USDC"
+              </div>
+              <div style="margin-bottom:12px">
+                <strong>Step 3:</strong> Choose your payment method (debit card, bank transfer, etc.)
+              </div>
+              <div style="margin-bottom:12px">
+                <strong>Step 4:</strong> Enter your wallet address below:
+              </div>
+              <div style="background:var(--surface);border:1px solid var(--border);border-radius:6px;padding:8px;font-family:monospace;font-size:0.75rem;word-break:break-all;color:var(--text);margin-bottom:12px">
+                ${walletAddr}
+              </div>
+              <button id="copy-addr-btn" onclick="navigator.clipboard.writeText('${walletAddr}').then(() => alert('Wallet address copied!')).catch(() => alert('Copy failed'))" style="padding:8px 12px;background:var(--green);color:#000;border:none;border-radius:6px;font-weight:600;cursor:pointer;font-size:0.85rem;width:100%">
+                📋 Copy Wallet Address
+              </button>
             </div>
-            <button id="ramp-direct-btn" style="padding:12px 24px;background:var(--green);color:#000;border:none;border-radius:8px;font-weight:700;cursor:pointer;font-size:0.95rem;width:100%;margin-bottom:12px">
-              Open Ramp.network →
-            </button>
-            <div style="font-size:0.8rem;color:var(--muted)">
-              ✓ Instant conversion to USDC<br>
-              ✓ Multiple payment methods<br>
-              ✓ 150+ countries supported
+            <div style="background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:12px;font-size:0.85rem;color:var(--muted)">
+              <div style="margin-bottom:8px">✓ USDC will arrive within minutes</div>
+              <div style="margin-bottom:8px">✓ 150+ countries supported</div>
+              <div>✓ Multiple payment methods</div>
             </div>
           </div>
         `;
-        // Attach click handler to the button
-        const btn = document.getElementById('ramp-direct-btn');
-        if (btn) {
-          btn.onclick = () => {
-            const rampUrl = `https://app.ramp.network/?userAddress=${walletAddr}&swapAsset=USDC`;
-            window.open(rampUrl, 'ramp-window', 'width=500,height=700');
-          };
-        }
       }
     };
 
