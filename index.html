@@ -737,8 +737,9 @@
     </div>
 
     <div class="field">
-      <label>Recipient Address (0x...)</label>
-      <input type="text" id="send-address" placeholder="0x742d35Cc6634C0532925a3b844Bc054e4438f44e" />
+      <label>Send To</label>
+      <input type="text" id="send-recipient" placeholder="@username or 0x... address" />
+      <div style="font-size:0.75rem;color:var(--muted);margin-top:4px">Send to FAWN users by @username or to external wallets</div>
     </div>
 
     <div class="field">
@@ -2692,13 +2693,23 @@
   }
 
   async function sendUSTC() {
-    const address = document.getElementById('send-address').value.trim();
+    const recipient = document.getElementById('send-recipient').value.trim();
     const amount = parseFloat(document.getElementById('send-amount').value) || 0;
     const memo = document.getElementById('send-memo').value.trim();
     const errDiv = document.getElementById('send-error');
 
-    if (!address || !address.startsWith('0x') || address.length !== 42) {
-      errDiv.textContent = 'Invalid wallet address. Must be 42 characters starting with 0x';
+    // Validate recipient (either @username or 0x... address)
+    if (!recipient) {
+      errDiv.textContent = 'Please enter a recipient (@username or wallet address)';
+      errDiv.classList.remove('hidden');
+      return;
+    }
+
+    const isUsername = recipient.startsWith('@');
+    const isAddress = recipient.startsWith('0x') && recipient.length === 42;
+
+    if (!isUsername && !isAddress) {
+      errDiv.textContent = 'Invalid recipient. Use @username (e.g., @maria) or 0x... wallet address';
       errDiv.classList.remove('hidden');
       return;
     }
@@ -2714,14 +2725,18 @@
       const btn = event?.target;
       if (btn) { btn.disabled = true; btn.textContent = 'Sending…'; }
 
-      const result = await authPost('/transfers/send', {
-        recipient_address: address,
+      const result = await authPost('/wallet/transfers/send-unified', {
+        recipient: recipient,
         amount_cents: Math.round(amount * 100),
         memo: memo || undefined
       });
 
-      toast(`✓ Sent $${amount.toFixed(2)} to ${address.slice(0, 6)}...`);
+      const displayName = isUsername ? recipient : (recipient.slice(0, 6) + '...');
+      toast(`✓ Sent $${amount.toFixed(2)} to ${displayName}`);
       closeSendModal();
+      document.getElementById('send-recipient').value = '';
+      document.getElementById('send-amount').value = '';
+      document.getElementById('send-memo').value = '';
       loadBalance();
       loadTxns();
 
