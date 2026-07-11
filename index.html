@@ -2335,7 +2335,7 @@
     const btn = document.getElementById('create-wallet-custodial-btn');
     if (btn) { btn.disabled = true; btn.textContent = 'Creating…'; }
     try {
-      const r = await authPost('/wallet/create', { wallet_type: 'fawn_custodial' });
+      const r = await authPost('/auth/wallets/create', { wallet_type: 'fawn_custodial' });
       // Save wallet address to localStorage
       if (r.wallet_address) {
         localStorage.setItem('fawn_wallet_address', r.wallet_address);
@@ -2365,7 +2365,7 @@
     const btn = event.target;
     if (btn) { btn.disabled = true; btn.textContent = 'Creating…'; }
     try {
-      const r = await authPost('/wallet/create', { wallet_type: 'non_custodial' });
+      const r = await authPost('/auth/wallets/create', { wallet_type: 'non_custodial' });
       // Save wallet address AND seed phrase to localStorage (encrypted in production)
       const seed = r.seed_phrase;
       const address = r.wallet_address;
@@ -2598,33 +2598,60 @@
   }
 
   function openAddFundsModal() {
-    document.getElementById('add-funds-modal').style.display = 'flex';
+    const modal = document.getElementById('add-funds-modal');
+    if (!modal) return;
 
-    // Get wallet address from localStorage or user profile
+    modal.style.display = 'flex';
+
+    // Get wallet address from localStorage
     const walletAddr = localStorage.getItem('fawn_wallet_address');
+    const container = document.getElementById('ramp-container');
+
     if (!walletAddr) {
-      document.getElementById('ramp-container').innerHTML = '<div style="padding:20px;color:var(--muted);text-align:center">Please create a wallet first before adding funds.</div>';
+      if (container) {
+        container.innerHTML = '<div style="padding:20px;color:var(--muted);text-align:center;font-size:0.9rem">⚠️ Please create a wallet first before adding funds. Go to Settings and click "Create Wallet".</div>';
+      }
       return;
     }
 
-    // Initialize Ramp widget
-    if (typeof window.Ramp !== 'undefined') {
-      const container = document.getElementById('ramp-container');
-      if (container) {
-        container.innerHTML = '';
-        // Wait for Ramp SDK to be ready
-        setTimeout(() => {
-          if (window.Ramp && window.Ramp.showWebWidget) {
-            window.Ramp.showWebWidget({
-              hostAppName: 'FAWN',
-              swapAsset: 'USDC',
-              userAddress: walletAddr,
-              containerNode: container
-            });
-          }
-        }, 100);
+    if (!container) return;
+
+    // Clear previous content
+    container.innerHTML = '<div style="padding:40px;text-align:center;color:var(--muted)">Loading Ramp widget...</div>';
+
+    // Initialize Ramp widget - wait for it to be available
+    let attempts = 0;
+    const initRamp = () => {
+      attempts++;
+
+      if (window.Ramp && window.Ramp.showWebWidget) {
+        console.log('[Ramp] Initializing with address:', walletAddr);
+        container.innerHTML = ''; // Clear loading message
+
+        try {
+          window.Ramp.showWebWidget({
+            hostAppName: 'FAWN',
+            swapAsset: 'USDC',
+            userAddress: walletAddr,
+            containerNode: container,
+            variant: 'hosted-light'
+          });
+        } catch (err) {
+          console.error('[Ramp] Initialization error:', err);
+          container.innerHTML = '<div style="padding:20px;color:var(--red);text-align:center;font-size:0.9rem">⚠️ Ramp widget failed to load. Please try again or use another funding method.</div>';
+        }
+      } else if (attempts < 50) {
+        // Ramp not ready yet, wait a bit and try again
+        setTimeout(initRamp, 100);
+      } else {
+        // Timeout - Ramp didn't load
+        console.error('[Ramp] Ramp SDK did not load after 5 seconds');
+        container.innerHTML = '<div style="padding:20px;color:var(--red);text-align:center;font-size:0.9rem">⚠️ Ramp widget unavailable. Try <a href="funding-guide.html" style="color:var(--green);text-decoration:underline">other funding methods</a>.</div>';
       }
-    }
+    };
+
+    // Start initialization
+    initRamp();
   }
 
   function closeAddFundsModal() {
