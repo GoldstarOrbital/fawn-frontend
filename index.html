@@ -2650,29 +2650,34 @@
         container.innerHTML = `
           <div style="padding:20px;text-align:center">
             <div style="margin-bottom:16px;color:var(--text);font-size:0.95rem">
-              🔗 Open Ramp in a new window to add funds to:
+              💳 Add funds from your bank or debit card
             </div>
             <div style="background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:12px;margin-bottom:16px;font-family:monospace;font-size:0.8rem;word-break:break-all;color:var(--text)">
-              ${walletAddr}
+              Wallet: ${walletAddr}
             </div>
-            <button onclick="openRampDirect('${walletAddr}')" style="padding:12px 24px;background:var(--green);color:#000;border:none;border-radius:8px;font-weight:700;cursor:pointer;font-size:0.95rem;width:100%">
+            <button id="ramp-direct-btn" style="padding:12px 24px;background:var(--green);color:#000;border:none;border-radius:8px;font-weight:700;cursor:pointer;font-size:0.95rem;width:100%;margin-bottom:12px">
               Open Ramp.network →
             </button>
-            <div style="font-size:0.8rem;color:var(--muted);margin-top:12px">
-              After adding funds on Ramp, they'll arrive in your wallet within minutes
+            <div style="font-size:0.8rem;color:var(--muted)">
+              ✓ Instant conversion to USDC<br>
+              ✓ Multiple payment methods<br>
+              ✓ 150+ countries supported
             </div>
           </div>
         `;
+        // Attach click handler to the button
+        const btn = document.getElementById('ramp-direct-btn');
+        if (btn) {
+          btn.onclick = () => {
+            const rampUrl = `https://app.ramp.network/?userAddress=${walletAddr}&swapAsset=USDC`;
+            window.open(rampUrl, 'ramp-window', 'width=500,height=700');
+          };
+        }
       }
     };
 
     // Start initialization
     initRamp();
-  }
-
-  function openRampDirect(walletAddr) {
-    const rampUrl = `https://app.ramp.network/?userAddress=${walletAddr}&swapAsset=USDC`;
-    window.open(rampUrl, 'ramp-window', 'width=500,height=700');
   }
 
   function closeAddFundsModal() {
