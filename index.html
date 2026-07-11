@@ -2617,41 +2617,62 @@
     if (!container) return;
 
     // Clear previous content
-    container.innerHTML = '<div style="padding:40px;text-align:center;color:var(--muted)">Loading Ramp widget...</div>';
+    container.innerHTML = '<div style="padding:40px;text-align:center;color:var(--muted)">Loading payment widget...</div>';
 
-    // Initialize Ramp widget - wait for it to be available
+    // Try to initialize Ramp widget with fallback to direct link
     let attempts = 0;
     const initRamp = () => {
       attempts++;
 
       if (window.Ramp && window.Ramp.showWebWidget) {
-        console.log('[Ramp] Initializing with address:', walletAddr);
-        container.innerHTML = ''; // Clear loading message
+        console.log('[Ramp] Widget SDK available, initializing...');
+        container.innerHTML = '';
 
         try {
           window.Ramp.showWebWidget({
             hostAppName: 'FAWN',
             swapAsset: 'USDC',
             userAddress: walletAddr,
-            containerNode: container,
-            variant: 'hosted-light'
+            containerNode: container
           });
+          console.log('[Ramp] Widget initialized successfully');
+          return;
         } catch (err) {
-          console.error('[Ramp] Initialization error:', err);
-          container.innerHTML = '<div style="padding:20px;color:var(--red);text-align:center;font-size:0.9rem">⚠️ Ramp widget failed to load. Please try again or use another funding method.</div>';
+          console.error('[Ramp] Widget error, falling back:', err);
         }
-      } else if (attempts < 50) {
-        // Ramp not ready yet, wait a bit and try again
-        setTimeout(initRamp, 100);
+      }
+
+      if (attempts < 30) {
+        setTimeout(initRamp, 200);
       } else {
-        // Timeout - Ramp didn't load
-        console.error('[Ramp] Ramp SDK did not load after 5 seconds');
-        container.innerHTML = '<div style="padding:20px;color:var(--red);text-align:center;font-size:0.9rem">⚠️ Ramp widget unavailable. Try <a href="funding-guide.html" style="color:var(--green);text-decoration:underline">other funding methods</a>.</div>';
+        // Fallback: Show direct link to Ramp
+        console.log('[Ramp] Widget unavailable, showing fallback');
+        container.innerHTML = `
+          <div style="padding:20px;text-align:center">
+            <div style="margin-bottom:16px;color:var(--text);font-size:0.95rem">
+              🔗 Open Ramp in a new window to add funds to:
+            </div>
+            <div style="background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:12px;margin-bottom:16px;font-family:monospace;font-size:0.8rem;word-break:break-all;color:var(--text)">
+              ${walletAddr}
+            </div>
+            <button onclick="openRampDirect('${walletAddr}')" style="padding:12px 24px;background:var(--green);color:#000;border:none;border-radius:8px;font-weight:700;cursor:pointer;font-size:0.95rem;width:100%">
+              Open Ramp.network →
+            </button>
+            <div style="font-size:0.8rem;color:var(--muted);margin-top:12px">
+              After adding funds on Ramp, they'll arrive in your wallet within minutes
+            </div>
+          </div>
+        `;
       }
     };
 
     // Start initialization
     initRamp();
+  }
+
+  function openRampDirect(walletAddr) {
+    const rampUrl = `https://app.ramp.network/?userAddress=${walletAddr}&swapAsset=USDC`;
+    window.open(rampUrl, 'ramp-window', 'width=500,height=700');
   }
 
   function closeAddFundsModal() {
