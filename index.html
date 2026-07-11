@@ -2527,7 +2527,7 @@
     btn.disabled = true;
     btn.textContent = 'Creating...';
     try {
-      const result = await authPost('/wallet/create', { wallet_type: 'fawn_custodial' });
+      const result = await authPost('/auth/wallets/create', { wallet_type: 'fawn_custodial' });
       if (result?.wallet_address) {
         localStorage.setItem('fawn_wallet_address', result.wallet_address);
         await updateSettingsDisplay();
