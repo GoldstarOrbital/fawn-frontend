@@ -688,6 +688,20 @@ Available anytime for questions or issues</span>
       <div style="font-size:0.75rem;color:var(--muted);margin-top:12px">Auto follows your system settings</div>
     </div>
 
+    <!-- Username / Profile -->
+    <div style="margin-bottom:28px;padding-bottom:24px;border-bottom:1px solid var(--border)">
+      <div style="font-size:0.8rem;font-weight:700;text-transform:uppercase;color:var(--muted);letter-spacing:1px;margin-bottom:12px">Your Username</div>
+      <div style="display:flex;gap:8px;margin-bottom:12px">
+        <div style="flex:1">
+          <div style="font-size:0.75rem;color:var(--muted);margin-bottom:6px;text-transform:uppercase">@username</div>
+          <input type="text" id="username-input" placeholder="username" style="width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:10px;color:var(--text);font-size:0.9rem;outline:none;transition:border-color 0.2s" />
+        </div>
+        <button onclick="saveUsername()" style="align-self:flex-end;padding:10px 16px;background:var(--green);color:#000;font-weight:700;border:none;border-radius:10px;cursor:pointer;font-size:0.85rem">Save</button>
+      </div>
+      <div style="font-size:0.75rem;color:var(--muted)">Your unique handle for receiving money and sharing your profile</div>
+      <div id="username-error" style="font-size:0.75rem;color:var(--red);margin-top:8px;display:none"></div>
+    </div>
+
     <!-- Connected Accounts -->
     <div style="margin-bottom:28px;padding-bottom:24px;border-bottom:1px solid var(--border)">
       <div style="font-size:0.8rem;font-weight:700;text-transform:uppercase;color:var(--muted);letter-spacing:1px;margin-bottom:12px">Connected Accounts</div>
@@ -2065,6 +2079,17 @@ Available anytime for questions or issues</span>
     return data;
   }
 
+  async function authPut(path, body) {
+    const r = await fetch(API + path, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+      body: JSON.stringify(body),
+    });
+    const data = await r.json();
+    if (!r.ok) throw new Error(data.detail || `Error ${r.status}`);
+    return data;
+  }
+
   async function authDelete(path) {
     const r = await fetch(API + path, {
       method: 'DELETE',
@@ -2600,6 +2625,12 @@ Available anytime for questions or issues</span>
       const userProfile = await authGet('/auth/me');
       const walletAddr = userProfile?.crypto_wallet_address;
       const walletType = userProfile?.wallet_type;
+      const username = userProfile?.username;
+
+      // Load username
+      if (username) {
+        document.getElementById('username-input').value = username;
+      }
 
       if (walletAddr) {
         document.getElementById('wallet-info').style.display = 'block';
@@ -2639,6 +2670,37 @@ Available anytime for questions or issues</span>
     } finally {
       btn.disabled = false;
       btn.textContent = 'Create Wallet';
+    }
+  }
+
+  async function saveUsername() {
+    const usernameInput = document.getElementById('username-input');
+    const errorDiv = document.getElementById('username-error');
+    const username = usernameInput.value.trim().toLowerCase();
+
+    errorDiv.style.display = 'none';
+
+    if (!username) {
+      errorDiv.textContent = 'Username cannot be empty';
+      errorDiv.style.display = 'block';
+      return;
+    }
+
+    if (!/^[a-z0-9_]{3,30}$/.test(username)) {
+      errorDiv.textContent = 'Username must be 3-30 characters (a-z, 0-9, underscore)';
+      errorDiv.style.display = 'block';
+      return;
+    }
+
+    try {
+      const result = await authPut('/accounts/username', { username });
+      if (result?.username) {
+        toast(`✓ Username set to @${result.username}`);
+        usernameInput.value = result.username;
+      }
+    } catch (e) {
+      errorDiv.textContent = e?.message || 'Failed to save username';
+      errorDiv.style.display = 'block';
     }
   }
 
