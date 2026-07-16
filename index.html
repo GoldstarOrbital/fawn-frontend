@@ -520,7 +520,10 @@
       .news-signal { margin-left: 0; }
     }
   </style>
+  <!-- Buy Crypto on-ramp SDKs (Ramp, MoonPay, Transak — Coinbase Onramp needs no client SDK) -->
   <script async src="https://cdn.ramp.network/flash/ramp.js"></script>
+  <script async src="https://static.moonpay.com/web-sdk/v1/moonpay-web-sdk.min.js"></script>
+  <script async src="https://global.transak.com/sdk/v1.1/widget.js"></script>
 </head>
 <body>
 
@@ -650,7 +653,7 @@
         </div>
         <div style="margin-bottom:12px">
           <strong>Roadmap</strong><br>
-          <span style="color:var(--muted)">Now: USDC wallet, P2P transfers, Trading live! | Q1 2025: Debit cards | Q2 2025: Fiat on/off ramps</span>
+          <span style="color:var(--muted)">Now: USDC wallet, P2P transfers, Trading, Stock investing live! | Coming soon: Bank-linked funding</span>
         </div>
         <div style="margin-bottom:12px">
           <strong>Customer Support</strong><br>
@@ -804,21 +807,33 @@ Available anytime for questions or issues</span>
 
 <!-- ── ADD FUNDS MODAL ── -->
 <div id="add-funds-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.7);z-index:1000;align-items:center;justify-content:center;padding:24px">
-  <div style="background:var(--surface);border:1px solid var(--border);border-radius:24px;padding:32px;max-width:500px;width:100%;position:relative">
-    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:24px">
+  <div style="background:var(--surface);border:1px solid var(--border);border-radius:24px;padding:32px;max-width:520px;width:100%;max-height:90vh;overflow-y:auto;position:relative">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px">
       <div style="font-size:1.3rem;font-weight:800">Add Funds</div>
       <button onclick="closeAddFundsModal()" style="background:none;border:none;font-size:1.5rem;cursor:pointer;color:var(--muted)">✕</button>
     </div>
 
-    <div style="background:rgba(0,200,150,0.1);border:1px solid rgba(0,200,150,0.3);border-radius:12px;padding:12px;font-size:0.8rem;color:var(--text);margin-bottom:20px">
-      <div style="font-weight:600;margin-bottom:4px">💳 Deposit from your bank</div>
-      <div>Pay with your debit card or bank account. USDC arrives instantly to your FAWN wallet.</div>
+    <div style="display:flex;gap:8px;margin-bottom:20px;background:var(--surface2);border-radius:12px;padding:4px">
+      <button id="funds-tab-address" class="funds-tab active" onclick="switchFundsTab('address')" style="flex:1;padding:10px;border:none;border-radius:9px;font-weight:700;font-size:0.85rem;cursor:pointer;background:var(--green);color:#000">Deposit Address</button>
+      <button id="funds-tab-buy" class="funds-tab" onclick="switchFundsTab('buy')" style="flex:1;padding:10px;border:none;border-radius:9px;font-weight:700;font-size:0.85rem;cursor:pointer;background:transparent;color:var(--muted)">Buy Crypto</button>
     </div>
 
-    <div id="ramp-container" style="min-height:300px;border-radius:12px;overflow:hidden;border:1px solid var(--border)"></div>
+    <!-- Deposit Address panel -->
+    <div id="funds-panel-address">
+      <div style="background:rgba(0,200,150,0.1);border:1px solid rgba(0,200,150,0.3);border-radius:12px;padding:12px;font-size:0.8rem;color:var(--text);margin-bottom:20px">
+        <div style="font-weight:600;margin-bottom:4px">💳 Deposit USDC</div>
+        <div>Send USDC on Polygon to your FAWN address below, or link a bank account to fund from your balance.</div>
+      </div>
+      <div id="funds-container" style="border-radius:12px;overflow:hidden;border:1px solid var(--border)"></div>
+    </div>
 
-    <div style="font-size:0.75rem;color:var(--muted);text-align:center;margin-top:16px">
-      Powered by Ramp Network • 150+ countries supported
+    <!-- Buy Crypto panel (heavyweight multi-provider on-ramp) -->
+    <div id="funds-panel-buy" class="hidden">
+      <div id="onramp-provider-row" style="display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin-bottom:16px"></div>
+      <div id="onramp-widget-container" style="min-height:60px;border-radius:12px;overflow:hidden"></div>
+      <div style="font-size:0.7rem;color:var(--muted);text-align:center;margin-top:14px">
+        Each provider is a separate purchase — you pay them directly, and the USDC lands in your FAWN wallet on-chain. FAWN never holds your card or bank details.
+      </div>
     </div>
   </div>
 </div>
@@ -954,7 +969,6 @@ Available anytime for questions or issues</span>
             <div class="onboard-sub" id="onboard-sub">No verification needed. Instantly create a wallet to send money, receive payments, and invest in stocks. No KYC, no waiting.</div>
             <div class="onboard-actions">
               <button class="onboard-action" id="create-wallet-custodial-btn" onclick="createWalletCustodial()">Create wallet (instant)</button>
-              <button class="onboard-action secondary" onclick="refreshApplicationStatus()">Check status</button>
             </div>
           </div>
         </div>
@@ -970,28 +984,6 @@ Available anytime for questions or issues</span>
             <div class="balance-pill">💰 Invest stocks & ETFs</div>
             <div class="balance-pill">💵 $0.01 flat fee</div>
           </div>
-        </div>
-
-        <!-- Account Address Card -->
-        <div id="acct-details-card" style="display:none;background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:18px 22px;margin-bottom:20px">
-          <div style="font-size:0.7rem;color:var(--muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:14px">Account Details</div>
-          <div style="display:flex;gap:12px;flex-wrap:wrap">
-            <div style="flex:1;min-width:140px">
-              <div style="font-size:0.72rem;color:var(--muted);margin-bottom:4px">Account Address</div>
-              <div style="display:flex;align-items:center;gap:8px">
-                <span id="routing-num" style="font-family:monospace;font-size:0.95rem;letter-spacing:1px">—</span>
-                <button onclick="copyField('routing-num','Wallet address')" style="background:none;border:none;color:var(--muted);cursor:pointer;font-size:0.8rem;padding:2px 6px;border-radius:6px;border:1px solid var(--border)">copy</button>
-              </div>
-            </div>
-            <div style="flex:1;min-width:140px">
-              <div style="font-size:0.72rem;color:var(--muted);margin-bottom:4px">Network</div>
-              <div style="display:flex;align-items:center;gap:8px">
-                <span id="acct-num" style="font-family:monospace;font-size:0.95rem;letter-spacing:1px">—</span>
-                <button onclick="copyField('acct-num','Network')" style="background:none;border:none;color:var(--muted);cursor:pointer;font-size:0.8rem;padding:2px 6px;border-radius:6px;border:1px solid var(--border)">copy</button>
-              </div>
-            </div>
-          </div>
-          <div style="font-size:0.7rem;color:var(--muted);margin-top:10px">Use your account address to send and receive USDC stablecoins instantly.</div>
         </div>
 
         <div class="quick-actions">
@@ -1292,7 +1284,6 @@ Available anytime for questions or issues</span>
   let schoolDirectory = [];
   let selectedSchoolKey = null;
   let savingsLoaded = false;
-  let unitApplicationStarted = localStorage.getItem('fawn_unit_application_started') === '1';
 
   const SCHOOL_THEMES = {
     ucla: ['#2774ae', '#ffd100', 'UCLA'],
@@ -1485,47 +1476,6 @@ Available anytime for questions or issues</span>
       loadTxns();
       loadReferral();
       startAutoRefresh();
-    }
-  }
-
-  function renderOnboardingState() {
-    // CRYPTO-NATIVE: No more Unit banking application flow. Wallet creation is self-service.
-    // Keeping this function as a no-op to avoid breaking old code that calls it.
-  }
-
-  async function startUnitApplication() {
-    const btn = document.getElementById('unit-form-btn');
-    if (btn) { btn.disabled = true; btn.textContent = 'Opening secure form...'; }
-    try {
-      const data = await authPost('/unit/application-form', {});
-      if (!data.application_form_url) throw new Error('Unit did not return an application form URL');
-      unitApplicationStarted = true;
-      localStorage.setItem('fawn_unit_application_started', '1');
-      renderOnboardingState();
-      window.open(data.application_form_url, '_blank', 'noopener,noreferrer');
-      toast('Secure Unit application opened in a new tab.');
-    } catch (e) {
-      toast(e.message || 'Could not open secure application');
-    } finally {
-      if (btn) { btn.disabled = false; renderOnboardingState(); }
-    }
-  }
-
-  async function refreshApplicationStatus() {
-    try {
-      await authPost('/accounts/refresh-application-status', {});
-    } catch {}
-    try {
-      user = await authGet('/auth/me');
-      if (user.wallet_initialized) {
-        toast('Your FAWN account is ready.');
-        loadApp();
-      } else {
-        renderOnboardingState();
-        toast('Still waiting on account activation.');
-      }
-    } catch {
-      toast('Could not refresh status.');
     }
   }
 
@@ -2188,28 +2138,6 @@ Available anytime for questions or issues</span>
     navigator.clipboard.writeText(url).then(() => toast('Invite link copied! 🎉')).catch(() => toast('Copy failed'));
   }
 
-  let acctDetailsLoaded = false;
-  async function toggleAcctDetails() {
-    const card = document.getElementById('acct-details-card');
-    const visible = card.style.display !== 'none';
-    card.style.display = visible ? 'none' : 'block';
-    if (!visible && !acctDetailsLoaded) {
-      try {
-        const d = await authGet('/accounts/details');
-        document.getElementById('routing-num').textContent = d.routing_number || '—';
-        document.getElementById('acct-num').textContent = d.account_number || '—';
-        acctDetailsLoaded = true;
-        const chk = document.getElementById('acct-check');
-        if (chk) chk.style.display = 'inline';
-      } catch { card.style.display = 'none'; toast('Could not load account details'); }
-    }
-  }
-
-  function copyField(id, label) {
-    const text = document.getElementById(id).textContent;
-    navigator.clipboard.writeText(text).then(() => toast(`${label} copied!`)).catch(() => toast('Copy failed'));
-  }
-
   // ── INVESTING (brokerage via partner) ──
   const _esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 
@@ -2822,93 +2750,220 @@ Available anytime for questions or issues</span>
     if (!modal) return;
 
     modal.style.display = 'flex';
+    switchFundsTab('address');
 
-    // Get wallet address from localStorage
     const walletAddr = localStorage.getItem('fawn_wallet_address');
-    const container = document.getElementById('ramp-container');
+    const container = document.getElementById('funds-container');
+    if (!container) return;
 
     if (!walletAddr) {
-      if (container) {
-        container.innerHTML = '<div style="padding:20px;color:var(--muted);text-align:center;font-size:0.9rem">⚠️ Please create a wallet first before adding funds. Go to Settings and click "Create Wallet".</div>';
-      }
+      container.innerHTML = '<div style="padding:20px;color:var(--muted);text-align:center;font-size:0.9rem">⚠️ Please create a wallet first before adding funds. Go to Settings and click "Create Wallet".</div>';
       return;
     }
 
-    if (!container) return;
-
-    // Clear previous content
-    container.innerHTML = '<div style="padding:40px;text-align:center;color:var(--muted)">Loading payment widget...</div>';
-
-    // Try to initialize Ramp widget with fallback to direct link
-    let attempts = 0;
-    const initRamp = () => {
-      attempts++;
-
-      if (window.Ramp && window.Ramp.showWebWidget) {
-        console.log('[Ramp] Widget SDK available, initializing...');
-        container.innerHTML = '';
-
-        try {
-          window.Ramp.showWebWidget({
-            hostAppName: 'FAWN',
-            swapAsset: 'USDC',
-            userAddress: walletAddr,
-            containerNode: container
-          });
-          console.log('[Ramp] Widget initialized successfully');
-          return;
-        } catch (err) {
-          console.error('[Ramp] Widget error, falling back:', err);
-        }
-      }
-
-      if (attempts < 30) {
-        setTimeout(initRamp, 200);
-      } else {
-        // Fallback: Show manual instructions with wallet address
-        console.log('[Ramp] Widget unavailable, showing fallback');
-        const copied = false;
-        container.innerHTML = `
-          <div style="padding:20px;text-align:center">
-            <div style="margin-bottom:16px;color:var(--text);font-size:0.95rem;font-weight:600">
-              💳 Manual Funding Instructions
-            </div>
-            <div style="background:rgba(0,200,150,0.1);border:1px solid var(--green);border-radius:8px;padding:16px;margin-bottom:16px;text-align:left;font-size:0.9rem">
-              <div style="margin-bottom:12px">
-                <strong>Step 1:</strong> Visit <a href="https://ramp.network" target="_blank" style="color:var(--green);text-decoration:underline">ramp.network</a> in a new tab
-              </div>
-              <div style="margin-bottom:12px">
-                <strong>Step 2:</strong> Select "Buy USDC"
-              </div>
-              <div style="margin-bottom:12px">
-                <strong>Step 3:</strong> Choose your payment method (debit card, bank transfer, etc.)
-              </div>
-              <div style="margin-bottom:12px">
-                <strong>Step 4:</strong> Enter your wallet address below:
-              </div>
-              <div style="background:var(--surface);border:1px solid var(--border);border-radius:6px;padding:8px;font-family:monospace;font-size:0.75rem;word-break:break-all;color:var(--text);margin-bottom:12px">
-                ${walletAddr}
-              </div>
-              <button id="copy-addr-btn" onclick="navigator.clipboard.writeText('${walletAddr}').then(() => alert('Wallet address copied!')).catch(() => alert('Copy failed'))" style="padding:8px 12px;background:var(--green);color:#000;border:none;border-radius:6px;font-weight:600;cursor:pointer;font-size:0.85rem;width:100%">
-                📋 Copy Wallet Address
-              </button>
-            </div>
-            <div style="background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:12px;font-size:0.85rem;color:var(--muted)">
-              <div style="margin-bottom:8px">✓ USDC will arrive within minutes</div>
-              <div style="margin-bottom:8px">✓ 150+ countries supported</div>
-              <div>✓ Multiple payment methods</div>
-            </div>
+    container.innerHTML = `
+      <div style="padding:20px;text-align:center">
+        <div style="background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:16px;margin-bottom:16px;text-align:left;font-size:0.9rem">
+          <div style="margin-bottom:8px;color:var(--muted);font-size:0.75rem;text-transform:uppercase;letter-spacing:0.6px">Your FAWN address (Polygon)</div>
+          <div style="background:var(--surface);border:1px solid var(--border);border-radius:6px;padding:8px;font-family:monospace;font-size:0.75rem;word-break:break-all;color:var(--text);margin-bottom:12px">
+            ${walletAddr}
           </div>
-        `;
-      }
-    };
-
-    // Start initialization
-    initRamp();
+          <button onclick="navigator.clipboard.writeText('${walletAddr}').then(() => toast('Wallet address copied')).catch(() => toast('Copy failed'))" style="padding:8px 12px;background:var(--green);color:#000;border:none;border-radius:6px;font-weight:600;cursor:pointer;font-size:0.85rem;width:100%">
+            📋 Copy Wallet Address
+          </button>
+        </div>
+        <div style="background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:12px;font-size:0.85rem;color:var(--muted);text-align:left">
+          <div style="margin-bottom:8px">✓ Send USDC on Polygon from any wallet or exchange</div>
+          <div style="margin-bottom:8px">✓ Funds are detected automatically and credited within minutes</div>
+          <div>✓ Bank-linked funding is coming soon to this screen</div>
+        </div>
+      </div>
+    `;
   }
 
   function closeAddFundsModal() {
     document.getElementById('add-funds-modal').style.display = 'none';
+  }
+
+  // ── BUY CRYPTO (heavyweight multi-provider on-ramp) ──
+  let onrampConfig = null;
+  let onrampConfigPromise = null;
+
+  const ONRAMP_PROVIDERS = [
+    { id: 'ramp', label: 'Ramp', emoji: '⚡' },
+    { id: 'coinbase', label: 'Coinbase', emoji: '🔵' },
+    { id: 'moonpay', label: 'MoonPay', emoji: '🌙' },
+    { id: 'transak', label: 'Transak', emoji: '🔁' },
+  ];
+
+  function switchFundsTab(tab) {
+    const isAddress = tab === 'address';
+    document.getElementById('funds-panel-address').classList.toggle('hidden', !isAddress);
+    document.getElementById('funds-panel-buy').classList.toggle('hidden', isAddress);
+
+    const addrTab = document.getElementById('funds-tab-address');
+    const buyTab = document.getElementById('funds-tab-buy');
+    addrTab.style.background = isAddress ? 'var(--green)' : 'transparent';
+    addrTab.style.color = isAddress ? '#000' : 'var(--muted)';
+    buyTab.style.background = isAddress ? 'transparent' : 'var(--green)';
+    buyTab.style.color = isAddress ? 'var(--muted)' : '#000';
+
+    if (!isAddress) loadOnrampProviders();
+  }
+
+  async function loadOnrampProviders() {
+    const row = document.getElementById('onramp-provider-row');
+    row.innerHTML = '<div style="grid-column:1/-1;color:var(--muted);font-size:0.85rem;text-align:center;padding:12px 0">Loading providers…</div>';
+
+    if (!onrampConfigPromise) {
+      onrampConfigPromise = fetch(API + '/onramp/config').then(r => r.json());
+    }
+    try {
+      onrampConfig = await onrampConfigPromise;
+    } catch {
+      row.innerHTML = '<div style="grid-column:1/-1;color:var(--muted);font-size:0.85rem;text-align:center;padding:12px 0">Could not load providers. Try again shortly.</div>';
+      return;
+    }
+
+    const live = ONRAMP_PROVIDERS.filter(p => onrampConfig[p.id]?.enabled);
+    if (!live.length) {
+      row.innerHTML = '<div style="grid-column:1/-1;color:var(--muted);font-size:0.85rem;text-align:center;padding:12px 0">No buy-crypto providers are configured yet.</div>';
+      return;
+    }
+
+    row.innerHTML = live.map(p => `
+      <button id="onramp-btn-${p.id}" onclick="selectOnrampProvider('${p.id}')" style="padding:12px;border:1px solid var(--border);border-radius:10px;background:var(--surface2);color:var(--text);font-weight:700;font-size:0.88rem;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;transition:border-color 0.15s">
+        <span>${p.emoji}</span> ${p.label}
+      </button>
+    `).join('');
+
+    // Auto-select the first live provider
+    selectOnrampProvider(live[0].id);
+  }
+
+  function selectOnrampProvider(providerId) {
+    ONRAMP_PROVIDERS.forEach(p => {
+      const btn = document.getElementById(`onramp-btn-${p.id}`);
+      if (btn) btn.style.borderColor = p.id === providerId ? 'var(--green)' : 'var(--border)';
+    });
+
+    const walletAddr = localStorage.getItem('fawn_wallet_address');
+    const container = document.getElementById('onramp-widget-container');
+    if (!walletAddr) {
+      container.innerHTML = '<div style="padding:20px;color:var(--muted);text-align:center;font-size:0.9rem">⚠️ Create a wallet first before buying crypto.</div>';
+      return;
+    }
+
+    if (providerId === 'ramp') return _embedRamp(container, walletAddr);
+    if (providerId === 'coinbase') return _embedCoinbase(container, walletAddr);
+    if (providerId === 'moonpay') return _embedMoonpay(container, walletAddr);
+    if (providerId === 'transak') return _embedTransak(container, walletAddr);
+  }
+
+  function _onrampFallback(container, providerName, providerUrl, walletAddr) {
+    container.innerHTML = `
+      <div style="padding:20px;text-align:center">
+        <div style="color:var(--muted);font-size:0.85rem;margin-bottom:14px">Couldn't load the embedded ${providerName} widget. Buy there directly and send to your FAWN address:</div>
+        <div style="background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:8px;font-family:monospace;font-size:0.75rem;word-break:break-all;color:var(--text);margin-bottom:12px">${walletAddr}</div>
+        <a href="${providerUrl}" target="_blank" rel="noopener noreferrer" style="display:inline-block;padding:10px 16px;background:var(--green);color:#000;border-radius:8px;font-weight:700;text-decoration:none;font-size:0.85rem">Open ${providerName} →</a>
+      </div>`;
+  }
+
+  function _embedRamp(container, walletAddr) {
+    container.innerHTML = '<div style="padding:40px;text-align:center;color:var(--muted)">Loading Ramp…</div>';
+    let attempts = 0;
+    const tryInit = () => {
+      attempts++;
+      if (window.Ramp && window.Ramp.showWebWidget) {
+        container.innerHTML = '';
+        try {
+          window.Ramp.showWebWidget({
+            hostAppName: 'FAWN',
+            hostApiKey: onrampConfig?.ramp?.host_app_id || undefined,
+            swapAsset: 'USDC',
+            userAddress: walletAddr,
+            containerNode: container,
+          });
+          return;
+        } catch (err) { console.error('[Ramp] widget error', err); }
+      }
+      if (attempts < 30) return setTimeout(tryInit, 200);
+      _onrampFallback(container, 'Ramp', 'https://ramp.network', walletAddr);
+    };
+    tryInit();
+  }
+
+  async function _embedCoinbase(container, walletAddr) {
+    container.innerHTML = '<div style="padding:40px;text-align:center;color:var(--muted)">Preparing Coinbase Onramp…</div>';
+    try {
+      const data = await authPost('/onramp/coinbase/session-token', {});
+      container.innerHTML = `
+        <div style="padding:20px;text-align:center">
+          <div style="color:var(--muted);font-size:0.85rem;margin-bottom:14px">Coinbase Onramp opens in a secure popup, pre-filled with your FAWN address.</div>
+          <button onclick="window.open('${data.onramp_url}', 'coinbase_onramp', 'width=460,height=700')" style="padding:12px 20px;background:var(--green);color:#000;border:none;border-radius:8px;font-weight:700;cursor:pointer;font-size:0.9rem">Continue with Coinbase →</button>
+        </div>`;
+    } catch (e) {
+      _onrampFallback(container, 'Coinbase', 'https://www.coinbase.com/onramp', walletAddr);
+    }
+  }
+
+  function _embedMoonpay(container, walletAddr) {
+    container.innerHTML = '<div style="padding:40px;text-align:center;color:var(--muted)">Loading MoonPay…</div>';
+    let attempts = 0;
+    const tryInit = () => {
+      attempts++;
+      if (window.MoonPayWebSdk) {
+        container.innerHTML = '';
+        try {
+          const sdk = window.MoonPayWebSdk.init({
+            flow: 'buy',
+            environment: 'production',
+            variant: 'embedded',
+            containerNodeSelector: '#onramp-widget-container',
+            params: {
+              apiKey: onrampConfig?.moonpay?.api_key,
+              currencyCode: 'usdc_polygon',
+              walletAddress: walletAddr,
+              theme: 'dark',
+            },
+          });
+          sdk.show();
+          return;
+        } catch (err) { console.error('[MoonPay] widget error', err); }
+      }
+      if (attempts < 30) return setTimeout(tryInit, 200);
+      _onrampFallback(container, 'MoonPay', 'https://www.moonpay.com', walletAddr);
+    };
+    tryInit();
+  }
+
+  function _embedTransak(container, walletAddr) {
+    container.innerHTML = '<div style="padding:40px;text-align:center;color:var(--muted)">Loading Transak…</div>';
+    let attempts = 0;
+    const tryInit = () => {
+      attempts++;
+      const TransakSDK = window.transakSDK || window.Transak;
+      if (TransakSDK) {
+        container.innerHTML = '<div style="padding:12px;color:var(--muted);font-size:0.85rem;text-align:center">Transak will open in a secure window.</div>';
+        try {
+          const Ctor = TransakSDK.default || TransakSDK;
+          const transak = new Ctor({
+            apiKey: onrampConfig?.transak?.api_key,
+            environment: onrampConfig?.transak?.environment || 'STAGING',
+            defaultCryptoCurrency: 'USDC',
+            network: 'polygon',
+            walletAddress: walletAddr,
+            themeColor: '00c896',
+            hideMenu: true,
+          });
+          transak.init();
+          return;
+        } catch (err) { console.error('[Transak] widget error', err); }
+      }
+      if (attempts < 30) return setTimeout(tryInit, 200);
+      _onrampFallback(container, 'Transak', 'https://transak.com', walletAddr);
+    };
+    tryInit();
   }
 
   async function sendUSTC() {
