@@ -1,0 +1,715 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>FAWN — Automated Crypto Banking for Everyone</title>
+  <meta name="description" content="FAWN automates your crypto finances: recurring transfers, price alerts, DCA, savings goals. Self-custodial USDC wallet on Polygon." />
+  <meta name="theme-color" content="#00d084" />
+  <meta property="og:title" content="FAWN — Automated Crypto Banking" />
+  <meta property="og:description" content="Send USDC instantly. Trade on Uniswap. Automate your savings. No fees. No intermediaries." />
+  <meta property="og:type" content="website" />
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    :root {
+      --color-primary: #00d084;
+      --color-primary-dark: #00a86b;
+      --color-primary-light: rgba(0, 208, 132, 0.1);
+      --color-bg-dark: #0a0e27;
+      --color-bg-secondary: #111633;
+      --color-bg-tertiary: #16213e;
+      --color-text-primary: #ffffff;
+      --color-text-secondary: #b0b5c6;
+      --color-text-muted: #7a7f8e;
+      --color-border: #1f2847;
+      --color-success: #00d084;
+      --color-warning: #ffa500;
+      --color-error: #ff4757;
+      --spacing-xs: 4px;
+      --spacing-sm: 8px;
+      --spacing-md: 16px;
+      --spacing-lg: 24px;
+      --spacing-xl: 32px;
+      --spacing-2xl: 48px;
+      --radius-sm: 6px;
+      --radius-md: 12px;
+      --radius-lg: 16px;
+      --radius-xl: 24px;
+      --font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.12);
+      --shadow-md: 0 4px 20px rgba(0, 0, 0, 0.2);
+      --shadow-lg: 0 8px 40px rgba(0, 0, 0, 0.3);
+      --shadow-hover: 0 8px 40px rgba(0, 208, 132, 0.15);
+    }
+
+    :root[data-theme="light"] {
+      --color-bg-dark: #f8f9fa;
+      --color-bg-secondary: #ffffff;
+      --color-bg-tertiary: #f0f2f5;
+      --color-text-primary: #1a1a1a;
+      --color-text-secondary: #666666;
+      --color-text-muted: #999999;
+      --color-border: #e0e0e0;
+      --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.08);
+      --shadow-md: 0 4px 20px rgba(0, 0, 0, 0.1);
+      --shadow-lg: 0 8px 40px rgba(0, 0, 0, 0.15);
+    }
+
+    html {
+      scroll-behavior: smooth;
+    }
+
+    body {
+      font-family: var(--font-family);
+      background: var(--color-bg-dark);
+      color: var(--color-text-primary);
+      line-height: 1.6;
+    }
+
+    /* ── HEADER ── */
+    header {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      background: rgba(10, 14, 39, 0.9);
+      backdrop-filter: blur(10px);
+      border-bottom: 1px solid var(--color-border);
+      padding: var(--spacing-lg) var(--spacing-xl);
+      z-index: 1000;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .header-logo {
+      font-size: 28px;
+      font-weight: 800;
+      background: linear-gradient(135deg, var(--color-primary), var(--color-primary-dark));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      letter-spacing: -1px;
+    }
+
+    .header-nav {
+      display: flex;
+      gap: var(--spacing-xl);
+      align-items: center;
+    }
+
+    .header-nav a {
+      color: var(--color-text-secondary);
+      text-decoration: none;
+      font-size: 14px;
+      font-weight: 500;
+      transition: color 0.2s;
+    }
+
+    .header-nav a:hover {
+      color: var(--color-primary);
+    }
+
+    .btn-primary {
+      padding: var(--spacing-md) var(--spacing-lg);
+      background: linear-gradient(135deg, var(--color-primary), var(--color-primary-dark));
+      color: #000;
+      border: none;
+      border-radius: var(--radius-md);
+      font-weight: 600;
+      font-size: 14px;
+      cursor: pointer;
+      transition: all 0.3s;
+      box-shadow: var(--shadow-sm);
+    }
+
+    .btn-primary:hover {
+      transform: translateY(-2px);
+      box-shadow: var(--shadow-hover);
+    }
+
+    /* ── HERO ── */
+    .hero {
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 120px var(--spacing-xl) var(--spacing-xl);
+      background: radial-gradient(ellipse at top, rgba(0, 208, 132, 0.08) 0%, transparent 60%);
+      text-align: center;
+    }
+
+    .hero-content {
+      max-width: 800px;
+    }
+
+    .hero h1 {
+      font-size: 64px;
+      font-weight: 800;
+      margin-bottom: var(--spacing-lg);
+      line-height: 1.2;
+      letter-spacing: -1.5px;
+    }
+
+    .hero h1 .highlight {
+      background: linear-gradient(135deg, var(--color-primary), var(--color-primary-dark));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .hero p {
+      font-size: 20px;
+      color: var(--color-text-secondary);
+      margin-bottom: var(--spacing-2xl);
+      max-width: 600px;
+      margin-left: auto;
+      margin-right: auto;
+    }
+
+    .hero-cta {
+      display: flex;
+      gap: var(--spacing-lg);
+      justify-content: center;
+      flex-wrap: wrap;
+    }
+
+    .btn-secondary {
+      padding: var(--spacing-md) var(--spacing-lg);
+      background: transparent;
+      color: var(--color-primary);
+      border: 2px solid var(--color-primary);
+      border-radius: var(--radius-md);
+      font-weight: 600;
+      font-size: 14px;
+      cursor: pointer;
+      transition: all 0.3s;
+    }
+
+    .btn-secondary:hover {
+      background: var(--color-primary-light);
+    }
+
+    /* ── FEATURES GRID ── */
+    .section {
+      padding: var(--spacing-2xl) var(--spacing-xl);
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+
+    .section-title {
+      font-size: 48px;
+      font-weight: 800;
+      margin-bottom: var(--spacing-2xl);
+      text-align: center;
+      letter-spacing: -1px;
+    }
+
+    .features-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: var(--spacing-xl);
+    }
+
+    .feature-card {
+      background: linear-gradient(135deg, var(--color-bg-secondary) 0%, var(--color-bg-tertiary) 100%);
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-lg);
+      padding: var(--spacing-xl);
+      transition: all 0.3s;
+      cursor: pointer;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .feature-card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 3px;
+      background: linear-gradient(90deg, var(--color-primary), var(--color-primary-dark));
+      transform: scaleX(0);
+      transform-origin: left;
+      transition: transform 0.3s;
+    }
+
+    .feature-card:hover {
+      box-shadow: var(--shadow-hover);
+      border-color: var(--color-primary);
+      transform: translateY(-8px);
+    }
+
+    .feature-card:hover::before {
+      transform: scaleX(1);
+    }
+
+    .feature-icon {
+      font-size: 40px;
+      margin-bottom: var(--spacing-lg);
+    }
+
+    .feature-card h3 {
+      font-size: 20px;
+      font-weight: 700;
+      margin-bottom: var(--spacing-md);
+      color: var(--color-text-primary);
+    }
+
+    .feature-card p {
+      color: var(--color-text-secondary);
+      font-size: 14px;
+      line-height: 1.8;
+    }
+
+    /* ── AUTOMATION SHOWCASE ── */
+    .automation-showcase {
+      background: linear-gradient(135deg, var(--color-bg-secondary) 0%, var(--color-bg-tertiary) 100%);
+      border-radius: var(--radius-xl);
+      padding: var(--spacing-2xl);
+      margin: var(--spacing-2xl) 0;
+      border: 1px solid var(--color-border);
+    }
+
+    .showcase-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: var(--spacing-xl);
+      align-items: center;
+    }
+
+    .showcase-text h2 {
+      font-size: 40px;
+      font-weight: 800;
+      margin-bottom: var(--spacing-lg);
+      letter-spacing: -0.5px;
+    }
+
+    .showcase-text p {
+      color: var(--color-text-secondary);
+      font-size: 16px;
+      margin-bottom: var(--spacing-lg);
+      line-height: 1.8;
+    }
+
+    .api-feature {
+      background: var(--color-bg-dark);
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-md);
+      padding: var(--spacing-lg);
+      margin-bottom: var(--spacing-md);
+      display: flex;
+      align-items: center;
+      gap: var(--spacing-md);
+    }
+
+    .api-feature-icon {
+      font-size: 24px;
+      min-width: 24px;
+    }
+
+    .api-feature-text h4 {
+      font-size: 14px;
+      font-weight: 700;
+      color: var(--color-primary);
+      margin-bottom: var(--spacing-xs);
+    }
+
+    .api-feature-text p {
+      font-size: 12px;
+      color: var(--color-text-muted);
+      margin: 0;
+    }
+
+    .showcase-visual {
+      background: linear-gradient(135deg, rgba(0, 208, 132, 0.05), rgba(0, 168, 107, 0.02));
+      border: 2px dashed var(--color-border);
+      border-radius: var(--radius-lg);
+      padding: var(--spacing-2xl);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 400px;
+      color: var(--color-text-muted);
+      font-size: 16px;
+      text-align: center;
+    }
+
+    /* ── STATS ── */
+    .stats-section {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: var(--spacing-xl);
+      margin: var(--spacing-2xl) 0;
+    }
+
+    .stat-box {
+      text-align: center;
+    }
+
+    .stat-value {
+      font-size: 48px;
+      font-weight: 800;
+      color: var(--color-primary);
+      margin-bottom: var(--spacing-sm);
+    }
+
+    .stat-label {
+      color: var(--color-text-secondary);
+      font-size: 14px;
+      font-weight: 500;
+    }
+
+    /* ── CTA SECTION ── */
+    .cta-section {
+      background: linear-gradient(135deg, rgba(0, 208, 132, 0.1), rgba(0, 168, 107, 0.05));
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-xl);
+      padding: var(--spacing-2xl);
+      text-align: center;
+      margin: var(--spacing-2xl) 0;
+    }
+
+    .cta-section h2 {
+      font-size: 40px;
+      font-weight: 800;
+      margin-bottom: var(--spacing-lg);
+    }
+
+    .cta-section p {
+      color: var(--color-text-secondary);
+      font-size: 18px;
+      margin-bottom: var(--spacing-2xl);
+      max-width: 600px;
+      margin-left: auto;
+      margin-right: auto;
+    }
+
+    /* ── FOOTER ── */
+    footer {
+      background: var(--color-bg-secondary);
+      border-top: 1px solid var(--color-border);
+      padding: var(--spacing-2xl) var(--spacing-xl);
+      margin-top: var(--spacing-2xl);
+    }
+
+    .footer-content {
+      max-width: 1200px;
+      margin: 0 auto;
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: var(--spacing-xl);
+      margin-bottom: var(--spacing-xl);
+    }
+
+    .footer-section h4 {
+      font-size: 14px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      color: var(--color-text-muted);
+      margin-bottom: var(--spacing-md);
+    }
+
+    .footer-section a {
+      display: block;
+      color: var(--color-text-secondary);
+      text-decoration: none;
+      font-size: 13px;
+      margin-bottom: var(--spacing-sm);
+      transition: color 0.2s;
+    }
+
+    .footer-section a:hover {
+      color: var(--color-primary);
+    }
+
+    .footer-bottom {
+      border-top: 1px solid var(--color-border);
+      padding-top: var(--spacing-xl);
+      text-align: center;
+      color: var(--color-text-muted);
+      font-size: 13px;
+    }
+
+    /* ── THEME TOGGLE ── */
+    .theme-toggle {
+      background: var(--color-bg-tertiary);
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-md);
+      padding: var(--spacing-sm) var(--spacing-md);
+      cursor: pointer;
+      font-size: 14px;
+      transition: all 0.2s;
+    }
+
+    .theme-toggle:hover {
+      border-color: var(--color-primary);
+      color: var(--color-primary);
+    }
+
+    /* ── RESPONSIVE ── */
+    @media (max-width: 768px) {
+      .header {
+        flex-direction: column;
+        gap: var(--spacing-lg);
+      }
+
+      .header-nav {
+        flex-direction: column;
+        width: 100%;
+      }
+
+      .hero h1 {
+        font-size: 40px;
+      }
+
+      .showcase-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .section-title {
+        font-size: 32px;
+      }
+
+      .features-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+  <!-- HEADER -->
+  <header>
+    <div class="header-logo">💎 FAWN</div>
+    <nav class="header-nav">
+      <a href="#features">Features</a>
+      <a href="#automation">Automation</a>
+      <a href="#pricing">Pricing</a>
+      <a href="index.html" class="btn-primary">Launch App</a>
+      <button class="theme-toggle" onclick="toggleTheme()">🌙</button>
+    </nav>
+  </header>
+
+  <!-- HERO -->
+  <section class="hero">
+    <div class="hero-content">
+      <h1>Crypto Banking That <span class="highlight">Automates</span></h1>
+      <p>Send USDC instantly. Trade on Uniswap. Automate your savings. DCA investing. Price alerts. Zero intermediaries. Self-custodial.</p>
+      <div class="hero-cta">
+        <button class="btn-primary" onclick="location.href='index.html'">Get Started Free</button>
+        <button class="btn-secondary" onclick="scrollToSection('features')">Learn More</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- FEATURES -->
+  <section class="section" id="features">
+    <h2 class="section-title">What You Can Do</h2>
+    <div class="features-grid">
+      <div class="feature-card">
+        <div class="feature-icon">💸</div>
+        <h3>Instant Transfers</h3>
+        <p>Send USDC to friends, wallets, or external addresses with zero fees internally. $0.50 for external transfers.</p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">⚡</div>
+        <h3>Trade Crypto</h3>
+        <p>Swap tokens on Uniswap V3. USDC, ETH, MATIC, USDT, DAI, WBTC. Real-time quotes, low slippage, $0.01 per trade.</p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">🔐</div>
+        <h3>Self-Custodial</h3>
+        <p>You control your private keys. AES-256-GCM encryption. BIP39 seed phrase. No bank, no intermediary.</p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">📊</div>
+        <h3>Real Stocks</h3>
+        <p>Invest in fractional shares via Alpaca. Same $0.01 fee. Full market coverage.</p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">📰</div>
+        <h3>Live News</h3>
+        <p>Filter real financial & market headlines by keyword. Housing, tech, crypto, your portfolio.</p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">💰</div>
+        <h3>No Monthly Fees</h3>
+        <p>Only pay per transaction. No hidden fees. No monthly charges. No minimum balance.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- AUTOMATION SHOWCASE -->
+  <section class="section" id="automation">
+    <div class="automation-showcase">
+      <div class="showcase-grid">
+        <div class="showcase-text">
+          <h2>Smart Automation</h2>
+          <p>Automate your entire crypto strategy. Set it once, never think about it again.</p>
+
+          <div class="api-feature">
+            <div class="api-feature-icon">🔄</div>
+            <div class="api-feature-text">
+              <h4>Recurring Transfers</h4>
+              <p>Auto-send USDC daily, weekly, or monthly</p>
+            </div>
+          </div>
+
+          <div class="api-feature">
+            <div class="api-feature-icon">💹</div>
+            <div class="api-feature-text">
+              <h4>DCA Investing</h4>
+              <p>Dollar-cost averaging: auto-buy at intervals</p>
+            </div>
+          </div>
+
+          <div class="api-feature">
+            <div class="api-feature-icon">🚨</div>
+            <div class="api-feature-text">
+              <h4>Price Alerts</h4>
+              <p>Notifications when tokens hit thresholds</p>
+            </div>
+          </div>
+
+          <div class="api-feature">
+            <div class="api-feature-icon">🎯</div>
+            <div class="api-feature-text">
+              <h4>Savings Goals</h4>
+              <p>Auto-allocate % of income to goals</p>
+            </div>
+          </div>
+
+          <div class="api-feature">
+            <div class="api-feature-icon">🪝</div>
+            <div class="api-feature-text">
+              <h4>Webhooks</h4>
+              <p>Real-time events to your own systems</p>
+            </div>
+          </div>
+
+          <div class="api-feature">
+            <div class="api-feature-icon">📦</div>
+            <div class="api-feature-text">
+              <h4>Batch Operations</h4>
+              <p>Send to 100 people in one atomic operation</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="showcase-visual">
+          <div>
+            <div style="font-size: 64px; margin-bottom: 16px;">🤖</div>
+            <div>Complete automation APIs</div>
+            <div style="font-size: 12px; color: var(--color-text-muted); margin-top: 8px;">POST /automation/recurring-transfers</div>
+            <div style="font-size: 12px; color: var(--color-text-muted);">POST /automation/dca-plans</div>
+            <div style="font-size: 12px; color: var(--color-text-muted);">POST /webhooks/subscribe</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- STATS -->
+  <section class="section">
+    <div class="stats-section">
+      <div class="stat-box">
+        <div class="stat-value">$0.01</div>
+        <div class="stat-label">Internal Transfer Fee</div>
+      </div>
+      <div class="stat-box">
+        <div class="stat-value">$0.50</div>
+        <div class="stat-label">External Transfer Fee</div>
+      </div>
+      <div class="stat-box">
+        <div class="stat-value">∞</div>
+        <div class="stat-label">Automations Possible</div>
+      </div>
+      <div class="stat-box">
+        <div class="stat-value">24/7</div>
+        <div class="stat-label">Blockchain Access</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- CTA -->
+  <section class="section">
+    <div class="cta-section">
+      <h2>Ready to Automate?</h2>
+      <p>Join thousands using FAWN to automate their crypto finances. Zero fees. Zero intermediaries. Total control.</p>
+      <button class="btn-primary" style="font-size: 16px; padding: 16px 32px;" onclick="location.href='index.html'">
+        Create Account Now
+      </button>
+    </div>
+  </section>
+
+  <!-- FOOTER -->
+  <footer>
+    <div class="footer-content">
+      <div class="footer-section">
+        <h4>Product</h4>
+        <a href="index.html">Dashboard</a>
+        <a href="admin-revenue.html">Admin Dashboard</a>
+        <a href="#">Pricing</a>
+        <a href="#">Roadmap</a>
+      </div>
+      <div class="footer-section">
+        <h4>Features</h4>
+        <a href="#">Transfers</a>
+        <a href="#">Trading</a>
+        <a href="#">Automation</a>
+        <a href="#">Webhooks</a>
+      </div>
+      <div class="footer-section">
+        <h4>Legal</h4>
+        <a href="#">Terms of Service</a>
+        <a href="#">Privacy Policy</a>
+        <a href="#">Disclaimers</a>
+        <a href="#">Security</a>
+      </div>
+      <div class="footer-section">
+        <h4>Developer</h4>
+        <a href="#">API Docs</a>
+        <a href="#">GitHub</a>
+        <a href="#">Status</a>
+        <a href="#">Support</a>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <p>© 2026 FAWN. Self-custodial. Decentralized. Automated. | 💎 Banking for Gen Z.</p>
+    </div>
+  </footer>
+
+  <script>
+    // Theme toggle
+    function toggleTheme() {
+      const current = document.documentElement.getAttribute('data-theme') || 'dark';
+      const next = current === 'dark' ? 'light' : 'dark';
+      document.documentElement.setAttribute('data-theme', next);
+      localStorage.setItem('fawn-theme', next);
+      document.querySelector('.theme-toggle').textContent = next === 'dark' ? '🌙' : '☀️';
+    }
+
+    // Restore theme on load
+    function restoreTheme() {
+      const saved = localStorage.getItem('fawn-theme') || 'dark';
+      document.documentElement.setAttribute('data-theme', saved);
+      document.querySelector('.theme-toggle').textContent = saved === 'dark' ? '🌙' : '☀️';
+    }
+
+    // Smooth scroll to section
+    function scrollToSection(id) {
+      document.getElementById(id).scrollIntoView({ behavior: 'smooth' });
+    }
+
+    // Initialize on load
+    window.addEventListener('DOMContentLoaded', restoreTheme);
+  </script>
+</body>
+</html>

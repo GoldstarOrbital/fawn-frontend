@@ -434,6 +434,93 @@
       font-size: 0.75rem; color: #555; line-height: 1.6;
     }
 
+    /* ── AUTOMATION HUB ── */
+    .automation-hero {
+      background: linear-gradient(135deg, rgba(0,200,150,0.1) 0%, rgba(0,168,107,0.05) 100%);
+      border: 1px solid rgba(0,200,150,0.2);
+      border-radius: 20px; padding: 32px; margin-bottom: 28px;
+      position: relative; overflow: hidden;
+    }
+    .automation-hero::before {
+      content: '🤖'; position: absolute; right: 20px; top: 10px;
+      font-size: 80px; opacity: 0.08; pointer-events: none;
+    }
+    .automation-hero h2 {
+      font-size: 28px; font-weight: 800; margin-bottom: 8px;
+      letter-spacing: -0.5px;
+    }
+    .automation-hero p {
+      color: var(--muted); font-size: 15px; max-width: 600px; line-height: 1.7;
+    }
+
+    .automation-grid {
+      display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 16px; margin-top: 24px;
+    }
+
+    .automation-card {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: 16px; padding: 20px; transition: all 0.3s;
+      position: relative; overflow: hidden;
+    }
+    .automation-card::before {
+      content: ''; position: absolute; top: 0; left: 0; right: 0;
+      height: 3px; background: linear-gradient(90deg, var(--green), var(--green-dark));
+      transform: scaleX(0); transform-origin: left; transition: transform 0.3s;
+    }
+    .automation-card:hover {
+      border-color: var(--green); box-shadow: 0 8px 32px rgba(0,200,150,0.15);
+      transform: translateY(-4px);
+    }
+    .automation-card:hover::before {
+      transform: scaleX(1);
+    }
+
+    .automation-icon {
+      font-size: 32px; margin-bottom: 12px;
+    }
+    .automation-card h3 {
+      font-size: 16px; font-weight: 700; margin-bottom: 8px;
+      color: var(--text);
+    }
+    .automation-card p {
+      font-size: 13px; color: var(--muted); line-height: 1.6; margin-bottom: 16px;
+    }
+    .automation-status {
+      display: inline-block; padding: 6px 12px;
+      background: var(--green-faint); color: var(--green);
+      border-radius: 999px; font-size: 12px; font-weight: 700;
+    }
+
+    .automation-setup-btn {
+      display: inline-flex; align-items: center; gap: 8px;
+      padding: 10px 20px; background: var(--green); color: #000;
+      font-weight: 700; font-size: 13px; border: none;
+      border-radius: 10px; cursor: pointer; margin-top: 12px;
+      transition: background 0.2s;
+    }
+    .automation-setup-btn:hover { background: var(--green-dark); }
+
+    .integration-showcase {
+      background: var(--surface2); border: 1px solid var(--border);
+      border-radius: 16px; padding: 24px; margin-top: 24px;
+      text-align: center;
+    }
+    .integration-showcase h3 {
+      font-size: 16px; font-weight: 700; margin-bottom: 16px;
+    }
+    .api-endpoints {
+      display: grid; gap: 12px; text-align: left;
+    }
+    .endpoint {
+      background: var(--bg); border: 1px solid var(--border);
+      border-radius: 10px; padding: 14px; font-family: 'Courier New', monospace;
+      font-size: 12px; color: var(--text);
+    }
+    .endpoint-method {
+      color: var(--green); font-weight: 700; margin-right: 8px;
+    }
+
     /* ── MODAL ── */
     .modal-overlay {
       position: fixed; inset: 0; background: rgba(0,0,0,0.75);
@@ -888,7 +975,9 @@ Available anytime for questions or issues</span>
 
     <!-- Sidebar -->
     <aside class="sidebar">
-      <div class="sidebar-logo">fawn</div>
+      <a href="landing.html" style="text-decoration:none;cursor:pointer">
+        <div class="sidebar-logo" style="margin-bottom:36px;cursor:pointer;transition:opacity 0.2s" onmouseover="this.style.opacity='0.7'" onmouseout="this.style.opacity='1'">💎 fawn</div>
+      </a>
 
       <div class="nav-section">Main</div>
       <div class="nav-item active" id="nav-dashboard" onclick="showTab('dashboard')">
@@ -910,6 +999,9 @@ Available anytime for questions or issues</span>
       </div>
       <div class="nav-item" id="nav-brief" onclick="showTab('brief')">
         <span class="icon">🎧</span> Daily Brief
+      </div>
+      <div class="nav-item" id="nav-automation" onclick="showTab('automation')">
+        <span class="icon">🤖</span> Automation
       </div>
 
       <div class="nav-item" id="nav-campus" onclick="showTab('campus')">
@@ -1260,6 +1352,91 @@ Available anytime for questions or issues</span>
           <div style="color:var(--muted);font-size:0.9rem;padding:20px 0;text-align:center">Loading today's brief…</div>
         </div>
         <div class="disclaimer-box" id="brief-disc" style="margin-top:16px;display:none"></div>
+      </div>
+
+      <!-- AUTOMATION HUB -->
+      <div class="tab" id="tab-automation">
+        <div class="automation-hero">
+          <h2>Automation Hub 🤖</h2>
+          <p>Automate your entire crypto strategy. Set it once, never think about it again. Recurring transfers, DCA investing, price alerts, savings goals, webhooks, and batch operations.</p>
+        </div>
+
+        <div class="automation-grid">
+          <div class="automation-card">
+            <div class="automation-icon">🔄</div>
+            <h3>Recurring Transfers</h3>
+            <p>Auto-send USDC to friends daily, weekly, or monthly. Perfect for splitting rent or regular payments.</p>
+            <span class="automation-status">✓ Active</span>
+            <button class="automation-setup-btn" onclick="alert('Recurring transfers API ready at POST /automation/recurring-transfers')">Setup</button>
+          </div>
+
+          <div class="automation-card">
+            <div class="automation-icon">💹</div>
+            <h3>DCA Investing</h3>
+            <p>Dollar-cost averaging: automatically buy crypto at fixed intervals. Remove emotion from timing.</p>
+            <span class="automation-status">✓ Active</span>
+            <button class="automation-setup-btn" onclick="alert('DCA API ready at POST /automation/dca-plans')">Setup</button>
+          </div>
+
+          <div class="automation-card">
+            <div class="automation-icon">🚨</div>
+            <h3>Price Alerts</h3>
+            <p>Get notified when tokens hit price thresholds. Email, SMS, or push notifications on your terms.</p>
+            <span class="automation-status">✓ Active</span>
+            <button class="automation-setup-btn" onclick="alert('Price alerts API ready at POST /automation/price-alerts')">Setup</button>
+          </div>
+
+          <div class="automation-card">
+            <div class="automation-icon">🎯</div>
+            <h3>Savings Goals</h3>
+            <p>Auto-allocate a percentage of income to savings goals. Track progress toward your targets.</p>
+            <span class="automation-status">✓ Active</span>
+            <button class="automation-setup-btn" onclick="alert('Savings goals API ready at POST /automation/savings-goals')">Setup</button>
+          </div>
+
+          <div class="automation-card">
+            <div class="automation-icon">🪝</div>
+            <h3>Webhooks</h3>
+            <p>Real-time event delivery to your own systems. Subscribe to transfers, trades, alerts, and more.</p>
+            <span class="automation-status">✓ Active</span>
+            <button class="automation-setup-btn" onclick="alert('Webhooks API ready at POST /webhooks/subscribe')">Setup</button>
+          </div>
+
+          <div class="automation-card">
+            <div class="automation-icon">📦</div>
+            <h3>Batch Operations</h3>
+            <p>Send USDC to 100+ recipients in one atomic operation. Perfect for payouts and distributions.</p>
+            <span class="automation-status">✓ Active</span>
+            <button class="automation-setup-btn" onclick="alert('Batch transfer API ready at POST /webhooks/batch/transfers')">Setup</button>
+          </div>
+        </div>
+
+        <div class="integration-showcase">
+          <h3>📡 API Endpoints</h3>
+          <div class="api-endpoints">
+            <div class="endpoint">
+              <span class="endpoint-method">POST</span>/automation/recurring-transfers
+            </div>
+            <div class="endpoint">
+              <span class="endpoint-method">POST</span>/automation/dca-plans
+            </div>
+            <div class="endpoint">
+              <span class="endpoint-method">POST</span>/automation/price-alerts
+            </div>
+            <div class="endpoint">
+              <span class="endpoint-method">POST</span>/automation/savings-goals
+            </div>
+            <div class="endpoint">
+              <span class="endpoint-method">POST</span>/webhooks/subscribe
+            </div>
+            <div class="endpoint">
+              <span class="endpoint-method">POST</span>/webhooks/batch/transfers
+            </div>
+            <div class="endpoint">
+              <span class="endpoint-method">GET</span>/webhooks/events
+            </div>
+          </div>
+        </div>
       </div>
 
     </main>
