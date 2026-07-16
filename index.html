@@ -434,93 +434,6 @@
       font-size: 0.75rem; color: #555; line-height: 1.6;
     }
 
-    /* ── AUTOMATION HUB ── */
-    .automation-hero {
-      background: linear-gradient(135deg, rgba(0,200,150,0.1) 0%, rgba(0,168,107,0.05) 100%);
-      border: 1px solid rgba(0,200,150,0.2);
-      border-radius: 20px; padding: 32px; margin-bottom: 28px;
-      position: relative; overflow: hidden;
-    }
-    .automation-hero::before {
-      content: '🤖'; position: absolute; right: 20px; top: 10px;
-      font-size: 80px; opacity: 0.08; pointer-events: none;
-    }
-    .automation-hero h2 {
-      font-size: 28px; font-weight: 800; margin-bottom: 8px;
-      letter-spacing: -0.5px;
-    }
-    .automation-hero p {
-      color: var(--muted); font-size: 15px; max-width: 600px; line-height: 1.7;
-    }
-
-    .automation-grid {
-      display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-      gap: 16px; margin-top: 24px;
-    }
-
-    .automation-card {
-      background: var(--surface); border: 1px solid var(--border);
-      border-radius: 16px; padding: 20px; transition: all 0.3s;
-      position: relative; overflow: hidden;
-    }
-    .automation-card::before {
-      content: ''; position: absolute; top: 0; left: 0; right: 0;
-      height: 3px; background: linear-gradient(90deg, var(--green), var(--green-dark));
-      transform: scaleX(0); transform-origin: left; transition: transform 0.3s;
-    }
-    .automation-card:hover {
-      border-color: var(--green); box-shadow: 0 8px 32px rgba(0,200,150,0.15);
-      transform: translateY(-4px);
-    }
-    .automation-card:hover::before {
-      transform: scaleX(1);
-    }
-
-    .automation-icon {
-      font-size: 32px; margin-bottom: 12px;
-    }
-    .automation-card h3 {
-      font-size: 16px; font-weight: 700; margin-bottom: 8px;
-      color: var(--text);
-    }
-    .automation-card p {
-      font-size: 13px; color: var(--muted); line-height: 1.6; margin-bottom: 16px;
-    }
-    .automation-status {
-      display: inline-block; padding: 6px 12px;
-      background: var(--green-faint); color: var(--green);
-      border-radius: 999px; font-size: 12px; font-weight: 700;
-    }
-
-    .automation-setup-btn {
-      display: inline-flex; align-items: center; gap: 8px;
-      padding: 10px 20px; background: var(--green); color: #000;
-      font-weight: 700; font-size: 13px; border: none;
-      border-radius: 10px; cursor: pointer; margin-top: 12px;
-      transition: background 0.2s;
-    }
-    .automation-setup-btn:hover { background: var(--green-dark); }
-
-    .integration-showcase {
-      background: var(--surface2); border: 1px solid var(--border);
-      border-radius: 16px; padding: 24px; margin-top: 24px;
-      text-align: center;
-    }
-    .integration-showcase h3 {
-      font-size: 16px; font-weight: 700; margin-bottom: 16px;
-    }
-    .api-endpoints {
-      display: grid; gap: 12px; text-align: left;
-    }
-    .endpoint {
-      background: var(--bg); border: 1px solid var(--border);
-      border-radius: 10px; padding: 14px; font-family: 'Courier New', monospace;
-      font-size: 12px; color: var(--text);
-    }
-    .endpoint-method {
-      color: var(--green); font-weight: 700; margin-right: 8px;
-    }
-
     /* ── MODAL ── */
     .modal-overlay {
       position: fixed; inset: 0; background: rgba(0,0,0,0.75);
@@ -975,9 +888,7 @@ Available anytime for questions or issues</span>
 
     <!-- Sidebar -->
     <aside class="sidebar">
-      <a href="landing.html" style="text-decoration:none;cursor:pointer">
-        <div class="sidebar-logo" style="margin-bottom:36px;cursor:pointer;transition:opacity 0.2s" onmouseover="this.style.opacity='0.7'" onmouseout="this.style.opacity='1'">💎 fawn</div>
-      </a>
+      <div class="sidebar-logo">fawn</div>
 
       <div class="nav-section">Main</div>
       <div class="nav-item active" id="nav-dashboard" onclick="showTab('dashboard')">
@@ -1354,88 +1265,15 @@ Available anytime for questions or issues</span>
         <div class="disclaimer-box" id="brief-disc" style="margin-top:16px;display:none"></div>
       </div>
 
-      <!-- AUTOMATION HUB -->
+      <!-- AUTOMATION -->
       <div class="tab" id="tab-automation">
-        <div class="automation-hero">
-          <h2>Automation Hub 🤖</h2>
-          <p>Automate your entire crypto strategy. Set it once, never think about it again. Recurring transfers, DCA investing, price alerts, savings goals, webhooks, and batch operations.</p>
+        <div class="page-header">
+          <h1>Automation</h1>
+          <p>Set it once, never think about it again. Recurring transfers, DCA investing, price alerts, savings goals, webhooks, and batch payouts.</p>
         </div>
-
-        <div class="automation-grid">
-          <div class="automation-card">
-            <div class="automation-icon">🔄</div>
-            <h3>Recurring Transfers</h3>
-            <p>Auto-send USDC to friends daily, weekly, or monthly. Perfect for splitting rent or regular payments.</p>
-            <span class="automation-status">✓ Active</span>
-            <button class="automation-setup-btn" onclick="alert('Recurring transfers API ready at POST /automation/recurring-transfers')">Setup</button>
-          </div>
-
-          <div class="automation-card">
-            <div class="automation-icon">💹</div>
-            <h3>DCA Investing</h3>
-            <p>Dollar-cost averaging: automatically buy crypto at fixed intervals. Remove emotion from timing.</p>
-            <span class="automation-status">✓ Active</span>
-            <button class="automation-setup-btn" onclick="alert('DCA API ready at POST /automation/dca-plans')">Setup</button>
-          </div>
-
-          <div class="automation-card">
-            <div class="automation-icon">🚨</div>
-            <h3>Price Alerts</h3>
-            <p>Get notified when tokens hit price thresholds. Email, SMS, or push notifications on your terms.</p>
-            <span class="automation-status">✓ Active</span>
-            <button class="automation-setup-btn" onclick="alert('Price alerts API ready at POST /automation/price-alerts')">Setup</button>
-          </div>
-
-          <div class="automation-card">
-            <div class="automation-icon">🎯</div>
-            <h3>Savings Goals</h3>
-            <p>Auto-allocate a percentage of income to savings goals. Track progress toward your targets.</p>
-            <span class="automation-status">✓ Active</span>
-            <button class="automation-setup-btn" onclick="alert('Savings goals API ready at POST /automation/savings-goals')">Setup</button>
-          </div>
-
-          <div class="automation-card">
-            <div class="automation-icon">🪝</div>
-            <h3>Webhooks</h3>
-            <p>Real-time event delivery to your own systems. Subscribe to transfers, trades, alerts, and more.</p>
-            <span class="automation-status">✓ Active</span>
-            <button class="automation-setup-btn" onclick="alert('Webhooks API ready at POST /webhooks/subscribe')">Setup</button>
-          </div>
-
-          <div class="automation-card">
-            <div class="automation-icon">📦</div>
-            <h3>Batch Operations</h3>
-            <p>Send USDC to 100+ recipients in one atomic operation. Perfect for payouts and distributions.</p>
-            <span class="automation-status">✓ Active</span>
-            <button class="automation-setup-btn" onclick="alert('Batch transfer API ready at POST /webhooks/batch/transfers')">Setup</button>
-          </div>
-        </div>
-
-        <div class="integration-showcase">
-          <h3>📡 API Endpoints</h3>
-          <div class="api-endpoints">
-            <div class="endpoint">
-              <span class="endpoint-method">POST</span>/automation/recurring-transfers
-            </div>
-            <div class="endpoint">
-              <span class="endpoint-method">POST</span>/automation/dca-plans
-            </div>
-            <div class="endpoint">
-              <span class="endpoint-method">POST</span>/automation/price-alerts
-            </div>
-            <div class="endpoint">
-              <span class="endpoint-method">POST</span>/automation/savings-goals
-            </div>
-            <div class="endpoint">
-              <span class="endpoint-method">POST</span>/webhooks/subscribe
-            </div>
-            <div class="endpoint">
-              <span class="endpoint-method">POST</span>/webhooks/batch/transfers
-            </div>
-            <div class="endpoint">
-              <span class="endpoint-method">GET</span>/webhooks/events
-            </div>
-          </div>
+        <div class="perk-grid" id="automation-grid"></div>
+        <div class="disclaimer-box" style="margin-top:16px">
+          Automations run on FAWN's infrastructure and execute using your USDC balance. Same $0.01 flat fee applies per triggered action.
         </div>
       </div>
 
@@ -1493,6 +1331,15 @@ Available anytime for questions or issues</span>
     { cat:'Wireless', emoji:'📱', title:'T-Mobile Military Plans', copy:'Military phone plans for eligible service members and families.', url:'https://www.t-mobile.com/cell-phone-plans/military-discount-plans' },
     { cat:'Wireless', emoji:'📶', title:'Verizon Military Discount', copy:'Monthly wireless and home internet savings for eligible military and veterans.', url:'https://www.verizon.com/discounts/military/' },
     { cat:'Wireless', emoji:'☎️', title:'AT&T Military Discount', copy:'Wireless savings for eligible active duty, veterans, spouses, and dependents.', url:'https://www.att.com/offers/discount-program/military-discount/' }
+  ];
+
+  const AUTOMATION_SERVICES = [
+    { cat:'Transfers', emoji:'🔄', title:'Recurring Transfers', copy:'Auto-send USDC to friends daily, weekly, or monthly. Perfect for splitting rent or regular payments.', action:'recurring-transfers' },
+    { cat:'Investing', emoji:'💹', title:'DCA Investing', copy:'Dollar-cost averaging: automatically buy crypto at fixed intervals. Remove emotion from timing.', action:'dca-plans' },
+    { cat:'Alerts', emoji:'🚨', title:'Price Alerts', copy:'Get notified when tokens hit price thresholds you set.', action:'price-alerts' },
+    { cat:'Savings', emoji:'🎯', title:'Savings Goals', copy:'Auto-allocate a percentage of income to savings goals. Track progress toward your targets.', action:'savings-goals' },
+    { cat:'Developer', emoji:'🪝', title:'Webhooks', copy:'Real-time event delivery to your own systems. Subscribe to transfers, trades, and alerts.', action:'webhooks' },
+    { cat:'Payouts', emoji:'📦', title:'Batch Transfers', copy:'Send USDC to 100+ recipients in one atomic operation. Perfect for payouts and distributions.', action:'batch-transfers' }
   ];
 
   // ── BOOT ──
@@ -1910,6 +1757,38 @@ Available anytime for questions or issues</span>
     if (el) el.innerHTML = MILITARY_PERKS.map(perkCard).join('');
   }
 
+  function renderAutomation() {
+    const el = document.getElementById('automation-grid');
+    if (el) el.innerHTML = AUTOMATION_SERVICES.map(automationCard).join('');
+  }
+
+  function automationCard(a) {
+    const icon = /\p{Extended_Pictographic}/u.test(a.emoji || '') ? a.emoji : '✨';
+    return `<div class="perk-card">
+      <div class="perk-head">
+        <div>
+          <div class="perk-cat">${escHtml(a.cat)}</div>
+          <div class="perk-title">${escHtml(a.title)}</div>
+        </div>
+        <div class="perk-emoji">${escHtml(icon)}</div>
+      </div>
+      <div class="perk-copy">${escHtml(a.copy)}</div>
+      <div style="margin-top:14px"><button class="perk-link" style="border:none;cursor:pointer" onclick="setupAutomation('${escHtml(a.action)}')">Set up</button></div>
+    </div>`;
+  }
+
+  async function setupAutomation(action) {
+    showTab('automation');
+    if (action === 'webhooks') {
+      try {
+        const res = await authGet('/webhooks/subscriptions');
+        toast(`You have ${res.count || 0} active webhook(s). Full setup coming to this screen soon.`);
+      } catch { toast('Sign in required to view webhooks.'); }
+      return;
+    }
+    toast('Setup flow for this automation is coming soon — the API is live at /automation/' + action);
+  }
+
   function perkCard(p) {
     const icon = /\p{Extended_Pictographic}/u.test(p.emoji || '') ? p.emoji : '✨';
     return `<div class="perk-card">
@@ -2172,6 +2051,7 @@ Available anytime for questions or issues</span>
     if (name === 'transactions' && user?.wallet_initialized) loadTxns();
     if ((name === 'campus' || name === 'perks' || name === 'military') && token && !savingsLoaded) loadSavingsHub();
     if (name === 'military') renderMilitaryStatus();
+    if (name === 'automation') renderAutomation();
     if (name === 'investing' && token) loadInvesting();
     if (name === 'trading' && token) { loadTradeTokens(); loadTradeHistory(); }
     if (name === 'brief') loadBrief();
