@@ -1,7 +1,7 @@
 {
-  "name": "FAWN — Banking for Gen Z",
+  "name": "FAWN — Crypto Payments for Gen Z",
   "short_name": "FAWN",
-  "description": "Flat-fee banking with live financial news. Built for college students.",
+  "description": "Flat-fee self-custodial USDC wallet with live financial news. Built for college students.",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#0d0d0d",
@@ -21,7 +21,7 @@
       "purpose": "any maskable"
     }
   ],
-  "categories": ["finance", "banking"],
+  "categories": ["finance"],
   "screenshots": [],
   "shortcuts": [
     {

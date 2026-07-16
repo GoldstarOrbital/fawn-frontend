@@ -3,11 +3,11 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>FAWN — Banking for Gen Z Without the Fees</title>
-  <meta name="description" content="Send money to anyone instantly. No monthly fees. No hidden charges. Banking built for students." />
+  <title>FAWN — Crypto Payments for Gen Z Without the Fees</title>
+  <meta name="description" content="Send money to anyone instantly. No monthly fees. No hidden charges. Self-custodial USDC wallet built for students." />
   <meta name="theme-color" content="#00c896" />
-  <meta property="og:title" content="FAWN — Better Banking for Students" />
-  <meta property="og:description" content="Send money to anyone instantly. Zero fees. Better than banks." />
+  <meta property="og:title" content="FAWN — Money That Respects Students" />
+  <meta property="og:description" content="Send money to anyone instantly. Zero fees. Self-custodial, always." />
   <meta property="og:type" content="website" />
   <link rel="manifest" href="manifest.json" />
   <style>
@@ -530,7 +530,7 @@
 <!-- ── AUTH ── -->
 <div id="auth-screen">
   <div class="auth-logo">fawn</div>
-  <div class="auth-tagline">Banking + Investing. Instant transfers. Real stocks.</div>
+  <div class="auth-tagline">Crypto Payments + Investing. Instant transfers. Real stocks.</div>
 
   <!-- LOGIN -->
   <div class="auth-card" id="login-card">
@@ -555,6 +555,12 @@
       <label class="checkbox-row">
         <input type="checkbox" id="r-student" checked />
         I'm a current college student (free tier)
+      </label>
+    </div>
+    <div class="field">
+      <label class="checkbox-row" style="align-items:flex-start">
+        <input type="checkbox" id="r-agree" />
+        <span>I agree to FAWN's <a href="https://goldstarorbital.github.io/fawn-landing/terms.html" target="_blank" rel="noopener noreferrer" style="color:var(--green)">Terms</a> and <a href="https://goldstarorbital.github.io/fawn-landing/privacy.html" target="_blank" rel="noopener noreferrer" style="color:var(--green)">Privacy Policy</a></span>
       </label>
     </div>
     <button class="btn" id="reg-btn" onclick="register()">Create account</button>
@@ -1192,7 +1198,7 @@ Available anytime for questions or issues</span>
       <div class="tab" id="tab-investing">
         <div class="page-header">
           <h1>Investing</h1>
-          <p>Real stocks, ETFs, and crypto. Fractional shares starting at $1. Same $0.01 fee. One account for banking AND investing.</p>
+          <p>Real stocks, ETFs, and crypto. Fractional shares starting at $1. Same $0.01 fee. One account for payments AND investing.</p>
         </div>
         <div id="investing-body">
           <div style="color:var(--muted);font-size:0.9rem;padding:20px 0;text-align:center">Loading investing…</div>
@@ -1398,6 +1404,7 @@ Available anytime for questions or issues</span>
       if (!email.includes('@')) throw new Error('Please enter a valid email address');
       if (!password) throw new Error('Password is required');
       if (password.length < 8) throw new Error('Password must be at least 8 characters');
+      if (!document.getElementById('r-agree').checked) throw new Error('Please agree to the Terms and Privacy Policy to continue');
 
       const r = await post('/auth/register', {
         full_name: fullName,
