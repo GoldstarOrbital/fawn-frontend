@@ -837,12 +837,23 @@ Available anytime for questions or issues</span>
       <div id="funds-container" style="border-radius:12px;overflow:hidden;border:1px solid var(--border)"></div>
     </div>
 
-    <!-- Buy Crypto panel (heavyweight multi-provider on-ramp) -->
+    <!-- Buy Crypto panel: single production path via MoonPay -->
     <div id="funds-panel-buy" class="hidden">
-      <div id="onramp-provider-row" style="display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin-bottom:16px"></div>
+      <div id="onramp-status-box" style="background:rgba(0,200,150,0.1);border:1px solid rgba(0,200,150,0.3);border-radius:12px;padding:12px;font-size:0.8rem;color:var(--text);margin-bottom:16px">
+        <div style="font-weight:600;margin-bottom:4px">💳 Buy USDC with your card</div>
+        <div>Pay with card, Apple Pay, or Google Pay. USDC is sent directly to your FAWN wallet on Polygon — FAWN never sees or stores your card details.</div>
+      </div>
       <div id="onramp-widget-container" style="min-height:60px;border-radius:12px;overflow:hidden"></div>
+
+      <!-- Live deposit tracker: shown after the purchase widget is opened -->
+      <div id="deposit-tracker" class="hidden" style="margin-top:16px;background:var(--surface2);border:1px solid var(--border);border-radius:12px;padding:16px;text-align:center">
+        <div id="deposit-tracker-spinner" style="font-size:1.5rem;margin-bottom:8px">⏳</div>
+        <div id="deposit-tracker-title" style="font-weight:700;font-size:0.9rem;margin-bottom:4px">Watching your wallet for the deposit…</div>
+        <div id="deposit-tracker-sub" style="color:var(--muted);font-size:0.78rem">USDC usually arrives within a minute of completing checkout. We're checking on-chain via Alchemy every few seconds — this page will update automatically, you don't need to refresh.</div>
+      </div>
+
       <div style="font-size:0.7rem;color:var(--muted);text-align:center;margin-top:14px">
-        Each provider is a separate purchase — you pay them directly, and the USDC lands in your FAWN wallet on-chain. FAWN never holds your card or bank details. Providers with Apple Pay support (MoonPay, Ramp, Transak) offer it automatically inside their own checkout — no separate button needed.
+        This is a real purchase — you pay MoonPay directly, and the USDC lands in your FAWN wallet on-chain. FAWN never holds your card or bank details.
       </div>
     </div>
 
@@ -2810,16 +2821,11 @@ Available anytime for questions or issues</span>
     document.getElementById('add-funds-modal').style.display = 'none';
   }
 
-  // ── BUY CRYPTO (heavyweight multi-provider on-ramp) ──
+  // ── BUY CRYPTO: single production path via MoonPay ──
   let onrampConfig = null;
   let onrampConfigPromise = null;
-
-  const ONRAMP_PROVIDERS = [
-    { id: 'ramp', label: 'Ramp', emoji: '⚡' },
-    { id: 'coinbase', label: 'Coinbase', emoji: '🔵' },
-    { id: 'moonpay', label: 'MoonPay', emoji: '🌙' },
-    { id: 'transak', label: 'Transak', emoji: '🔁' },
-  ];
+  let depositWatchTimer = null;
+  let depositWatchStartedCents = null;
 
   function switchFundsTab(tab) {
     const tabs = ['address', 'buy', 'bank'];
@@ -2830,13 +2836,17 @@ Available anytime for questions or issues</span>
       btn.style.color = t === tab ? '#000' : 'var(--muted)';
     });
 
-    if (tab === 'buy') loadOnrampProviders();
+    if (tab === 'buy') loadMoonpayBuy();
     if (tab === 'bank') loadBankAccounts();
   }
 
-  async function loadOnrampProviders() {
-    const row = document.getElementById('onramp-provider-row');
-    row.innerHTML = '<div style="grid-column:1/-1;color:var(--muted);font-size:0.85rem;text-align:center;padding:12px 0">Loading providers…</div>';
+  async function loadMoonpayBuy() {
+    const container = document.getElementById('onramp-widget-container');
+    const walletAddr = localStorage.getItem('fawn_wallet_address');
+    if (!walletAddr) {
+      container.innerHTML = '<div style="padding:20px;color:var(--muted);text-align:center;font-size:0.9rem">⚠️ Create a wallet first before buying crypto.</div>';
+      return;
+    }
 
     if (!onrampConfigPromise) {
       onrampConfigPromise = fetch(API + '/onramp/config').then(r => r.json());
@@ -2844,94 +2854,23 @@ Available anytime for questions or issues</span>
     try {
       onrampConfig = await onrampConfigPromise;
     } catch {
-      row.innerHTML = '<div style="grid-column:1/-1;color:var(--muted);font-size:0.85rem;text-align:center;padding:12px 0">Could not load providers. Try again shortly.</div>';
-      return;
+      onrampConfig = null;
     }
 
-    const live = ONRAMP_PROVIDERS.filter(p => onrampConfig[p.id]?.enabled);
-    if (!live.length) {
-      row.innerHTML = '<div style="grid-column:1/-1;color:var(--muted);font-size:0.85rem;text-align:center;padding:12px 0">No buy-crypto providers are configured yet.</div>';
-      return;
-    }
-
-    row.innerHTML = live.map(p => `
-      <button id="onramp-btn-${p.id}" onclick="selectOnrampProvider('${p.id}')" style="padding:12px;border:1px solid var(--border);border-radius:10px;background:var(--surface2);color:var(--text);font-weight:700;font-size:0.88rem;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;transition:border-color 0.15s">
-        <span>${p.emoji}</span> ${p.label}
-      </button>
-    `).join('');
-
-    // Auto-select the first live provider
-    selectOnrampProvider(live[0].id);
-  }
-
-  function selectOnrampProvider(providerId) {
-    ONRAMP_PROVIDERS.forEach(p => {
-      const btn = document.getElementById(`onramp-btn-${p.id}`);
-      if (btn) btn.style.borderColor = p.id === providerId ? 'var(--green)' : 'var(--border)';
-    });
-
-    const walletAddr = localStorage.getItem('fawn_wallet_address');
-    const container = document.getElementById('onramp-widget-container');
-    if (!walletAddr) {
-      container.innerHTML = '<div style="padding:20px;color:var(--muted);text-align:center;font-size:0.9rem">⚠️ Create a wallet first before buying crypto.</div>';
-      return;
-    }
-
-    if (providerId === 'ramp') return _embedRamp(container, walletAddr);
-    if (providerId === 'coinbase') return _embedCoinbase(container, walletAddr);
-    if (providerId === 'moonpay') return _embedMoonpay(container, walletAddr);
-    if (providerId === 'transak') return _embedTransak(container, walletAddr);
-  }
-
-  function _onrampFallback(container, providerName, providerUrl, walletAddr) {
-    container.innerHTML = `
-      <div style="padding:20px;text-align:center">
-        <div style="color:var(--muted);font-size:0.85rem;margin-bottom:14px">Couldn't load the embedded ${providerName} widget. Buy there directly and send to your FAWN address:</div>
-        <div style="background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:8px;font-family:monospace;font-size:0.75rem;word-break:break-all;color:var(--text);margin-bottom:12px">${walletAddr}</div>
-        <a href="${providerUrl}" target="_blank" rel="noopener noreferrer" style="display:inline-block;padding:10px 16px;background:var(--green);color:#000;border-radius:8px;font-weight:700;text-decoration:none;font-size:0.85rem">Open ${providerName} →</a>
-      </div>`;
-  }
-
-  function _embedRamp(container, walletAddr) {
-    container.innerHTML = '<div style="padding:40px;text-align:center;color:var(--muted)">Loading Ramp…</div>';
-    let attempts = 0;
-    const tryInit = () => {
-      attempts++;
-      if (window.Ramp && window.Ramp.showWebWidget) {
-        container.innerHTML = '';
-        try {
-          window.Ramp.showWebWidget({
-            hostAppName: 'FAWN',
-            hostApiKey: onrampConfig?.ramp?.host_app_id || undefined,
-            swapAsset: 'USDC',
-            userAddress: walletAddr,
-            containerNode: container,
-          });
-          return;
-        } catch (err) { console.error('[Ramp] widget error', err); }
-      }
-      if (attempts < 30) return setTimeout(tryInit, 200);
-      _onrampFallback(container, 'Ramp', 'https://ramp.network', walletAddr);
-    };
-    tryInit();
-  }
-
-  async function _embedCoinbase(container, walletAddr) {
-    container.innerHTML = '<div style="padding:40px;text-align:center;color:var(--muted)">Preparing Coinbase Onramp…</div>';
-    try {
-      const data = await authPost('/onramp/coinbase/session-token', {});
+    if (!onrampConfig?.moonpay?.enabled) {
       container.innerHTML = `
         <div style="padding:20px;text-align:center">
-          <div style="color:var(--muted);font-size:0.85rem;margin-bottom:14px">Coinbase Onramp opens in a secure popup, pre-filled with your FAWN address.</div>
-          <button onclick="window.open('${data.onramp_url}', 'coinbase_onramp', 'width=460,height=700')" style="padding:12px 20px;background:var(--green);color:#000;border:none;border-radius:8px;font-weight:700;cursor:pointer;font-size:0.9rem">Continue with Coinbase →</button>
+          <div style="color:var(--muted);font-size:0.85rem;margin-bottom:14px">Buying crypto isn't configured yet. Ask the FAWN team to set MOONPAY_API_KEY.</div>
+          <div style="background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:8px;font-family:monospace;font-size:0.75rem;word-break:break-all;color:var(--text)">${walletAddr}</div>
         </div>`;
-    } catch (e) {
-      _onrampFallback(container, 'Coinbase', 'https://www.coinbase.com/onramp', walletAddr);
+      return;
     }
+
+    _embedMoonpay(container, walletAddr);
   }
 
   function _embedMoonpay(container, walletAddr) {
-    container.innerHTML = '<div style="padding:40px;text-align:center;color:var(--muted)">Loading MoonPay…</div>';
+    container.innerHTML = '<div style="padding:40px;text-align:center;color:var(--muted)">Loading secure checkout…</div>';
     let attempts = 0;
     const tryInit = () => {
       attempts++;
@@ -2951,42 +2890,76 @@ Available anytime for questions or issues</span>
             },
           });
           sdk.show();
+          _startDepositWatch();
           return;
         } catch (err) { console.error('[MoonPay] widget error', err); }
       }
       if (attempts < 30) return setTimeout(tryInit, 200);
-      _onrampFallback(container, 'MoonPay', 'https://www.moonpay.com', walletAddr);
+      container.innerHTML = `
+        <div style="padding:20px;text-align:center">
+          <div style="color:var(--muted);font-size:0.85rem;margin-bottom:14px">Couldn't load the checkout widget. Buy on moonpay.com directly and send to your FAWN address:</div>
+          <div style="background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:8px;font-family:monospace;font-size:0.75rem;word-break:break-all;color:var(--text);margin-bottom:12px">${walletAddr}</div>
+          <a href="https://www.moonpay.com" target="_blank" rel="noopener noreferrer" style="display:inline-block;padding:10px 16px;background:var(--green);color:#000;border-radius:8px;font-weight:700;text-decoration:none;font-size:0.85rem">Open MoonPay →</a>
+        </div>`;
     };
     tryInit();
   }
 
-  function _embedTransak(container, walletAddr) {
-    container.innerHTML = '<div style="padding:40px;text-align:center;color:var(--muted)">Loading Transak…</div>';
-    let attempts = 0;
-    const tryInit = () => {
-      attempts++;
-      const TransakSDK = window.transakSDK || window.Transak;
-      if (TransakSDK) {
-        container.innerHTML = '<div style="padding:12px;color:var(--muted);font-size:0.85rem;text-align:center">Transak will open in a secure window.</div>';
-        try {
-          const Ctor = TransakSDK.default || TransakSDK;
-          const transak = new Ctor({
-            apiKey: onrampConfig?.transak?.api_key,
-            environment: onrampConfig?.transak?.environment || 'STAGING',
-            defaultCryptoCurrency: 'USDC',
-            network: 'polygon',
-            walletAddress: walletAddr,
-            themeColor: '00c896',
-            hideMenu: true,
-          });
-          transak.init();
-          return;
-        } catch (err) { console.error('[Transak] widget error', err); }
+  // Polls the real ledger balance (which only moves once blockchain_monitor.py
+  // detects the on-chain deposit via Alchemy) so the user sees actual proof
+  // the purchase landed, not just "trust the widget said success."
+  async function _startDepositWatch() {
+    _stopDepositWatch();
+    try {
+      const d = await authGet('/wallet/balance');
+      depositWatchStartedCents = d.usdc_balance_cents;
+    } catch {
+      depositWatchStartedCents = null;
+    }
+
+    const tracker = document.getElementById('deposit-tracker');
+    tracker.classList.remove('hidden');
+    document.getElementById('deposit-tracker-spinner').textContent = '⏳';
+    document.getElementById('deposit-tracker-title').textContent = 'Watching your wallet for the deposit…';
+    document.getElementById('deposit-tracker-sub').textContent =
+      "USDC usually arrives within a minute of completing checkout. We're checking on-chain via Alchemy every few seconds — this page updates automatically.";
+
+    let elapsed = 0;
+    const intervalMs = 5000;
+    const timeoutMs = 10 * 60 * 1000; // stop watching after 10 minutes
+
+    depositWatchTimer = setInterval(async () => {
+      elapsed += intervalMs;
+      try {
+        const d = await authGet('/wallet/balance');
+        if (depositWatchStartedCents !== null && d.usdc_balance_cents > depositWatchStartedCents) {
+          const received = (d.usdc_balance_cents - depositWatchStartedCents) / 100;
+          document.getElementById('deposit-tracker-spinner').textContent = '✅';
+          document.getElementById('deposit-tracker-title').textContent = `$${received.toFixed(2)} received!`;
+          document.getElementById('deposit-tracker-sub').textContent =
+            'Confirmed on-chain and credited to your FAWN balance. Logged in your account activity.';
+          toast(`✓ $${received.toFixed(2)} USDC received`);
+          loadBalance();
+          _stopDepositWatch(true);
+        }
+      } catch { /* transient errors are fine, keep polling */ }
+
+      if (elapsed >= timeoutMs) {
+        document.getElementById('deposit-tracker-spinner').textContent = 'ℹ️';
+        document.getElementById('deposit-tracker-title').textContent = 'Still watching in the background';
+        document.getElementById('deposit-tracker-sub').textContent =
+          'Some card purchases take longer to settle. Your balance will update here automatically once it lands — feel free to close this and check back.';
+        _stopDepositWatch();
       }
-      if (attempts < 30) return setTimeout(tryInit, 200);
-      _onrampFallback(container, 'Transak', 'https://transak.com', walletAddr);
-    };
-    tryInit();
+    }, intervalMs);
+  }
+
+  function _stopDepositWatch(keepVisible) {
+    if (depositWatchTimer) { clearInterval(depositWatchTimer); depositWatchTimer = null; }
+    if (!keepVisible) {
+      const tracker = document.getElementById('deposit-tracker');
+      if (tracker) tracker.classList.add('hidden');
+    }
   }
 
   // ── BANK ACCOUNT LINKING (Plaid) ──
