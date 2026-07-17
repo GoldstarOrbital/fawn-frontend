@@ -1551,11 +1551,13 @@ Available anytime for questions or issues</span>
         id: t.transfer_id,
         type: t.type,
         amount: t.type === 'send' ? -1 * (t.amount + t.fee) : t.amount,
-        description: t.type === 'send' ? `Sent to ${t.counterparty.slice(0,6)}...${t.counterparty.slice(-4)}` : `Received from ${t.counterparty.slice(0,6)}...`,
+        description: t.type === 'send' ? `Sent to ${t.counterparty.slice(0,6)}...${t.counterparty.slice(-4)}` : `Received from ${t.counterparty.slice(0,6)}...${t.counterparty.slice(-4)}`,
         category: 'transfer',
         date: t.created_at ? t.created_at.split('T')[0] : '',
         status: t.status,
         memo: t.memo,
+        chain: t.chain,
+        txHash: t.tx_hash,
       }));
       setDashTx(allTxns.slice(0, 5));
       setFullTx(allTxns);
@@ -1598,15 +1600,22 @@ Available anytime for questions or issues</span>
     document.getElementById('full-tx').innerHTML = txns.length ? txns.map(txCard).join('') : emptyState('No transactions yet', 'Your activity will show up here once you start using your account.');
   }
 
+  const EXPLORERS = { polygon: 'https://polygonscan.com/tx/', base: 'https://basescan.org/tx/' };
+
   function txCard(t) {
     const credit = t.amount >= 0;
     const icon = t.emoji || (credit ? '⬇️' : '⬆️');
+    const chainBadge = t.chain ? `<span style="text-transform:capitalize;color:var(--muted)">${escHtml(t.chain)}</span> · ` : '';
+    const explorerBase = t.chain && EXPLORERS[t.chain];
+    const txLink = (t.txHash && explorerBase && !t.txHash.startsWith('balance-fallback'))
+      ? ` · <a href="${explorerBase}${t.txHash}" target="_blank" rel="noopener" style="color:var(--muted)">view on-chain ↗</a>`
+      : '';
     return `<div class="tx-item">
       <div class="tx-left">
         <div class="tx-icon ${credit ? 'credit' : 'debit'}">${icon}</div>
         <div>
           <div class="tx-name">${escHtml(t.description || 'Transaction')}</div>
-          <div class="tx-meta">${t.category ? `<span style="color:var(--muted)">${t.category}</span> · ` : ''}${t.date || '—'}</div>
+          <div class="tx-meta">${chainBadge}${t.category ? `<span style="color:var(--muted)">${t.category}</span> · ` : ''}${t.date || '—'}${txLink}</div>
         </div>
       </div>
       <div class="tx-right">
