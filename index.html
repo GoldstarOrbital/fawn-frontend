@@ -811,6 +811,10 @@ Available anytime for questions or issues</span>
         <li>Money arrives instantly</li>
       </ol>
     </div>
+
+    <button id="check-deposits-btn" onclick="checkForDeposits()" style="width:100%;margin-top:16px;padding:12px;background:var(--surface2);color:var(--text);border:1px solid var(--border);border-radius:12px;font-weight:700;cursor:pointer">
+      Check for deposits
+    </button>
   </div>
 </div>
 
@@ -2788,6 +2792,43 @@ Available anytime for questions or issues</span>
 
   function closeReceiveModal() {
     document.getElementById('receive-modal').style.display = 'none';
+  }
+
+  // Manual "I just sent crypto externally, check now" action — separate from
+  // the passive startAutoRefresh()/stopAutoRefresh() 60s polling and the
+  // MoonPay-purchase-specific _startDepositWatch()/_stopDepositWatch().
+  async function checkForDeposits() {
+    const btn = document.getElementById('check-deposits-btn');
+    if (btn) { btn.disabled = true; btn.textContent = 'Checking…'; }
+
+    // Capture the balance currently shown so we can compute how much came in.
+    const balEl = document.getElementById('balance-amt');
+    const before = balEl ? parseFloat(balEl.textContent.replace(/[^0-9.]/g, '')) : NaN;
+
+    try {
+      const d = await authPost('/wallet/sync-now', {});
+      const count = d.newly_credited_count || 0;
+      if (count > 0) {
+        let msg = 'New deposit found!';
+        if (typeof d.usdc_balance === 'number' && !Number.isNaN(before)) {
+          const delta = d.usdc_balance - before;
+          if (delta > 0) msg = `$${delta.toFixed(2)} received!`;
+        }
+        toast(msg);
+      } else {
+        toast('No new deposits found yet — they usually confirm within a minute of sending.');
+      }
+      loadBalance();
+      loadTxns();
+    } catch (e) {
+      toast(String(e.message || "Couldn't check for deposits right now — try again in a moment."));
+    } finally {
+      // Client-side throttle: keep the button disabled briefly after the call
+      // settles, as a courtesy since the backend also rate-limits this (10/min).
+      setTimeout(() => {
+        if (btn) { btn.disabled = false; btn.textContent = 'Check for deposits'; }
+      }, 4000);
+    }
   }
 
   function openAddFundsModal() {
