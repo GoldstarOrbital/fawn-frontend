@@ -3101,7 +3101,7 @@ Available anytime for questions or issues</span>
       const btn = event?.target;
       if (btn) { btn.disabled = true; btn.textContent = 'Sending…'; }
 
-      const result = await authPost('/wallet/transfers/send-unified', {
+      const result = await authPost('/transfers/send-unified', {
         recipient: recipient,
         amount_cents: Math.round(amount * 100),
         memo: memo || undefined
