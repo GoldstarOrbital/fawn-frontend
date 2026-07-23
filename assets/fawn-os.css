@@ -1,4 +1,10 @@
 /* FAWN OS layer: tactile surfaces and motion that feel native to the product. */
+.fawn-image,
+.buck-art {
+  background: transparent !important;
+  mix-blend-mode: multiply;
+}
+
 .fawn-custody-card {
   position: relative;
   display: grid;
