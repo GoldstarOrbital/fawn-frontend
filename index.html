@@ -75,6 +75,7 @@
 
     .brand-lockup { display:flex; align-items:center; gap:12px; }
     .brand-lockup .fawn-mark { width:42px; height:42px; color:var(--green); filter: drop-shadow(0 0 14px rgba(0,200,150,0.34)); }
+    .brand-lockup .fawn-image { object-fit:contain; border-radius:8px; mix-blend-mode:screen; }
     .brand-lockup .fawn-mark path { fill:none; stroke:currentColor; stroke-width:2.3; stroke-linecap:round; stroke-linejoin:round; }
     .auth-logo { font-size: 2.8rem; font-weight: 800; color: var(--green); letter-spacing: -1px; margin-bottom: 6px; }
     .auth-tagline { color: var(--muted); font-size: 0.92rem; margin-bottom: 40px; }
@@ -136,6 +137,7 @@
     .sidebar-logo { font-size: 1.7rem; font-weight: 800; color: var(--green); letter-spacing: -0.5px; margin-bottom: 36px; padding: 0 8px; }
     .sidebar-brand { display:flex; align-items:center; gap:9px; }
     .sidebar-brand .fawn-mark { width:27px; height:27px; color:var(--green); }
+    .sidebar-brand .fawn-image { object-fit:contain; border-radius:6px; mix-blend-mode:screen; }
     .sidebar-brand .fawn-mark path { fill:none; stroke:currentColor; stroke-width:2.5; stroke-linecap:round; stroke-linejoin:round; }
 
     .nav-section { font-size: 0.68rem; font-weight: 700; text-transform: uppercase; letter-spacing: 1.5px; color: #444; padding: 0 8px; margin: 16px 0 8px; }
@@ -421,6 +423,7 @@
     .buck-orbit::before { content:""; position:absolute; width:7px; height:7px; border-radius:50%; background:var(--green); top:8px; left:28px; box-shadow:0 0 18px var(--green); }
     .buck-svg { width:112px; height:135px; color:var(--green); transform:translateZ(25px) rotateY(-8deg); filter:drop-shadow(0 14px 16px rgba(0,0,0,0.28)); animation:buck-float 4.5s ease-in-out infinite; }
     .buck-svg path { fill:none; stroke:currentColor; stroke-width:2.25; stroke-linecap:round; stroke-linejoin:round; }
+    .buck-art { position:relative; z-index:1; width:145px; height:145px; object-fit:contain; filter:drop-shadow(0 14px 16px rgba(0,0,0,0.3)); transform:translateZ(25px) rotateY(-8deg); animation:buck-float 4.5s ease-in-out infinite; }
     .buck-tag { position:absolute; right:1px; bottom:6px; color:var(--muted); font-size:0.62rem; letter-spacing:1.2px; text-transform:uppercase; }
     @keyframes buck-float { 0%,100%{transform:translate3d(0,3px,25px) rotateY(-8deg)} 50%{transform:translate3d(0,-7px,25px) rotateY(8deg)} }
     @keyframes orbit-breathe { 0%,100%{transform:rotate(-18deg) scale(0.96); opacity:.65} 50%{transform:rotate(-10deg) scale(1.04); opacity:1} }
@@ -566,7 +569,7 @@
 <div id="auth-screen">
   <a href="https://goldstarorbital.github.io/fawn-landing/" style="text-decoration:none">
     <div class="brand-lockup">
-      <svg class="fawn-mark" viewBox="0 0 48 48" aria-hidden="true"><path d="M24 42c-7-8-11-15-8-24 1-4 4-7 8-9 4 2 7 5 8 9 3 9-1 16-8 24Z"/><path d="M18 17 11 9M16 21 7 18M30 17l7-8M32 21l9-3M24 9V4"/><path d="M20 28c2 2 6 2 8 0"/></svg>
+      <img class="fawn-mark fawn-image" src="assets/fawn-quarter-real.png" alt="" aria-hidden="true" />
       <div class="auth-logo">fawn</div>
     </div>
   </a>
@@ -990,7 +993,7 @@ Available anytime for questions or issues</span>
     <aside class="sidebar">
       <a href="https://goldstarorbital.github.io/fawn-landing/" style="text-decoration:none" title="Back to fawn.com">
         <div class="sidebar-logo sidebar-brand">
-          <svg class="fawn-mark" viewBox="0 0 48 48" aria-hidden="true"><path d="M24 42c-7-8-11-15-8-24 1-4 4-7 8-9 4 2 7 5 8 9 3 9-1 16-8 24Z"/><path d="M18 17 11 9M16 21 7 18M30 17l7-8M32 21l9-3M24 9V4"/><path d="M20 28c2 2 6 2 8 0"/></svg>
+          <img class="fawn-mark fawn-image" src="assets/fawn-quarter-real.png" alt="" aria-hidden="true" />
           <span>fawn</span>
         </div>
       </a>
@@ -1166,7 +1169,7 @@ Available anytime for questions or issues</span>
           </div>
           <div class="buck-stage" aria-hidden="true">
             <div class="buck-orbit"></div>
-            <svg class="buck-svg" viewBox="0 0 120 150"><path d="M60 137c-17-19-27-37-22-59 2-10 9-18 22-23 13 5 20 13 22 23 5 22-5 40-22 59Z"/><path d="M45 61 27 41M42 72 20 65M75 61 93 41M78 72l22-7M60 55V26M49 43 37 23M71 43 83 23"/><path d="M50 91c6 5 14 5 20 0M53 106h14"/></svg>
+            <img class="buck-art" src="assets/buck-dollar-real.png" alt="" />
             <span class="buck-tag">the FAWN field</span>
           </div>
         </div>
