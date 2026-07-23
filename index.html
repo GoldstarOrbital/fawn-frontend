@@ -2461,42 +2461,61 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
   }
 
   // ── DAILY BRIEF (AI podcast) ──
+  const STATIC_DAILY_BRIEF = {
+    episode_date: '2026-07-23',
+    title: 'AI spending hits markets as oil and jobs data shape the rate debate',
+    description: "AI capital spending rattles Alphabet and Tesla investors, oil above $100 adds inflation pressure, U.S. jobless claims fall sharply, Washington debates AI transparency, and OpenAI's reported Hugging Face incident raises safety questions.",
+    audio_url: 'https://goldstarorbital.github.io/fawn-landing/podcast/2026-07-23/fawn-daily-news-2026-07-23.mp3',
+    episode_url: 'https://goldstarorbital.github.io/fawn-landing/podcast/2026-07-23/',
+    est_duration_seconds: 300,
+    script: 'Today: AI spending is being priced like infrastructure, not magic growth. Markets sold off as Alphabet and Tesla investors focused on capital spending, Brent crude briefly moved above $100, U.S. jobless claims fell to 187,000, and Washington debated AI model transparency rules. The full FAWN Daily Brief includes the audio, transcript, story mix tracker, disclaimer, and source links.',
+    disclaimer: 'Informational news only; not investment, financial, legal, or tax advice.'
+  };
+
+  function resolveBriefAudioUrl(e) {
+    if (!e.audio_url) return '';
+    return /^https?:\/\//i.test(e.audio_url) ? e.audio_url : API + e.audio_url;
+  }
+
+  function renderBriefEpisode(body, disc, e, sourceLabel) {
+    const mins = Math.max(1, Math.round((e.est_duration_seconds || 0) / 60));
+    const audioUrl = resolveBriefAudioUrl(e);
+    const audio = audioUrl
+      ? `<audio controls preload="none" style="width:100%;margin:14px 0" src="${_esc(audioUrl)}"></audio>`
+      : '<div style="font-size:0.8rem;color:var(--muted);margin:12px 0">Audio is still rendering - transcript below.</div>';
+    const episodeLink = e.episode_url
+      ? `<a href="${_esc(e.episode_url)}" target="_blank" rel="noopener" style="display:inline-flex;margin-top:14px;color:var(--green);font-weight:700;text-decoration:none">Full transcript and sources -></a>`
+      : '';
+    body.innerHTML = `
+        <div style="background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:22px">
+          <div style="font-size:0.72rem;color:var(--green);text-transform:uppercase;letter-spacing:1px;font-weight:700;margin-bottom:6px">${_esc(e.episode_date)} &middot; ~${mins} min &middot; ${_esc(sourceLabel)}</div>
+          <div style="font-weight:800;font-size:1.15rem;margin-bottom:4px">${_esc(e.title)}</div>
+          ${e.description ? `<div style="color:var(--muted);font-size:0.88rem;line-height:1.6;margin-bottom:10px">${_esc(e.description)}</div>` : ''}
+          ${audio}
+          <div style="font-size:0.7rem;color:var(--muted);text-transform:uppercase;letter-spacing:1px;margin:14px 0 8px">Transcript</div>
+          <div style="font-size:0.92rem;line-height:1.6;color:var(--text);white-space:pre-wrap;max-height:420px;overflow:auto;padding-right:6px">${_esc(e.script || '')}</div>
+          ${episodeLink}
+        </div>`;
+    if (disc && e.disclaimer) { disc.textContent = e.disclaimer; disc.style.display = 'block'; }
+  }
+
   async function loadBrief() {
     const body = document.getElementById('brief-body');
     const disc = document.getElementById('brief-disc');
-    body.innerHTML = '<div style="color:var(--muted);font-size:0.9rem;padding:20px 0;text-align:center">Loading today\'s brief…</div>';
+    body.innerHTML = '<div style="color:var(--muted);font-size:0.9rem;padding:20px 0;text-align:center">Loading today\'s brief...</div>';
     try {
       const r = await fetch(API + '/podcast/latest');
       if (r.status === 404) {
-        body.innerHTML = `<div style="background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:28px;text-align:center">
-          <div style="font-size:2rem;margin-bottom:8px">🎧</div>
-          <div style="font-weight:700;margin-bottom:6px">No brief yet</div>
-          <div style="color:var(--muted);font-size:0.9rem">The first FAWN Daily Brief drops at 3:30 AM Pacific. Check back in the morning.</div>
-        </div>`;
-        if (disc) disc.style.display = 'none';
+        renderBriefEpisode(body, disc, STATIC_DAILY_BRIEF, 'latest static episode');
         return;
       }
       if (!r.ok) throw new Error('Error ' + r.status);
       const e = await r.json();
-      const mins = Math.max(1, Math.round((e.est_duration_seconds || 0) / 60));
-      const audio = e.audio_available && e.audio_url
-        ? `<audio controls preload="none" style="width:100%;margin:14px 0" src="${API}${_esc(e.audio_url)}"></audio>`
-        : '<div style="font-size:0.8rem;color:var(--muted);margin:12px 0">Audio is still rendering — transcript below.</div>';
-      body.innerHTML = `
-        <div style="background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:22px">
-          <div style="font-size:0.72rem;color:var(--green);text-transform:uppercase;letter-spacing:1px;font-weight:700;margin-bottom:6px">${_esc(e.episode_date)} · ~${mins} min</div>
-          <div style="font-weight:800;font-size:1.15rem;margin-bottom:4px">${_esc(e.title)}</div>
-          ${audio}
-          <div style="font-size:0.7rem;color:var(--muted);text-transform:uppercase;letter-spacing:1px;margin:14px 0 8px">Transcript</div>
-          <div style="font-size:0.92rem;line-height:1.6;color:var(--text);white-space:pre-wrap;max-height:420px;overflow:auto;padding-right:6px">${_esc(e.script)}</div>
-        </div>`;
-      if (disc && e.disclaimer) { disc.textContent = e.disclaimer; disc.style.display = 'block'; }
+      renderBriefEpisode(body, disc, e, 'backend episode');
     } catch (e) {
-      body.innerHTML = '<div class="disclaimer-box">Couldn\'t load the brief right now. Please try again later.</div>';
-      if (disc) disc.style.display = 'none';
+      renderBriefEpisode(body, disc, STATIC_DAILY_BRIEF, 'latest static episode');
     }
   }
-
   // ── CRYPTO WALLET CREATION (CRYPTO-NATIVE ARCHITECTURE) ──
 
   async function createWalletCustodial() {
