@@ -839,11 +839,20 @@ Available anytime for questions or issues</span>
       <button onclick="closeReceiveModal()" style="background:none;border:none;font-size:1.5rem;cursor:pointer;color:var(--muted)">✕</button>
     </div>
 
+    <div id="receive-profile" class="receive-profile">
+      <div id="receive-avatar" class="receive-avatar">?</div>
+      <div>
+        <strong id="receive-username">Your FAWN profile</strong>
+        <span id="receive-profile-label">Scan to send money</span>
+      </div>
+    </div>
+
     <div style="text-align:center;margin-bottom:24px">
       <div style="font-size:0.8rem;color:var(--muted);margin-bottom:12px;text-transform:uppercase">Your Wallet Address</div>
-      <div id="receive-qr" style="background:white;padding:16px;border-radius:12px;display:inline-block;margin-bottom:16px">
+      <div id="receive-qr" class="receive-qr-shell">
         <svg width="200" height="200" id="qr-code"></svg>
       </div>
+      <div id="receive-qr-caption" class="receive-qr-caption">Anyone who scans this can send you USDC.</div>
     </div>
 
     <div style="background:var(--surface2);border:1px solid var(--border);border-radius:12px;padding:14px;margin-bottom:16px">
@@ -1563,6 +1572,8 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
     try {
       user = await authGet('/auth/me');
     } catch { logout(); return; }
+
+    handlePayLink();
 
     // Sidebar
     const initials = user.full_name.split(' ').map(w => w[0]).join('').slice(0,2).toUpperCase();
@@ -2785,8 +2796,10 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
         document.getElementById('seed-btn').style.display = 'none';
         document.getElementById('send-btn').style.display = 'none';
       }
+      return userProfile;
     } catch (e) {
       console.log('Failed to load wallet:', e);
+      return user || null;
     }
   }
 
@@ -2941,14 +2954,15 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
     document.getElementById('send-error').classList.add('hidden');
   }
 
-  function openReceiveModal() {
+  async function openReceiveModal() {
     document.getElementById('receive-modal').style.display = 'flex';
-    updateSettingsDisplay();
+    const profile = await updateSettingsDisplay();
 
     // Populate wallet address and generate QR code
-    if (walletAddress) {
-      document.getElementById('receive-address').value = walletAddress;
-      generateQRCode(walletAddress);
+    const address = profile?.crypto_wallet_address || walletAddress;
+    if (address) {
+      document.getElementById('receive-address').value = address;
+      generateQRCode(address, profile);
     }
   }
 
@@ -3300,20 +3314,37 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
   // Generated entirely client-side (see the vendored qrcode-generator
   // library above) -- the wallet address never leaves the browser, unlike
   // the previous implementation which sent it to a third-party image API.
-  function generateQRCode(address) {
+  function buildReceivePayload(profile, address) {
+    const username = String(profile?.username || '').trim().replace(/^@/, '');
+    if (!username) return address;
+    return `https://goldstarorbital.github.io/fawn-frontend/?pay=${encodeURIComponent(username)}`;
+  }
+
+  function generateQRCode(address, profile) {
     if (!address) return;
     const container = document.getElementById('receive-qr');
     if (!container) return;
 
     try {
-      const qr = qrcode(0, 'M'); // type 0 = auto-size, error correction level M
-      qr.addData(address);
+      const qr = qrcode(0, 'H'); // high correction leaves room for the avatar badge
+      qr.addData(buildReceivePayload(profile, address));
       qr.make();
       const targetSize = 200;
       const cellSize = Math.max(1, Math.floor(targetSize / (qr.getModuleCount() + 8)));
       container.innerHTML = qr.createSvgTag({ cellSize, margin: cellSize * 4, alt: 'USDC Wallet Address QR Code' });
       const svg = container.querySelector('svg');
       if (svg) { svg.style.display = 'block'; svg.style.borderRadius = '8px'; }
+      const badge = document.createElement('div');
+      badge.className = 'receive-qr-avatar';
+      setAvatarElement(badge, profile || user);
+      container.appendChild(badge);
+      setAvatarElement(document.getElementById('receive-avatar'), profile || user);
+      const username = String(profile?.username || '').trim().replace(/^@/, '');
+      document.getElementById('receive-username').textContent = username ? `@${username}` : 'Your FAWN profile';
+      document.getElementById('receive-profile-label').textContent = username ? 'Scan to send money' : 'Share your wallet QR';
+      document.getElementById('receive-qr-caption').textContent = username
+        ? `Scan to send USDC directly to @${username}.`
+        : 'Anyone who scans this can send you USDC.';
     } catch (e) {
       console.error('[qr] generation failed', e);
       container.innerHTML = '<div style="width:200px;height:200px;display:flex;align-items:center;justify-content:center;color:#666;font-size:0.8rem;text-align:center;padding:8px">QR code unavailable — use the address below</div>';
@@ -3545,6 +3576,17 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
   // Register service worker for PWA install support
   if ('serviceWorker' in navigator) {
     navigator.serviceWorker.register('sw.js').catch(() => {});
+  }
+
+  function handlePayLink() {
+    const pay = new URLSearchParams(window.location.search).get('pay');
+    if (!pay) return;
+    const username = String(pay).trim().replace(/^@/, '');
+    if (!/^[a-z0-9_]{3,30}$/i.test(username)) return;
+    const recipient = document.getElementById('send-recipient');
+    if (recipient) recipient.value = `@${username}`;
+    openSendModal();
+    toast(`Ready to send to @${username}`);
   }
 
   document.querySelectorAll('[data-fawn-tilt]').forEach((card) => {
