@@ -799,7 +799,7 @@ Available anytime for questions or issues</span>
     <div class="field">
       <label>Amount (USD)</label>
       <input type="number" id="send-amount" placeholder="10.00" step="0.01" min="0" />
-      <div style="font-size:0.75rem;color:var(--muted);margin-top:4px">Fee: $0.01 for friends, $0.50 for external • Instant delivery</div>
+      <div style="font-size:0.75rem;color:var(--muted);margin-top:4px">Fee: $0.01 for FAWN friends, $0.50 for external wallets • USDC settles on Polygon or Base when network gas is available</div>
     </div>
 
     <div class="field">
@@ -841,9 +841,10 @@ Available anytime for questions or issues</span>
       <div style="font-weight:600;margin-bottom:4px">💡 How to receive</div>
       <ol style="margin:0;padding-left:20px">
         <li>Share your address above with anyone</li>
-        <li>They send USDC to this address</li>
-        <li>Money arrives instantly</li>
+        <li>They send native USDC on Polygon or Base to this address</li>
+        <li>FAWN detects the deposit and credits your balance after confirmation</li>
       </ol>
+      <div style="margin-top:10px;color:var(--muted);font-size:0.75rem">Do not send other tokens or use another network. The same address works on both supported networks.</div>
     </div>
 
     <button id="check-deposits-btn" onclick="checkForDeposits()" style="width:100%;margin-top:16px;padding:12px;background:var(--surface2);color:var(--text);border:1px solid var(--border);border-radius:12px;font-weight:700;cursor:pointer">
@@ -2843,7 +2844,7 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
     container.innerHTML = `
       <div style="padding:20px;text-align:center">
         <div style="background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:16px;margin-bottom:16px;text-align:left;font-size:0.9rem">
-          <div style="margin-bottom:8px;color:var(--muted);font-size:0.75rem;text-transform:uppercase;letter-spacing:0.6px">Your FAWN address (Polygon)</div>
+          <div style="margin-bottom:8px;color:var(--muted);font-size:0.75rem;text-transform:uppercase;letter-spacing:0.6px">Your FAWN address (Polygon or Base)</div>
           <div style="background:var(--surface);border:1px solid var(--border);border-radius:6px;padding:8px;font-family:monospace;font-size:0.75rem;word-break:break-all;color:var(--text);margin-bottom:12px">
             ${walletAddr}
           </div>
@@ -2852,9 +2853,9 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
           </button>
         </div>
         <div style="background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:12px;font-size:0.85rem;color:var(--muted);text-align:left">
-          <div style="margin-bottom:8px">✓ Send USDC on Polygon from any wallet or exchange</div>
-          <div style="margin-bottom:8px">✓ Funds are detected automatically and credited within minutes</div>
-          <div>✓ Bank-linked funding is coming soon to this screen</div>
+          <div style="margin-bottom:8px">✓ Send native USDC on Polygon or Base from any wallet or exchange</div>
+          <div style="margin-bottom:8px">✓ Funds are detected automatically and credited after confirmation</div>
+          <div>✓ Use Check for deposits for an immediate sync after sending</div>
         </div>
       </div>
     `;
