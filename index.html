@@ -1847,6 +1847,8 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
   let newsInFlight = false;
   let newsSeen = new Set(JSON.parse(localStorage.getItem('fawn_news_seen') || '[]'));
   let newsNotifications = localStorage.getItem('fawn_news_notifications') === '1';
+  let newsOpenIdentity = null;
+  let newsRenderSignature = '';
 
   function addKeyword() {
     const input = document.getElementById('keyword-input');
@@ -1952,8 +1954,10 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
     if (!articles.length) {
       return '<div style="color:var(--muted);font-size:0.9rem;padding:24px 0;text-align:center">No stories matched your filters — try different keywords or clear all chips.</div>';
     }
-    return articles.map((a, i) => `
-      <div class="article-card" id="article-${i}" style="background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:18px 20px;margin-bottom:10px;cursor:pointer;transition:border-color 0.15s" onclick="toggleArticle(${i})">
+    return articles.map((a, i) => {
+      const identity = articleIdentity(a);
+      return `
+      <div class="article-card" id="article-${i}" data-article-identity="${escHtml(identity)}" role="button" tabindex="0" style="background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:18px 20px;margin-bottom:10px;cursor:pointer;transition:border-color 0.15s" onclick="toggleArticle(${i})" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();toggleArticle(${i})}">
         <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:12px">
           <div style="flex:1">
             <div style="font-size:0.88rem;font-weight:600;line-height:1.45;margin-bottom:6px">${escHtml(a.title)}</div>
@@ -1967,7 +1971,16 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
         <div id="article-body-${i}" style="display:none;margin-top:12px;padding-top:12px;border-top:1px solid var(--border);font-size:0.875rem;line-height:1.7;color:#ccc">
           ${escHtml(a.summary)}
         </div>
-      </div>`).join('');
+      </div>`;
+    }).join('');
+  }
+
+  function articleIdentity(article) {
+    return `${article.source || ''}|${article.title || ''}|${article.pub_date || ''}`;
+  }
+
+  function newsSignature(articles) {
+    return articles.map(a => `${articleIdentity(a)}|${a.summary || ''}`).join('\\n');
   }
 
   function toggleArticle(i) {
@@ -1978,6 +1991,7 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
     body.style.display = open ? 'block' : 'none';
     chev.textContent = open ? '▴' : '▾';
     card.style.borderColor = open ? 'var(--green)' : 'var(--border)';
+    newsOpenIdentity = open ? card.dataset.articleIdentity : null;
   }
 
   async function fetchNews(manual = false) {
@@ -2007,7 +2021,15 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
       notifyNewArticles(articles, manual);
       if (countEl) countEl.textContent = articles.length ? `- ${articles.length} stories${query ? ` for "${query}"` : ''}` : '';
       if (signal) signal.textContent = 'Multiple sources - 1s live refresh';
-      feed.innerHTML = renderArticles(articles);
+      const signature = newsSignature(articles);
+      if (signature !== newsRenderSignature) {
+        newsRenderSignature = signature;
+        feed.innerHTML = renderArticles(articles);
+        if (newsOpenIdentity) {
+          const openIndex = articles.findIndex(a => articleIdentity(a) === newsOpenIdentity);
+          if (openIndex >= 0) toggleArticle(openIndex);
+        }
+      }
       feed.style.opacity = '1';
 
       const disc = document.getElementById('news-disc');
