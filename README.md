@@ -1,112 +1,62 @@
 # FAWN Frontend
 
-**Fintech All-in-One Wallet** — React/TypeScript UI for onboarding, banking, cards, investing.
+Custodial USDC payments + investing web app for college students. This is the
+**live, shipped frontend**: a single-file vanilla-JavaScript PWA with no build
+step, no framework, and no bundler.
 
-## Quick Start
+## What this actually is
+
+- **`index.html`** — the entire app: markup, CSS (custom-property design
+  tokens, dark/light/forest/auto themes), and all JavaScript. It talks
+  directly to the FAWN backend (FastAPI on Railway) at
+  `https://web-production-13d5b.up.railway.app`.
+- **`manifest.json` + `sw.js` + `icon-192.png` / `icon-512.png`** — PWA
+  install support (installable on iOS/Android/desktop).
+- **`assets/`** — brand mascot art (Penny the fawn, Buck the dollar) shared
+  with the marketing site.
+- **`funding-guide.html`**, **`landing.html`**, **`admin-revenue.html`** —
+  standalone auxiliary pages.
+
+There is **no** React, TypeScript, Vite, Tailwind, Redux, Zustand, or Sentry
+here, and no `npm install` is needed. `package.json` exists only to mark the
+directory private for tooling; it declares no dependencies.
+
+## Running locally
+
+Serve the directory with any static file server (a plain `file://` open works
+for most of the app too):
 
 ```bash
-npm install
-npm run dev
+python -m http.server 8080
+# then open http://localhost:8080
 ```
 
-## Architecture
+The app points at the production backend by default — change the `API`
+constant at the top of the main `<script>` block in `index.html` to target a
+local backend.
 
-```
-src/
-├── components/
-│   ├── Auth/
-│   │   ├── Login.tsx
-│   │   ├── Register.tsx
-│   │   └── KYCFlow.tsx
-│   ├── Dashboard/
-│   │   ├── Dashboard.tsx
-│   │   ├── Balance.tsx
-│   │   └── Transactions.tsx
-│   ├── Cards/
-│   │   ├── CardManager.tsx
-│   │   ├── CardCreation.tsx
-│   │   └── TokenizationFlow.tsx
-│   ├── Transfers/
-│   │   ├── ACHTransfer.tsx
-│   │   ├── WireTransfer.tsx
-│   │   └── TransferHistory.tsx
-│   ├── Investing/
-│   │   ├── BuyShares.tsx
-│   │   ├── Portfolio.tsx
-│   │   └── AutoInvest.tsx
-│   └── Common/
-│       ├── Header.tsx
-│       ├── Sidebar.tsx
-│       └── Modal.tsx
-├── pages/
-│   ├── LoginPage.tsx
-│   ├── DashboardPage.tsx
-│   ├── CardsPage.tsx
-│   ├── TransfersPage.tsx
-│   ├── InvestingPage.tsx
-│   └── CompliancePage.tsx
-├── services/
-│   ├── api.ts         # API client
-│   ├── auth.ts        # Auth service
-│   ├── accounts.ts
-│   ├── cards.ts
-│   ├── transfers.ts
-│   ├── investing.ts
-│   └── compliance.ts
-├── hooks/
-│   ├── useAuth.ts
-│   ├── useAccount.ts
-│   ├── useTransfers.ts
-│   └── useInvesting.ts
-├── store/             # Redux (optional)
-├── styles/
-│   ├── globals.css
-│   ├── theme.css
-│   └── components.css
-├── types/
-│   ├── index.ts       # Shared types
-│   └── api.ts         # API types
-├── App.tsx
-└── main.tsx
-```
+## Architecture notes
 
-## Key Features
+- **Auth**: JWT from `POST /auth/login` / `/auth/register`, stored in
+  `localStorage` (`fawn_token`), sent as a Bearer header by the `authGet` /
+  `authPost` helpers.
+- **Custody**: FAWN wallets are custodial — the backend creates the wallet,
+  holds the encrypted key, and signs sends. The UI never handles private
+  keys for custodial wallets.
+- **Feature gating**: features whose backends are not fully live (token
+  swaps, automations) are explicitly gated as "coming soon" in the UI rather
+  than simulated. Do not add UI that fakes a money movement.
+- **QR codes**: generated fully client-side by a vendored copy of
+  `qrcode-generator` (MIT) — wallet addresses never leave the browser.
+- **Third-party SDKs** (loaded from CDNs at runtime): MoonPay (buy-crypto
+  on-ramp), Plaid Link (bank account linking), Ramp/Transak (present but
+  MoonPay is the production buy path).
 
-- **Onboarding**: Email registration → KYC (Alloy) → Reg E acceptance
-- **Dashboard**: Real-time balance, transaction history, alerts
-- **Debit Card**: Create virtual/physical, tokenize (Apple/Google Pay), freeze/unfreeze, dispute
-- **Transfers**: ACH, wires, book transfers, transfer history
-- **Investing**: Buy fractional shares, auto-invest, portfolio dashboard
-- **Compliance**: KYC status, AML alerts, Reg E disclosures
+## Conventions
 
-## Technologies
-
-- **React 18** with TypeScript
-- **Vite** for fast builds
-- **TailwindCSS** for styling
-- **React Query** for server state
-- **React Router** for navigation
-- **Axios** for API calls
-
-## Environment Variables
-
-```
-VITE_API_URL=http://localhost:8000
-VITE_SENTRY_DSN=...
-```
-
-## Status
-
-- [ ] Frontend scaffold
-- [ ] Auth UI (login, register)
-- [ ] KYC flow (Alloy redirect)
-- [ ] Dashboard
-- [ ] Card management UI
-- [ ] Transfer UI
-- [ ] Investing UI
-- [ ] Compliance UI
-- [ ] Mobile responsive
-
----
-
-**Team:** 1 full-stack | **Launch:** Aug 13
+- Design tokens live in `:root` (`--green`, `--surface`, `--fs-*` type
+  scale, etc.). Prefer tokens + classes over new inline one-off styles.
+- All user-visible strings must describe what the product actually does
+  today — `KEY_MESSAGING_REFERENCE.md` is the source of truth for taglines
+  and claims.
+- Toasts: `toast(msg)` or `toast(msg, { type: 'success' | 'error' | 'info' })`.

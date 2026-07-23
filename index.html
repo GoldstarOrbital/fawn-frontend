@@ -4,12 +4,14 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>FAWN — Crypto Payments for Gen Z Without the Fees</title>
-  <meta name="description" content="Send money to anyone instantly. No monthly fees. No hidden charges. Self-custodial USDC wallet built for students." />
+  <meta name="description" content="Send money to anyone instantly. No monthly fees. No hidden charges. A secure USDC account built for students." />
   <meta name="theme-color" content="#00c896" />
   <meta property="og:title" content="FAWN — Money That Respects Students" />
-  <meta property="og:description" content="Send money to anyone instantly. Zero fees. Self-custodial, always." />
+  <meta property="og:description" content="Send money to anyone instantly. Just $0.01 per transfer. Built for students." />
   <meta property="og:type" content="website" />
   <link rel="manifest" href="manifest.json" />
+  <link rel="apple-touch-icon" href="icon-192.png" />
+  <link rel="icon" type="image/png" sizes="192x192" href="icon-192.png" />
   <style>
     :root {
       --green: #00c896;
@@ -60,10 +62,32 @@
     html { scroll-behavior: smooth; }
     body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; }
 
+    /* ── TYPE SCALE ──
+       5 steps; prefer these over one-off font sizes in new code. */
+    :root {
+      --fs-xs: 0.75rem;   /* labels, meta, badges */
+      --fs-sm: 0.85rem;   /* secondary copy */
+      --fs-md: 0.95rem;   /* body, buttons */
+      --fs-lg: 1.3rem;    /* section/modal titles */
+      --fs-xl: 1.6rem;    /* page headers, stats */
+    }
+
     /* ── UTILS ── */
     .hidden { display: none !important; }
     .green { color: var(--green); }
     .muted { color: var(--muted); }
+    .sr-only {
+      position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px;
+      overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0;
+    }
+
+    /* ── ACCESSIBILITY: visible keyboard focus everywhere ── */
+    :focus-visible {
+      outline: 2px solid var(--green);
+      outline-offset: 2px;
+      border-radius: 6px;
+    }
+    .nav-item:focus-visible { outline-offset: -2px; }
 
     /* ── AUTH ── */
     #auth-screen {
@@ -257,6 +281,7 @@
       display: flex; flex-direction: column; align-items: center; gap: 12px;
     }
     .empty-icon { font-size: 2.5rem; opacity: 0.4; }
+    .empty-mascot { height: 72px; opacity: 0.55; filter: saturate(0.85); }
     .empty-title { font-size: 0.95rem; font-weight: 600; color: var(--muted); }
     .empty-sub { font-size: 0.82rem; color: #555; max-width: 260px; line-height: 1.6; }
 
@@ -459,14 +484,23 @@
     .btn-green { flex: 1; padding: 12px; background: var(--green); color: #000; border: none; border-radius: 10px; font-size: 0.9rem; font-weight: 700; cursor: pointer; }
 
     /* ── TOAST ── */
-    #toast {
-      position: fixed; bottom: 28px; left: 50%;
-      transform: translateX(-50%) translateY(80px);
+    #toast-stack {
+      position: fixed; bottom: 28px; left: 50%; transform: translateX(-50%);
+      display: flex; flex-direction: column-reverse; align-items: center; gap: 8px;
+      z-index: 300; pointer-events: none; width: min(92vw, 520px);
+    }
+    .toast {
       background: var(--surface2); border: 1px solid var(--border);
       border-radius: 12px; padding: 12px 22px; font-size: 0.88rem;
-      transition: transform 0.3s ease; z-index: 300; white-space: nowrap;
+      color: var(--text); max-width: 100%; text-align: center; line-height: 1.45;
+      opacity: 0; transform: translateY(16px);
+      transition: opacity 0.25s ease, transform 0.25s ease;
+      box-shadow: 0 6px 24px rgba(0,0,0,0.35); pointer-events: auto;
     }
-    #toast.show { transform: translateX(-50%) translateY(0); }
+    .toast.show { opacity: 1; transform: translateY(0); }
+    .toast.success { border-color: rgba(0,200,150,0.5); background: rgba(0,200,150,0.12); }
+    .toast.error { border-color: rgba(255,77,77,0.5); background: rgba(255,77,77,0.12); }
+    .toast.info { border-color: rgba(120,170,255,0.4); background: rgba(120,170,255,0.1); }
 
     @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.3} }
 
@@ -533,7 +567,7 @@
   <a href="https://goldstarorbital.github.io/fawn-landing/" style="text-decoration:none">
     <div class="auth-logo">fawn</div>
   </a>
-  <div class="auth-tagline">Crypto Payments + Investing. Instant transfers. Real stocks.</div>
+  <div class="auth-tagline">Payments + Investing. Instant USDC transfers. Real stocks.</div>
 
   <!-- LOGIN -->
   <div class="auth-card" id="login-card">
@@ -576,9 +610,9 @@
 <div id="status-bar" style="display:none;position:fixed;top:0;left:0;right:0;z-index:2000;background:#7c2d12;color:#fde8d8;font-size:0.8rem;font-weight:600;text-align:center;padding:8px 16px"></div>
 
 <!-- ── WELCOME MODAL ── -->
-<div id="welcome-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.7);z-index:1000;align-items:center;justify-content:center;padding:24px">
+<div id="welcome-modal" role="dialog" aria-modal="true" aria-label="Welcome to FAWN" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.7);z-index:1000;align-items:center;justify-content:center;padding:24px">
   <div style="background:var(--surface);border:1px solid var(--border);border-radius:24px;padding:40px 36px;max-width:420px;width:100%;text-align:center;position:relative">
-    <div style="font-size:3rem;margin-bottom:16px">🌿</div>
+    <img src="assets/fawn-mascot.png" alt="Penny, the FAWN mascot — a fawn made of quarter coins" style="height:96px;margin-bottom:16px" />
     <div style="font-size:1.5rem;font-weight:800;margin-bottom:10px">Welcome to FAWN</div>
     <div style="color:var(--muted);font-size:0.95rem;line-height:1.6;margin-bottom:28px">
       Your account is ready. Here's what you can do:
@@ -586,7 +620,7 @@
     <div style="display:flex;flex-direction:column;gap:12px;margin-bottom:32px;text-align:left">
       <div style="display:flex;gap:14px;align-items:flex-start">
         <span style="font-size:1.3rem">⚡</span>
-        <div><strong>Instant transfers</strong> — send money instantly to any bank or friend. $0.01 flat fee, no limits.</div>
+        <div><strong>Instant transfers</strong> — send USDC instantly to any friend's @username or any wallet address. $0.01 flat fee.</div>
       </div>
       <div style="display:flex;gap:14px;align-items:flex-start">
         <span style="font-size:1.3rem">📈</span>
@@ -604,11 +638,11 @@
 </div>
 
 <!-- ── SETTINGS MODAL ── -->
-<div id="settings-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.7);z-index:1000;align-items:center;justify-content:center;padding:24px">
+<div id="settings-modal" role="dialog" aria-modal="true" aria-label="Settings" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.7);z-index:1000;align-items:center;justify-content:center;padding:24px">
   <div style="background:var(--surface);border:1px solid var(--border);border-radius:24px;padding:32px;max-width:500px;width:100%;max-height:80vh;overflow-y:auto;position:relative">
     <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:24px">
       <div style="font-size:1.3rem;font-weight:800">Settings</div>
-      <button onclick="closeSettings()" style="background:none;border:none;font-size:1.5rem;cursor:pointer;color:var(--muted)">✕</button>
+      <button onclick="closeSettings()" aria-label="Close settings" style="background:none;border:none;font-size:1.5rem;cursor:pointer;color:var(--muted)">✕</button>
     </div>
 
     <!-- Wallet Section -->
@@ -657,12 +691,12 @@
           <span style="color:var(--muted)">This application was built with AI assistance. Multiple AI models contributed to the architecture, smart contracts, backend APIs, and frontend.</span>
         </div>
         <div style="margin-bottom:12px">
-          <strong>⚠️ No KYC / No Regulated Banking</strong><br>
-          <span style="color:var(--muted)">FAWN is a self-custodial USDC wallet. We do not hold your funds. You control your private keys. This is not a bank or regulated financial institution.</span>
+          <strong>🔐 Custodial Wallet / No Regulated Banking</strong><br>
+          <span style="color:var(--muted)">FAWN is a custodial USDC wallet: FAWN creates and securely holds the private key for your wallet (encrypted at rest) and signs transfers on your behalf — similar to how custodial exchange wallets like Coinbase work. You do not hold your own keys. FAWN is not a bank and not a regulated financial institution, and balances are not FDIC insured.</span>
         </div>
         <div style="margin-bottom:12px">
           <strong>Roadmap</strong><br>
-          <span style="color:var(--muted)">Now: USDC wallet, P2P transfers, Trading, Stock investing live! | Coming soon: Bank-linked funding</span>
+          <span style="color:var(--muted)">Now: USDC wallet, P2P transfers, and stock investing | Coming soon: token trading, automations, bank-linked funding</span>
         </div>
         <div style="margin-bottom:12px">
           <strong>Customer Support</strong><br>
@@ -674,8 +708,8 @@ Available anytime for questions or issues</span>
           <span style="color:var(--muted)">• USDC is 1:1 backed by USD reserves<br>
 • Crypto markets are volatile and uninsured<br>
 • Smart contracts carry technical risk<br>
-• You are responsible for your private keys<br>
-• Trading: Markets open 24/7, settlement varies by asset</span>
+• FAWN holds your wallet's private key in encrypted custody<br>
+• Investing: markets have set hours; settlement varies by asset</span>
         </div>
       </div>
     </div>
@@ -717,11 +751,11 @@ Available anytime for questions or issues</span>
     <!-- Connected Accounts -->
     <div style="margin-bottom:28px;padding-bottom:24px;border-bottom:1px solid var(--border)">
       <div style="font-size:0.8rem;font-weight:700;text-transform:uppercase;color:var(--muted);letter-spacing:1px;margin-bottom:12px">Connected Accounts</div>
-      <div style="font-size:0.85rem;color:var(--muted);margin-bottom:12px">Link other bank accounts and services for faster transfers.</div>
-      <button style="width:100%;padding:12px;background:var(--surface2);border:1px solid var(--border);border-radius:10px;cursor:pointer;font-weight:600;color:var(--text);margin-bottom:8px" onclick="toast('Coming soon: Link bank accounts')">
+      <div style="font-size:0.85rem;color:var(--muted);margin-bottom:12px">Securely link an external bank account via Plaid — FAWN never sees your bank credentials.</div>
+      <button style="width:100%;padding:12px;background:var(--surface2);border:1px solid var(--border);border-radius:10px;cursor:pointer;font-weight:600;color:var(--text);margin-bottom:8px" onclick="closeSettings();openAddFundsModal();switchFundsTab('bank')">
         + Link Bank Account
       </button>
-      <button style="width:100%;padding:12px;background:var(--surface2);border:1px solid var(--border);border-radius:10px;cursor:pointer;font-weight:600;color:var(--text)" onclick="toast('Coming soon: Apple Pay integration')">
+      <button style="width:100%;padding:12px;background:var(--surface2);border:1px solid var(--border);border-radius:10px;cursor:pointer;font-weight:600;color:var(--text)" onclick="toast('Apple Pay is coming soon', { type: 'info' })">
         + Add Apple Pay
       </button>
     </div>
@@ -744,11 +778,11 @@ Available anytime for questions or issues</span>
 </div>
 
 <!-- ── SEND USDC MODAL ── -->
-<div id="send-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.7);z-index:1000;align-items:center;justify-content:center;padding:24px">
+<div id="send-modal" role="dialog" aria-modal="true" aria-label="Send USDC" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.7);z-index:1000;align-items:center;justify-content:center;padding:24px">
   <div style="background:var(--surface);border:1px solid var(--border);border-radius:24px;padding:32px;max-width:420px;width:100%;position:relative">
     <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:24px">
       <div style="font-size:1.3rem;font-weight:800">Send USDC</div>
-      <button onclick="closeSendModal()" style="background:none;border:none;font-size:1.5rem;cursor:pointer;color:var(--muted)">✕</button>
+      <button onclick="closeSendModal()" aria-label="Close send dialog" style="background:none;border:none;font-size:1.5rem;cursor:pointer;color:var(--muted)">✕</button>
     </div>
 
     <div style="margin-bottom:20px;padding:16px;background:var(--surface2);border:1px solid var(--border);border-radius:12px">
@@ -781,11 +815,11 @@ Available anytime for questions or issues</span>
 </div>
 
 <!-- ── RECEIVE USDC MODAL ── -->
-<div id="receive-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.7);z-index:1000;align-items:center;justify-content:center;padding:24px">
+<div id="receive-modal" role="dialog" aria-modal="true" aria-label="Receive USDC" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.7);z-index:1000;align-items:center;justify-content:center;padding:24px">
   <div style="background:var(--surface);border:1px solid var(--border);border-radius:24px;padding:32px;max-width:420px;width:100%;position:relative">
     <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:24px">
       <div style="font-size:1.3rem;font-weight:800">Receive USDC</div>
-      <button onclick="closeReceiveModal()" style="background:none;border:none;font-size:1.5rem;cursor:pointer;color:var(--muted)">✕</button>
+      <button onclick="closeReceiveModal()" aria-label="Close receive dialog" style="background:none;border:none;font-size:1.5rem;cursor:pointer;color:var(--muted)">✕</button>
     </div>
 
     <div style="text-align:center;margin-bottom:24px">
@@ -819,11 +853,11 @@ Available anytime for questions or issues</span>
 </div>
 
 <!-- ── ADD FUNDS MODAL ── -->
-<div id="add-funds-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.7);z-index:1000;align-items:center;justify-content:center;padding:24px">
+<div id="add-funds-modal" role="dialog" aria-modal="true" aria-label="Add funds" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.7);z-index:1000;align-items:center;justify-content:center;padding:24px">
   <div style="background:var(--surface);border:1px solid var(--border);border-radius:24px;padding:32px;max-width:520px;width:100%;max-height:90vh;overflow-y:auto;position:relative">
     <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px">
       <div style="font-size:1.3rem;font-weight:800">Add Funds</div>
-      <button onclick="closeAddFundsModal()" style="background:none;border:none;font-size:1.5rem;cursor:pointer;color:var(--muted)">✕</button>
+      <button onclick="closeAddFundsModal()" aria-label="Close add funds dialog" style="background:none;border:none;font-size:1.5rem;cursor:pointer;color:var(--muted)">✕</button>
     </div>
 
     <div style="display:flex;gap:8px;margin-bottom:20px;background:var(--surface2);border-radius:12px;padding:4px">
@@ -875,114 +909,57 @@ Available anytime for questions or issues</span>
   </div>
 </div>
 
-<!-- ── TRADE MODAL ── -->
-<div id="trade-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.7);z-index:1000;align-items:center;justify-content:center;padding:24px">
-  <div style="background:var(--surface);border:1px solid var(--border);border-radius:24px;padding:32px;max-width:450px;width:100%;position:relative">
-    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:24px">
-      <div style="font-size:1.3rem;font-weight:800">Trade Tokens</div>
-      <button onclick="closeTradeModal()" style="background:none;border:none;font-size:1.5rem;cursor:pointer;color:var(--muted)">✕</button>
-    </div>
-
-    <div style="margin-bottom:20px;padding:16px;background:var(--surface2);border:1px solid var(--border);border-radius:12px">
-      <div style="font-size:0.75rem;color:var(--muted);margin-bottom:4px;text-transform:uppercase">Available Balance</div>
-      <div id="trade-balance" style="font-size:1.8rem;font-weight:800;color:var(--green)">$—</div>
-    </div>
-
-    <div class="field">
-      <label>From Token</label>
-      <select id="trade-from-token" style="width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:13px 15px;color:var(--text);font-size:0.95rem;outline:none;cursor:pointer">
-        <option value="">Select token...</option>
-      </select>
-    </div>
-
-    <div class="field">
-      <label>To Token</label>
-      <select id="trade-to-token" style="width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:13px 15px;color:var(--text);font-size:0.95rem;outline:none;cursor:pointer">
-        <option value="">Select token...</option>
-      </select>
-    </div>
-
-    <div class="field">
-      <label>Amount</label>
-      <input type="number" id="trade-amount" placeholder="0.00" step="0.01" min="0" style="width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:13px 15px;color:var(--text);font-size:0.95rem;outline:none" />
-      <div style="font-size:0.75rem;color:var(--muted);margin-top:4px">Enter amount in the 'From Token'</div>
-    </div>
-
-    <div style="background:var(--surface2);border:1px solid var(--border);border-radius:12px;padding:14px;margin-bottom:20px;display:none" id="trade-quote-box">
-      <div style="display:flex;justify-content:space-between;margin-bottom:8px">
-        <span style="color:var(--muted);font-size:0.85rem">You receive</span>
-        <span id="trade-quote-amount" style="font-weight:700;color:var(--green)">—</span>
-      </div>
-      <div style="display:flex;justify-content:space-between;margin-bottom:8px">
-        <span style="color:var(--muted);font-size:0.85rem">Rate</span>
-        <span id="trade-quote-rate" style="font-size:0.8rem;color:var(--muted)">—</span>
-      </div>
-      <div style="display:flex;justify-content:space-between">
-        <span style="color:var(--muted);font-size:0.85rem">Fee</span>
-        <span id="trade-quote-fee" style="font-size:0.8rem;color:var(--muted)">$0.01</span>
-      </div>
-    </div>
-
-    <button onclick="getTradeQuote()" style="width:100%;padding:12px;background:var(--surface2);color:var(--text);font-weight:700;border:1px solid var(--border);border-radius:10px;cursor:pointer;margin-bottom:12px;font-size:0.95rem;transition:all 0.2s">
-      Get Quote
-    </button>
-
-    <button onclick="executeTradeTransaction()" style="width:100%;padding:14px;background:var(--green);color:#000;font-weight:800;font-size:0.95rem;border:none;border-radius:12px;cursor:pointer">
-      Execute Trade
-    </button>
-    <div id="trade-error" class="error-box hidden"></div>
-  </div>
-</div>
-
 <!-- ── APP ── -->
 <div id="app-screen">
   <div class="shell">
 
     <!-- Sidebar -->
-    <aside class="sidebar">
+    <aside class="sidebar" aria-label="Main navigation">
       <a href="https://goldstarorbital.github.io/fawn-landing/" style="text-decoration:none" title="Back to fawn.com">
         <div class="sidebar-logo">fawn</div>
       </a>
 
+      <nav role="navigation" aria-label="App sections" style="display:contents">
       <div class="nav-section">Main</div>
-      <div class="nav-item active" id="nav-dashboard" onclick="showTab('dashboard')">
-        <span class="icon">🏠</span> Dashboard
+      <div class="nav-item active" id="nav-dashboard" role="button" tabindex="0" onclick="showTab('dashboard')">
+        <span class="icon" aria-hidden="true">🏠</span> Dashboard
       </div>
-      <div class="nav-item" id="nav-transactions" onclick="showTab('transactions')">
-        <span class="icon">↕️</span> Transactions
+      <div class="nav-item" id="nav-transactions" role="button" tabindex="0" onclick="showTab('transactions')">
+        <span class="icon" aria-hidden="true">↕️</span> Transactions
       </div>
-      <div class="nav-item" id="nav-investing" onclick="showTab('investing')">
-        <span class="icon">📈</span> Investing
+      <div class="nav-item" id="nav-investing" role="button" tabindex="0" onclick="showTab('investing')">
+        <span class="icon" aria-hidden="true">📈</span> Investing
       </div>
-      <div class="nav-item" id="nav-trading" onclick="showTab('trading')">
-        <span class="icon">🔄</span> Trading
+      <div class="nav-item" id="nav-trading" role="button" tabindex="0" onclick="showTab('trading')">
+        <span class="icon" aria-hidden="true">🔄</span> Trading
       </div>
 
       <div class="nav-section">Discover</div>
-      <div class="nav-item" id="nav-news" onclick="showTab('news')">
-        <span class="icon">📰</span> News
+      <div class="nav-item" id="nav-news" role="button" tabindex="0" onclick="showTab('news')">
+        <span class="icon" aria-hidden="true">📰</span> News
       </div>
-      <div class="nav-item" id="nav-brief" onclick="showTab('brief')">
-        <span class="icon">🎧</span> Daily Brief
+      <div class="nav-item" id="nav-brief" role="button" tabindex="0" onclick="showTab('brief')">
+        <span class="icon" aria-hidden="true">🎧</span> Daily Brief
       </div>
-      <div class="nav-item" id="nav-automation" onclick="showTab('automation')">
-        <span class="icon">🤖</span> Automation
+      <div class="nav-item" id="nav-automation" role="button" tabindex="0" onclick="showTab('automation')">
+        <span class="icon" aria-hidden="true">🤖</span> Automation
       </div>
 
-      <div class="nav-item" id="nav-campus" onclick="showTab('campus')">
-        <span class="icon">🎓</span> Campus
+      <div class="nav-item" id="nav-campus" role="button" tabindex="0" onclick="showTab('campus')">
+        <span class="icon" aria-hidden="true">🎓</span> Campus
       </div>
-      <div class="nav-item" id="nav-perks" onclick="showTab('perks')">
-        <span class="icon">$</span> .edu Perks
+      <div class="nav-item" id="nav-perks" role="button" tabindex="0" onclick="showTab('perks')">
+        <span class="icon" aria-hidden="true">$</span> .edu Perks
       </div>
-      <div class="nav-item" id="nav-military" onclick="showTab('military')">
-        <span class="icon">*</span> Military
+      <div class="nav-item" id="nav-military" role="button" tabindex="0" onclick="showTab('military')">
+        <span class="icon" aria-hidden="true">*</span> Military
       </div>
+      </nav>
 
       <div class="sidebar-spacer"></div>
 
-      <div class="user-chip" onclick="openSettings()">
-        <div class="user-avatar" id="sidebar-avatar">?</div>
+      <div class="user-chip" role="button" tabindex="0" aria-label="Open settings" onclick="openSettings()">
+        <div class="user-avatar" id="sidebar-avatar" aria-hidden="true">?</div>
         <div>
           <div class="user-name" id="sidebar-name">Loading…</div>
           <div class="user-tier" id="sidebar-tier">—</div>
@@ -997,7 +974,7 @@ Available anytime for questions or issues</span>
       <div class="tab active" id="tab-dashboard">
         <div class="page-header">
           <h1 id="greeting">Good morning</h1>
-          <p id="greeting-sub">Your money, your way. Send instantly, trade crypto 24/7, OR invest in real stocks. One account, zero compromises.</p>
+          <p id="greeting-sub">Your money, your way. Send USDC instantly OR invest in real stocks. One account, zero compromises.</p>
         </div>
 
         <!-- Onboarding banner (shown when wallet not initialized) -->
@@ -1015,11 +992,11 @@ Available anytime for questions or issues</span>
         <div class="balance-card">
           <div style="display:flex;justify-content:space-between;align-items:flex-start">
             <div class="balance-eyebrow">Your Balance</div>
-            <button onclick="loadBalance()" id="balance-refresh-btn" title="Refresh balance" style="background:rgba(0,0,0,0.18);border:none;border-radius:8px;padding:5px 9px;cursor:pointer;font-size:1rem;color:#000;line-height:1;transition:background 0.15s" onmouseover="this.style.background='rgba(0,0,0,0.3)'" onmouseout="this.style.background='rgba(0,0,0,0.18)'">↻</button>
+            <button onclick="loadBalance()" id="balance-refresh-btn" title="Refresh balance" aria-label="Refresh balance" style="background:rgba(0,0,0,0.18);border:none;border-radius:8px;padding:5px 9px;cursor:pointer;font-size:1rem;color:#000;line-height:1;transition:background 0.15s" onmouseover="this.style.background='rgba(0,0,0,0.3)'" onmouseout="this.style.background='rgba(0,0,0,0.18)'">↻</button>
           </div>
           <div class="balance-amount" id="balance-amt">$—</div>
           <div class="balance-pills">
-            <div class="balance-pill">⚡ Instant to any bank</div>
+            <div class="balance-pill">⚡ Instant USDC transfers</div>
             <div class="balance-pill">💰 Invest stocks & ETFs</div>
             <div class="balance-pill">💵 $0.01 flat fee</div>
           </div>
@@ -1064,9 +1041,9 @@ Available anytime for questions or issues</span>
           <div style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:12px">
             <div>
               <div style="font-size:0.7rem;color:var(--green);text-transform:uppercase;letter-spacing:1px;margin-bottom:6px">Invite Friends</div>
-              <div style="font-size:1rem;font-weight:700;margin-bottom:4px">Earn rewards for every friend you bring in</div>
+              <div style="font-size:1rem;font-weight:700;margin-bottom:4px" id="referral-headline">Earn rewards for every friend you bring in</div>
               <div style="font-size:0.8rem;color:var(--muted)">Your link: <span id="referral-url" style="color:var(--text);font-family:monospace"></span></div>
-              <div style="font-size:0.8rem;color:var(--muted);margin-top:4px"><span id="referral-count">0</span> friends joined so far</div>
+              <div style="font-size:0.8rem;color:var(--muted);margin-top:4px"><span id="referral-count">0</span> friends joined so far<span id="referral-earned"></span></div>
             </div>
             <button onclick="copyReferral()" style="background:var(--green);color:#000;font-weight:700;font-size:0.82rem;border:none;border-radius:10px;padding:10px 18px;cursor:pointer;white-space:nowrap">Copy link</button>
           </div>
@@ -1077,7 +1054,7 @@ Available anytime for questions or issues</span>
           <div class="section-title">Spending breakdown</div>
         </div>
         <div style="background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:20px 24px;margin-bottom:28px">
-          <div id="spending-chart"><div style="color:var(--muted);font-size:0.85rem">Loading…</div></div>
+          <div id="spending-chart"><div class="skeleton-line" style="width:60%"></div><div class="skeleton-line" style="width:85%"></div><div class="skeleton-line" style="width:40%"></div></div>
         </div>
 
         <div class="section-header">
@@ -1091,7 +1068,7 @@ Available anytime for questions or issues</span>
       <div class="tab" id="tab-transactions">
         <div class="page-header">
           <h1>Transfers</h1>
-          <p>All your instant bank transfers. Sent and received instantly, not 1-3 days.</p>
+          <p>All your USDC transfers — sent and received in seconds, not 1-3 days.</p>
         </div>
         <div class="tx-search-wrap">
           <span class="tx-search-icon">🔍</span>
@@ -1160,7 +1137,7 @@ Available anytime for questions or issues</span>
 
         <!-- Article feed -->
         <div id="news-feed">
-          <div style="color:var(--muted);font-size:0.9rem;padding:20px 0;text-align:center">Loading live news…</div>
+          <div class="skeleton-line" style="width:70%"></div><div class="skeleton-line" style="width:90%"></div><div class="skeleton-line" style="width:55%"></div><div class="skeleton-line" style="width:80%"></div>
         </div>
 
         <div class="disclaimer-box hidden" id="news-disc" style="margin-top:16px"></div>
@@ -1245,42 +1222,29 @@ Available anytime for questions or issues</span>
       <div class="tab" id="tab-trading">
         <div class="page-header">
           <h1>Trading</h1>
-          <p>Trade tokens and stablecoins instantly. Swap between USDC, USDT, DAI, and more. Same $0.01 flat fee.</p>
+          <p>Token swaps between USDC, USDT, DAI, and more — launching soon with the same $0.01 flat fee.</p>
         </div>
 
-        <div class="quick-actions">
-          <div class="qa-btn" onclick="openTradeModal()">
-            <div class="qa-icon">🔄</div>
-            <div class="qa-label">Trade</div>
-          </div>
-          <div class="qa-btn" onclick="loadTradeHistory()">
-            <div class="qa-icon">📊</div>
-            <div class="qa-label">History</div>
-          </div>
-          <div class="qa-btn" onclick="loadTradeTokens()">
-            <div class="qa-icon">💰</div>
-            <div class="qa-label">Tokens</div>
-          </div>
-          <div class="qa-btn" onclick="showTab('dashboard')">
-            <div class="qa-icon">🏠</div>
-            <div class="qa-label">Dashboard</div>
-          </div>
+        <div style="background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:28px;text-align:center;margin-bottom:24px">
+          <div style="font-size:2rem;margin-bottom:8px" aria-hidden="true">🔄</div>
+          <div style="font-weight:700;font-size:1.05rem;margin-bottom:6px">Token swaps launching soon</div>
+          <div style="color:var(--muted);font-size:0.9rem;max-width:460px;margin:0 auto">Swap between stablecoins and tokens with slippage protection and a flat $0.01 fee. The quote engine and trade ledger are built — we're finishing the signing flow for FAWN custodial wallets before opening swaps up. Until then, nothing you do here moves real money.</div>
         </div>
 
         <div style="background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:20px;margin-bottom:24px">
-          <div style="font-size:0.7rem;color:var(--muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:12px">Available Tokens</div>
+          <div style="font-size:0.7rem;color:var(--muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:12px">Tokens supported at launch</div>
           <div id="trade-tokens-list">
             <div style="color:var(--muted);font-size:0.85rem;padding:20px 0;text-align:center">Loading tokens…</div>
           </div>
         </div>
 
         <div class="section-header">
-          <div class="section-title">Recent Trades</div>
+          <div class="section-title">Your Trades</div>
         </div>
         <div class="tx-list" id="trade-history"></div>
 
         <div class="disclaimer-box" style="margin-top:16px">
-          Trading stablecoins is instant with FAWN. Each trade costs $0.01. Markets are 24/7. Settlement varies by blockchain network.
+          Each swap will cost a flat $0.01. Crypto markets run 24/7; settlement varies by blockchain network. Swaps are not live yet — this page will unlock automatically when they are.
         </div>
       </div>
 
@@ -1300,11 +1264,14 @@ Available anytime for questions or issues</span>
       <div class="tab" id="tab-automation">
         <div class="page-header">
           <h1>Automation</h1>
-          <p>Set it once, never think about it again. Recurring transfers, DCA investing, price alerts, savings goals, webhooks, and batch payouts.</p>
+          <p>Set it once, never think about it again. Here's what's coming — none of these are live yet.</p>
+        </div>
+        <div style="background:rgba(0,200,150,0.06);border:1px solid rgba(0,200,150,0.2);border-radius:12px;padding:14px 18px;margin-bottom:18px;font-size:0.85rem;color:var(--muted)">
+          <strong style="color:var(--text)">🚧 In development.</strong> These automations are being built right now and nothing here schedules or moves real money yet. They'll unlock on this page as each one goes live.
         </div>
         <div class="perk-grid" id="automation-grid"></div>
         <div class="disclaimer-box" style="margin-top:16px">
-          Automations run on FAWN's infrastructure and execute using your USDC balance. Same $0.01 flat fee applies per triggered action.
+          When automations launch, they'll execute using your USDC balance with the same $0.01 flat fee per triggered action.
         </div>
       </div>
 
@@ -1312,8 +1279,8 @@ Available anytime for questions or issues</span>
   </div>
 </div>
 
-<!-- TOAST -->
-<div id="toast"></div>
+<!-- TOAST STACK (queued, severity-aware) -->
+<div id="toast-stack" role="status" aria-live="polite"></div>
 
 <!-- QR code generation, entirely client-side -- no wallet address is ever
      sent to a third party. qrcode-generator by Kazuhiko Arase (MIT license,
@@ -1509,7 +1476,8 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
     if (!user.wallet_initialized) {
       document.getElementById('onboard-banner').classList.remove('hidden');
       document.getElementById('balance-amt').textContent = '$0.00';
-      document.getElementById('acct-pill').textContent = 'No account';
+      const acctPill = document.getElementById('acct-pill');
+      if (acctPill) acctPill.textContent = 'No account';
       setDashTx([]);
       setStats([]);
       // Enable create wallet buttons
@@ -1659,7 +1627,7 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
 
   function emptyState(title, sub) {
     return `<div class="empty-state">
-      <div class="empty-icon">🌿</div>
+      <img class="empty-mascot" src="assets/fawn-mascot.png" alt="" aria-hidden="true" />
       <div class="empty-title">${title}</div>
       <div class="empty-sub">${sub}</div>
     </div>`;
@@ -1777,10 +1745,13 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
           <div class="perk-cat">${escHtml(a.cat)}</div>
           <div class="perk-title">${escHtml(a.title)}</div>
         </div>
-        <div class="perk-emoji">${escHtml(icon)}</div>
+        <div class="perk-emoji" aria-hidden="true">${escHtml(icon)}</div>
       </div>
       <div class="perk-copy">${escHtml(a.copy)}</div>
-      <div style="margin-top:14px"><button class="perk-link" style="border:none;cursor:pointer" onclick="setupAutomation('${escHtml(a.action)}')">Set up</button></div>
+      <div style="margin-top:14px;display:flex;align-items:center;gap:10px">
+        <button class="perk-link" style="border:none;cursor:pointer" onclick="setupAutomation('${escHtml(a.action)}')">Learn more</button>
+        <span style="font-size:0.68rem;font-weight:800;letter-spacing:0.8px;text-transform:uppercase;color:var(--muted);border:1px solid var(--border);border-radius:999px;padding:4px 10px">Coming soon</span>
+      </div>
     </div>`;
   }
 
@@ -1789,11 +1760,11 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
     if (action === 'webhooks') {
       try {
         const res = await authGet('/webhooks/subscriptions');
-        toast(`You have ${res.count || 0} active webhook(s). Full setup coming to this screen soon.`);
+        toast(`You have ${res.count || 0} active webhook(s). Full setup coming to this screen soon.`, { type: 'info' });
       } catch { toast('Sign in required to view webhooks.'); }
       return;
     }
-    toast('Setup flow for this automation is coming soon — the API is live at /automation/' + action);
+    toast('This automation is still in development — nothing is scheduled or moved yet. We\'ll unlock it here when it\'s real.', { type: 'info', duration: 4200 });
   }
 
   function perkCard(p) {
@@ -2076,10 +2047,32 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
   const showErr = (id, msg) => { const e = document.getElementById(id); e.textContent = msg; e.classList.remove('hidden'); };
   const clearErr = id => document.getElementById(id).classList.add('hidden');
 
-  function toast(msg, duration = 3000) {
-    const t = document.getElementById('toast');
-    t.textContent = msg; t.classList.add('show');
-    setTimeout(() => t.classList.remove('show'), duration);
+  // toast(msg), toast(msg, 4000), or toast(msg, { type: 'success'|'error'|'info', duration }).
+  // Toasts stack (up to 3 visible) instead of overwriting each other; the type
+  // is inferred from leading ✓/✗ markers when not given explicitly.
+  function toast(msg, opts = {}) {
+    if (typeof opts === 'number') opts = { duration: opts };
+    const text = String(msg);
+    let type = opts.type;
+    if (!type) {
+      if (/^[✓✅]/.test(text)) type = 'success';
+      else if (/^[✗✕❌⚠]/.test(text) || /\b(failed|error|could ?n[o']t)\b/i.test(text)) type = 'error';
+    }
+    const duration = opts.duration || (text.length > 80 ? 5000 : 3200);
+
+    const stack = document.getElementById('toast-stack');
+    if (!stack) return;
+    while (stack.children.length >= 3) stack.removeChild(stack.firstChild);
+
+    const el = document.createElement('div');
+    el.className = 'toast' + (type ? ' ' + type : '');
+    el.textContent = text;
+    stack.appendChild(el);
+    requestAnimationFrame(() => el.classList.add('show'));
+    setTimeout(() => {
+      el.classList.remove('show');
+      setTimeout(() => el.remove(), 300);
+    }, duration);
   }
 
   async function post(path, body) {
@@ -2186,6 +2179,15 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
       const d = await authGet('/referral/code');
       document.getElementById('referral-url').textContent = d.invite_url;
       document.getElementById('referral-count').textContent = d.referrals;
+      if (d.rewards_enabled && d.bonus_cents_per_referral > 0) {
+        const bonus = (d.bonus_cents_per_referral / 100).toFixed(2);
+        document.getElementById('referral-headline').textContent =
+          `You each get $${bonus} in USDC for every friend who joins`;
+        if (d.total_earned_cents > 0) {
+          document.getElementById('referral-earned').textContent =
+            ` · $${(d.total_earned_cents / 100).toFixed(2)} earned`;
+        }
+      }
       document.getElementById('referral-card').style.display = 'block';
     } catch {}
   }
@@ -2218,7 +2220,7 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
       <div style="background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:28px;text-align:center">
         <div style="font-size:2rem;margin-bottom:8px">📈</div>
         <div style="font-weight:700;font-size:1.05rem;margin-bottom:6px">Real stocks & ETFs launching soon</div>
-        <div style="color:var(--muted);font-size:0.9rem;max-width:420px;margin:0 auto">Buy fractional shares straight from your FAWN account. Start with $1. Same instant execution, same $0.01 fee as your bank transfers.</div>
+        <div style="color:var(--muted);font-size:0.9rem;max-width:420px;margin:0 auto">Buy fractional shares straight from your FAWN account. Start with $1. Same instant execution, same $0.01 fee as your USDC transfers.</div>
       </div>`;
   }
 
@@ -2529,50 +2531,10 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
     }
   }
 
-  async function createWalletNonCustodial() {
-    const btn = event.target;
-    if (btn) { btn.disabled = true; btn.textContent = 'Creating…'; }
-    try {
-      const r = await authPost('/auth/wallets/create', { wallet_type: 'non_custodial' });
-      // Save wallet address AND seed phrase to localStorage (encrypted in production)
-      const seed = r.seed_phrase;
-      const address = r.wallet_address;
-      localStorage.setItem('fawn_seed_phrase', seed);
-      localStorage.setItem('fawn_wallet_address', address);
-      localStorage.setItem('fawn_wallet_type', 'non_custodial');
-
-      // Show seed in modal instead of alert
-      const seedModal = document.createElement('div');
-      seedModal.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.8);z-index:2000;align-items:center;justify-content:center;padding:24px;display:flex';
-      seedModal.innerHTML = `
-        <div style="background:var(--surface);border:1px solid var(--border);border-radius:24px;padding:40px;max-width:500px;width:100%;text-align:center">
-          <div style="font-size:2rem;margin-bottom:16px">🔐</div>
-          <div style="font-size:1.3rem;font-weight:800;margin-bottom:12px">Save Your Seed Phrase</div>
-          <div style="color:var(--muted);font-size:0.9rem;margin-bottom:24px;line-height:1.6">
-            This is your secret recovery phrase. You'll need it to recover your wallet. Store it safely offline — never share it!
-          </div>
-          <div style="background:var(--surface2);border:2px solid var(--green);border-radius:16px;padding:20px;margin-bottom:24px;font-family:monospace;font-size:0.9rem;line-height:2;word-break:break-word;color:var(--green);letter-spacing:1px">
-            ${seed}
-          </div>
-          <button onclick="navigator.clipboard.writeText('${seed}').then(()=>toast('Seed copied!')).catch(()=>toast('Copy failed'))" style="width:100%;padding:12px;background:var(--green);color:#000;font-weight:700;border:none;border-radius:12px;cursor:pointer;margin-bottom:12px">
-            📋 Copy to Clipboard
-          </button>
-          <button onclick="this.closest('div').parentElement.remove();location.reload()" style="width:100%;padding:12px;background:var(--surface2);color:var(--text);font-weight:700;border:1px solid var(--border);border-radius:12px;cursor:pointer">
-            I've saved it securely
-          </button>
-        </div>
-      `;
-      document.body.appendChild(seedModal);
-      user.wallet_initialized = true;
-
-      // Hide onboarding banner immediately
-      const banner = document.getElementById('onboard-banner');
-      if (banner) banner.classList.add('hidden');
-    } catch (e) {
-      toast(String(e.message || 'Failed to create wallet'));
-      if (btn) { btn.disabled = false; btn.textContent = 'Create wallet'; }
-    }
-  }
+  // Self-custody (non_custodial) wallet creation was removed from the UI --
+  // POST /auth/wallets/create now rejects wallet_type: 'non_custodial' for
+  // new accounts server-side (those wallets could never actually send;
+  // FAWN custodial is the only wallet type on offer going forward).
 
   // ── AUTO-REFRESH balance every 60s while app is open ──
   let refreshInterval = null;
@@ -2589,11 +2551,28 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
     document.hidden ? stopAutoRefresh() : (user && startAutoRefresh());
   });
 
-  // ── KEYBOARD SHORTCUTS ──
+  // ── KEYBOARD SHORTCUTS & ACCESSIBILITY ──
+  // Enter/Space activate any element with role="button" (nav items, user chip)
   document.addEventListener('keydown', e => {
+    if ((e.key === 'Enter' || e.key === ' ') && e.target?.getAttribute?.('role') === 'button') {
+      e.preventDefault();
+      e.target.click();
+    }
+  });
+
+  document.addEventListener('keydown', e => {
+    if (e.key === 'Escape') {
+      // Close whichever overlay is open, topmost first
+      closeWelcome();
+      closeSettings();
+      closeSendModal();
+      closeReceiveModal();
+      closeAddFundsModal();
+      return;
+    }
     if (!user) return;
     // Only fire when no input is focused
-    if (['INPUT','TEXTAREA'].includes(document.activeElement?.tagName)) return;
+    if (['INPUT','TEXTAREA','SELECT'].includes(document.activeElement?.tagName)) return;
     if (e.key === '1') showTab('dashboard');
     if (e.key === '2') showTab('transactions');
     if (e.key === '3') showTab('news');
@@ -2602,7 +2581,6 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
       if (activeTab === 'tab-news') { fetchNews(true); toast('News refreshed'); }
       else { loadBalance(); loadTxns(); toast('Refreshed'); }
     }
-    if (e.key === 'Escape') closeWelcome();
   });
 
   // ── LOGOUT CONFIRMATION ──
@@ -2677,7 +2655,9 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
       if (walletAddr) {
         document.getElementById('wallet-info').style.display = 'block';
         document.getElementById('create-wallet-btn').style.display = 'none';
-        document.getElementById('seed-btn').style.display = 'block';
+        // Seed phrases only exist for legacy non-custodial wallets; FAWN
+        // custodial wallets have no client-side seed to show.
+        document.getElementById('seed-btn').style.display = walletType === 'fawn_custodial' ? 'none' : 'block';
         document.getElementById('send-btn').style.display = 'block';
         document.getElementById('settings-wallet-addr').textContent = walletAddr.slice(0, 8) + '...' + walletAddr.slice(-6);
         document.getElementById('settings-wallet-type').textContent = walletType === 'fawn_custodial' ? 'FAWN Custodial' : 'Non-Custodial';
@@ -2749,7 +2729,7 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
   function downloadSeedPhrase() {
     const seed = localStorage.getItem('fawn_seed_phrase');
     if (!seed) {
-      toast('Seed phrase not saved. Create a new non-custodial wallet.');
+      toast('No seed phrase on this device. FAWN custodial wallets don\'t have one — FAWN holds the key securely for you.', { type: 'info' });
       return;
     }
     const modal = document.createElement('div');
@@ -2792,9 +2772,14 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
     updateSettingsDisplay();
 
     // Populate wallet address and generate QR code
-    if (walletAddress) {
-      document.getElementById('receive-address').value = walletAddress;
-      generateQRCode(walletAddress);
+    const walletAddr = localStorage.getItem('fawn_wallet_address');
+    if (walletAddr) {
+      document.getElementById('receive-address').value = walletAddr;
+      generateQRCode(walletAddr);
+    } else {
+      generateQRCode('');
+      const qrBox = document.getElementById('receive-qr');
+      if (qrBox) qrBox.innerHTML = '<div style="width:200px;height:200px;display:flex;align-items:center;justify-content:center;color:#666;font-size:0.8rem;text-align:center;padding:8px">Create a wallet first to get your receive address</div>';
     }
   }
 
@@ -3167,32 +3152,49 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
   }
 
   // ── UI CUSTOMIZATION ──
-  function setTheme(theme) {
-    const root = document.documentElement;
+  // "Auto" genuinely follows the OS via prefers-color-scheme: it resolves to
+  // the light palette when the OS is light, otherwise the default dark palette,
+  // and re-resolves live if the OS theme changes while the app is open.
+  const _osLightQuery = window.matchMedia ? window.matchMedia('(prefers-color-scheme: light)') : null;
 
+  function applyTheme(theme) {
+    const root = document.documentElement;
     if (theme === 'auto') {
-      root.removeAttribute('data-theme');
-      localStorage.setItem('fawn_theme', 'auto');
+      if (_osLightQuery && _osLightQuery.matches) root.setAttribute('data-theme', 'light');
+      else root.removeAttribute('data-theme'); // default dark palette
     } else {
       root.setAttribute('data-theme', theme);
-      localStorage.setItem('fawn_theme', theme);
     }
+  }
 
+  function setTheme(theme, silent = false) {
+    localStorage.setItem('fawn_theme', theme);
+    applyTheme(theme);
     updateThemeButtonStates();
-    toast(`✨ Theme: ${theme.charAt(0).toUpperCase() + theme.slice(1)}`);
+    if (!silent) toast(`✨ Theme: ${theme.charAt(0).toUpperCase() + theme.slice(1)}`);
+  }
+
+  if (_osLightQuery) {
+    const onOsThemeChange = () => {
+      if ((localStorage.getItem('fawn_theme') || 'auto') === 'auto') applyTheme('auto');
+    };
+    if (_osLightQuery.addEventListener) _osLightQuery.addEventListener('change', onOsThemeChange);
+    else if (_osLightQuery.addListener) _osLightQuery.addListener(onOsThemeChange);
   }
 
   function loadThemePreference() {
     const saved = localStorage.getItem('fawn_theme') || 'auto';
-    setTheme(saved);
+    setTheme(saved, true);
   }
 
   function updateThemeButtonStates() {
-    const currentTheme = document.documentElement.getAttribute('data-theme') || 'auto';
+    const currentTheme = localStorage.getItem('fawn_theme') || 'auto';
     ['dark', 'light', 'forest', 'auto'].forEach(theme => {
       const btn = document.getElementById(`theme-${theme}`);
       if (btn) {
-        if (theme === currentTheme) {
+        const selected = theme === currentTheme;
+        btn.setAttribute('aria-pressed', selected ? 'true' : 'false');
+        if (selected) {
           btn.style.borderColor = 'var(--green)';
           btn.style.color = 'var(--green)';
         } else {
@@ -3204,6 +3206,12 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
   }
 
   // ── TRADING ──
+  // Swaps are NOT live yet: the backend quote engine and trade ledger exist
+  // (POST /wallet/trades/quote, /execute), but /execute returns an unsigned
+  // transaction that custodial wallets can't sign client-side, so exposing it
+  // here would debit balances for trades that can never settle. Until the
+  // custodial signing flow ships, this tab is display-only: a static token
+  // roster plus the user's REAL trade history from the backend.
   const TRADEABLE_TOKENS = [
     { symbol: 'USDC', name: 'USD Coin', decimals: 6, network: 'Polygon' },
     { symbol: 'USDT', name: 'Tether', decimals: 6, network: 'Polygon' },
@@ -3213,39 +3221,8 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
     { symbol: 'WBTC', name: 'Wrapped Bitcoin', decimals: 8, network: 'Polygon' },
   ];
 
-  let tradeHistory = [];
-
-  function openTradeModal() {
-    const modal = document.getElementById('trade-modal');
-    if (modal) modal.style.display = 'flex';
-    loadTradeTokens();
-    loadBalance().then(() => {
-      const bal = parseFloat(document.getElementById('balance-amt').textContent.replace('$', '') || 0);
-      document.getElementById('trade-balance').textContent = '$' + bal.toFixed(2);
-    });
-  }
-
-  function closeTradeModal() {
-    const modal = document.getElementById('trade-modal');
-    if (modal) modal.style.display = 'none';
-    document.getElementById('trade-error').classList.add('hidden');
-    document.getElementById('trade-quote-box').style.display = 'none';
-    document.getElementById('trade-from-token').value = '';
-    document.getElementById('trade-to-token').value = '';
-    document.getElementById('trade-amount').value = '';
-  }
-
   function loadTradeTokens() {
-    const fromEl = document.getElementById('trade-from-token');
-    const toEl = document.getElementById('trade-to-token');
     const listEl = document.getElementById('trade-tokens-list');
-
-    if (fromEl && toEl) {
-      const options = TRADEABLE_TOKENS.map(t => `<option value="${t.symbol}">${t.symbol} - ${t.name}</option>`).join('');
-      fromEl.innerHTML = '<option value="">Select token...</option>' + options;
-      toEl.innerHTML = '<option value="">Select token...</option>' + options;
-    }
-
     if (listEl) {
       listEl.innerHTML = TRADEABLE_TOKENS.map(t => `
         <div style="display:flex;justify-content:space-between;align-items:center;background:var(--surface2);border:1px solid var(--border);border-radius:12px;padding:14px 16px;margin-bottom:10px">
@@ -3261,122 +3238,37 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
     }
   }
 
-  async function getTradeQuote() {
-    const fromToken = document.getElementById('trade-from-token')?.value || '';
-    const toToken = document.getElementById('trade-to-token')?.value || '';
-    const amount = parseFloat(document.getElementById('trade-amount')?.value || 0);
-    const quoteBox = document.getElementById('trade-quote-box');
-    const errDiv = document.getElementById('trade-error');
-
-    if (!fromToken || !toToken) {
-      errDiv.textContent = 'Please select both tokens';
-      errDiv.classList.remove('hidden');
-      return;
-    }
-
-    if (fromToken === toToken) {
-      errDiv.textContent = 'Please select different tokens to trade';
-      errDiv.classList.remove('hidden');
-      return;
-    }
-
-    if (amount <= 0) {
-      errDiv.textContent = 'Enter an amount greater than 0';
-      errDiv.classList.remove('hidden');
-      return;
-    }
-
-    try {
-      errDiv.classList.add('hidden');
-      quoteBox.style.display = 'block';
-
-      // Simulate quote calculation (in production, call backend /trading/quote endpoint)
-      const rate = (Math.random() * 0.95 + 0.98).toFixed(4);
-      const toAmount = (amount * rate).toFixed(6);
-
-      document.getElementById('trade-quote-amount').textContent = toAmount + ' ' + toToken;
-      document.getElementById('trade-quote-rate').textContent = '1 ' + fromToken + ' = ' + rate + ' ' + toToken;
-
-      toast('Quote loaded — valid for 30 seconds');
-    } catch (e) {
-      errDiv.textContent = 'Could not fetch quote: ' + String(e.message || 'Error');
-      errDiv.classList.remove('hidden');
-      quoteBox.style.display = 'none';
-    }
-  }
-
-  async function executeTradeTransaction() {
-    const fromToken = document.getElementById('trade-from-token')?.value || '';
-    const toToken = document.getElementById('trade-to-token')?.value || '';
-    const amount = parseFloat(document.getElementById('trade-amount')?.value || 0);
-    const quoteAmount = document.getElementById('trade-quote-amount')?.textContent?.split(' ')[0] || '0';
-    const errDiv = document.getElementById('trade-error');
-    const btn = event?.target;
-
-    if (!fromToken || !toToken || amount <= 0) {
-      errDiv.textContent = 'Invalid trade parameters';
-      errDiv.classList.remove('hidden');
-      return;
-    }
-
-    if (!confirm(`Trade ${amount} ${fromToken} for ~${quoteAmount} ${toToken}?\n\nFee: $0.01`)) return;
-
-    try {
-      errDiv.classList.add('hidden');
-      if (btn) { btn.disabled = true; btn.textContent = 'Processing…'; }
-
-      // Call backend trade endpoint (implement on backend)
-      const tradeRecord = {
-        id: 'trade_' + Date.now(),
-        from_token: fromToken,
-        to_token: toToken,
-        from_amount: amount,
-        to_amount: parseFloat(quoteAmount),
-        fee: 0.01,
-        status: 'completed',
-        timestamp: new Date().toISOString().split('T')[0],
-        date: new Date().toLocaleTimeString(),
-      };
-
-      tradeHistory.unshift(tradeRecord);
-
-      toast(`✓ Traded ${amount} ${fromToken} for ${quoteAmount} ${toToken}`);
-      closeTradeModal();
-      loadBalance();
-      loadTradeHistory();
-
-      if (btn) { btn.disabled = false; btn.textContent = 'Execute Trade'; }
-    } catch (e) {
-      errDiv.textContent = 'Trade failed: ' + String(e.message || 'Error');
-      errDiv.classList.remove('hidden');
-      if (btn) { btn.disabled = false; btn.textContent = 'Execute Trade'; }
-    }
-  }
-
   async function loadTradeHistory() {
     const el = document.getElementById('trade-history');
     if (!el) return;
-
-    if (!tradeHistory.length) {
-      el.innerHTML = emptyState('No trades yet', 'Execute your first trade above to see history here.');
-      return;
-    }
-
-    el.innerHTML = tradeHistory.map(t => `
-      <div class="tx-item">
-        <div class="tx-left">
-          <div class="tx-icon debit" style="background:rgba(0,200,150,0.12)">🔄</div>
-          <div>
-            <div class="tx-name">${escHtml(t.from_token)} → ${escHtml(t.to_token)}</div>
-            <div class="tx-meta">trade · ${t.timestamp}</div>
+    el.innerHTML = '<div style="padding:24px;text-align:center"><span class="spinner" role="status" aria-label="Loading trades"></span></div>';
+    try {
+      const trades = await authGet('/wallet/trades/history?limit=50');
+      if (!Array.isArray(trades) || !trades.length) {
+        el.innerHTML = emptyState('No trades yet', 'Your swap history will appear here once token trading goes live.');
+        return;
+      }
+      el.innerHTML = trades.map(t => `
+        <div class="tx-item">
+          <div class="tx-left">
+            <div class="tx-icon debit" style="background:rgba(0,200,150,0.12)" aria-hidden="true">🔄</div>
+            <div>
+              <div class="tx-name">${escHtml(t.from_token)} → ${escHtml(t.to_token)}</div>
+              <div class="tx-meta">${escHtml(t.from_amount)} · fee ${escHtml(t.fee)} · ${escHtml((t.created_at || '').split('T')[0])}</div>
+            </div>
+          </div>
+          <div class="tx-right">
+            <div class="tx-amount" style="color:var(--text)">${escHtml(t.received)}</div>
+            <div class="tx-status" style="color:${t.status === 'completed' ? 'var(--green)' : 'var(--muted)'}">${escHtml(t.status)}</div>
           </div>
         </div>
-        <div class="tx-right">
-          <div class="tx-amount" style="color:var(--text)">${escHtml(t.from_amount.toFixed(6))} ${escHtml(t.from_token)}</div>
-          <div class="tx-status" style="color:var(--green)">${escHtml(t.status)}</div>
-        </div>
-      </div>
-    `).join('');
+      `).join('');
+    } catch (e) {
+      // 404 = wallet not initialized yet; anything else = backend hiccup
+      el.innerHTML = /wallet/i.test(String(e.message))
+        ? emptyState('No trades yet', 'Create your wallet first — your swap history will live here.')
+        : emptyState('Couldn\'t load trades', 'Try again in a moment.');
+    }
   }
 
   // Close modals when clicking outside
@@ -3385,7 +3277,6 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
     if (e.target.id === 'send-modal') closeSendModal();
     if (e.target.id === 'receive-modal') closeReceiveModal();
     if (e.target.id === 'add-funds-modal') closeAddFundsModal();
-    if (e.target.id === 'trade-modal') closeTradeModal();
   });
 
   // Register service worker for PWA install support
@@ -3397,7 +3288,7 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
 <!-- AI & Legal Footer Disclosure -->
 <footer style="background:var(--surface);border-top:1px solid var(--border);padding:16px 20px;margin-top:32px;font-size:0.75rem;color:var(--muted);line-height:1.5;text-align:center;width:100%">
   <div><strong style="color:var(--text)">🤖 Built with AI</strong> — FAWN was developed with AI assistance. Smart contracts, backend APIs, and frontend utilized AI models.</div>
-  <div style="margin-top:8px">⚠️ Non-custodial • No KYC • Not regulated • You hold your keys • Crypto markets are volatile</div>
+  <div style="margin-top:8px">⚠️ Custodial USDC wallet — FAWN holds your wallet's keys in encrypted custody • Not a bank • Not FDIC insured • Crypto markets are volatile</div>
 </footer>
 
 </body>

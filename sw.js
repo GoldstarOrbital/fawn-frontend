@@ -1,6 +1,8 @@
 // FAWN Service Worker — offline shell + background sync
-const CACHE = 'fawn-v1';
-const SHELL = ['/', '/index.html', '/manifest.json'];
+// Bump CACHE on every shell change: the fetch handler is cache-first for the
+// shell, so an unbumped version leaves existing installs on the stale HTML.
+const CACHE = 'fawn-v2';
+const SHELL = ['/', '/index.html', '/manifest.json', '/icon-192.png', '/icon-512.png', '/assets/fawn-mascot.png'];
 
 self.addEventListener('install', e => {
   e.waitUntil(caches.open(CACHE).then(c => c.addAll(SHELL)).then(() => self.skipWaiting()));
