@@ -4,10 +4,10 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>FAWN — Crypto Payments for Gen Z Without the Fees</title>
-  <meta name="description" content="Send money to anyone instantly. No monthly fees. No hidden charges. Self-custodial USDC wallet built for students." />
+  <meta name="description" content="Send money to anyone instantly. No monthly fees. No hidden charges. FAWN-custodied USDC wallet built for students." />
   <meta name="theme-color" content="#00c896" />
   <meta property="og:title" content="FAWN — Money That Respects Students" />
-  <meta property="og:description" content="Send money to anyone instantly. Zero fees. Self-custodial, always." />
+  <meta property="og:description" content="Send money to anyone instantly. Zero fees. FAWN-custodied, encrypted by design." />
   <meta property="og:type" content="website" />
   <link rel="manifest" href="manifest.json" />
   <style>
@@ -562,6 +562,7 @@
   <script async src="https://static.moonpay.com/web-sdk/v1/moonpay-web-sdk.min.js"></script>
   <script async src="https://global.transak.com/sdk/v1.1/widget.js"></script>
   <script async src="https://cdn.plaid.com/link/v2/stable/link-initialize.js"></script>
+  <link rel="stylesheet" href="assets/fawn-os.css" />
 </head>
 <body>
 
@@ -675,7 +676,6 @@
 
       <button id="create-wallet-btn" onclick="createWalletFromSettings()" style="width:100%;padding:12px;background:var(--green);color:#000;font-weight:700;border:none;border-radius:10px;cursor:pointer;font-size:0.9rem;margin-bottom:8px;display:none">Create Wallet</button>
 
-      <button onclick="downloadSeedPhrase()" style="width:100%;padding:10px;background:var(--green);color:#000;font-weight:700;border:none;border-radius:10px;cursor:pointer;font-size:0.85rem;margin-bottom:8px;display:none" id="seed-btn">View Seed Phrase</button>
       <button onclick="openSendModal()" style="width:100%;padding:10px;background:var(--green-faint);color:var(--green);font-weight:700;border:1px solid var(--green);border-radius:10px;cursor:pointer;font-size:0.85rem;display:none" id="send-btn">Send USDC</button>
     </div>
 
@@ -698,7 +698,7 @@
         </div>
         <div style="margin-bottom:12px">
           <strong>⚠️ No KYC / No Regulated Banking</strong><br>
-          <span style="color:var(--muted)">FAWN is a self-custodial USDC wallet. We do not hold your funds. You control your private keys. This is not a bank or regulated financial institution.</span>
+          <span style="color:var(--muted)">FAWN is a custodial USDC wallet. Signing keys are encrypted at rest and never exposed in the browser. This is not a bank or regulated financial institution.</span>
         </div>
         <div style="margin-bottom:12px">
           <strong>Roadmap</strong><br>
@@ -714,7 +714,7 @@ Available anytime for questions or issues</span>
           <span style="color:var(--muted)">• USDC is 1:1 backed by USD reserves<br>
 • Crypto markets are volatile and uninsured<br>
 • Smart contracts carry technical risk<br>
-• You are responsible for your private keys<br>
+• FAWN protects encrypted signing keys; you are responsible for account access<br>
 • Trading: Markets open 24/7, settlement varies by asset</span>
         </div>
       </div>
@@ -1058,8 +1058,8 @@ Available anytime for questions or issues</span>
         <div class="onboard-banner hidden" id="onboard-banner">
           <div class="onboard-icon">💳</div>
           <div>
-            <div class="onboard-title" id="onboard-title">Create your USDC wallet</div>
-            <div class="onboard-sub" id="onboard-sub">No verification needed. Instantly create a wallet to send money, receive payments, and invest in stocks. No KYC, no waiting.</div>
+            <div class="onboard-title" id="onboard-title">Create your custodial USDC wallet</div>
+            <div class="onboard-sub" id="onboard-sub">FAWN creates and protects your wallet key with envelope encryption, so you can send, receive, and invest without managing a seed phrase.</div>
             <div class="onboard-actions">
               <button class="onboard-action" id="create-wallet-custodial-btn" onclick="createWalletCustodial()">Create wallet (instant)</button>
             </div>
@@ -1172,6 +1172,12 @@ Available anytime for questions or issues</span>
             <img class="buck-art" src="assets/buck-dollar-lifelike.png" alt="" />
             <span class="buck-tag">the FAWN field</span>
           </div>
+        </div>
+
+        <div class="fawn-custody-card" data-fawn-tilt aria-label="FAWN custodial wallet status">
+          <div class="fawn-custody-mark" aria-hidden="true">✓</div>
+          <div class="fawn-custody-copy"><strong>Custodial by design</strong><span>FAWN encrypts the signing key at rest and keeps it out of the browser. You get instant movement without seed-phrase anxiety.</span></div>
+          <div class="fawn-custody-meta"><span>Envelope encrypted</span><span>Instant sends</span></div>
         </div>
 
         <div class="news-control-panel">
@@ -1551,7 +1557,7 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
     document.getElementById('auth-screen').style.display = 'none';
     document.getElementById('app-screen').style.display = 'block';
 
-    // Load saved wallet data (seed phrase, address) from localStorage
+    // Load the public wallet address from the account profile.
     loadSavedWalletData();
 
     try {
@@ -2636,7 +2642,7 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
     const btn = document.getElementById('create-wallet-custodial-btn');
     if (btn) { btn.disabled = true; btn.textContent = 'Creating…'; }
     try {
-      const r = await authPost('/auth/wallets/create', { wallet_type: 'fawn_custodial' });
+      const r = await authPost('/auth/wallets/create', {});
       // Save wallet address to localStorage
       if (r.wallet_address) {
         localStorage.setItem('fawn_wallet_address', r.wallet_address);
@@ -2656,51 +2662,6 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
       startAutoRefresh();
 
       setTimeout(() => location.reload(), 1500);
-    } catch (e) {
-      toast(String(e.message || 'Failed to create wallet'));
-      if (btn) { btn.disabled = false; btn.textContent = 'Create wallet'; }
-    }
-  }
-
-  async function createWalletNonCustodial() {
-    const btn = event.target;
-    if (btn) { btn.disabled = true; btn.textContent = 'Creating…'; }
-    try {
-      const r = await authPost('/auth/wallets/create', { wallet_type: 'non_custodial' });
-      // Save wallet address AND seed phrase to localStorage (encrypted in production)
-      const seed = r.seed_phrase;
-      const address = r.wallet_address;
-      localStorage.setItem('fawn_seed_phrase', seed);
-      localStorage.setItem('fawn_wallet_address', address);
-      localStorage.setItem('fawn_wallet_type', 'non_custodial');
-
-      // Show seed in modal instead of alert
-      const seedModal = document.createElement('div');
-      seedModal.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.8);z-index:2000;align-items:center;justify-content:center;padding:24px;display:flex';
-      seedModal.innerHTML = `
-        <div style="background:var(--surface);border:1px solid var(--border);border-radius:24px;padding:40px;max-width:500px;width:100%;text-align:center">
-          <div style="font-size:2rem;margin-bottom:16px">🔐</div>
-          <div style="font-size:1.3rem;font-weight:800;margin-bottom:12px">Save Your Seed Phrase</div>
-          <div style="color:var(--muted);font-size:0.9rem;margin-bottom:24px;line-height:1.6">
-            This is your secret recovery phrase. You'll need it to recover your wallet. Store it safely offline — never share it!
-          </div>
-          <div style="background:var(--surface2);border:2px solid var(--green);border-radius:16px;padding:20px;margin-bottom:24px;font-family:monospace;font-size:0.9rem;line-height:2;word-break:break-word;color:var(--green);letter-spacing:1px">
-            ${seed}
-          </div>
-          <button onclick="navigator.clipboard.writeText('${seed}').then(()=>toast('Seed copied!')).catch(()=>toast('Copy failed'))" style="width:100%;padding:12px;background:var(--green);color:#000;font-weight:700;border:none;border-radius:12px;cursor:pointer;margin-bottom:12px">
-            📋 Copy to Clipboard
-          </button>
-          <button onclick="this.closest('div').parentElement.remove();location.reload()" style="width:100%;padding:12px;background:var(--surface2);color:var(--text);font-weight:700;border:1px solid var(--border);border-radius:12px;cursor:pointer">
-            I've saved it securely
-          </button>
-        </div>
-      `;
-      document.body.appendChild(seedModal);
-      user.wallet_initialized = true;
-
-      // Hide onboarding banner immediately
-      const banner = document.getElementById('onboard-banner');
-      if (banner) banner.classList.add('hidden');
     } catch (e) {
       toast(String(e.message || 'Failed to create wallet'));
       if (btn) { btn.disabled = false; btn.textContent = 'Create wallet'; }
@@ -2810,10 +2771,10 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
       if (walletAddr) {
         document.getElementById('wallet-info').style.display = 'block';
         document.getElementById('create-wallet-btn').style.display = 'none';
-        document.getElementById('seed-btn').style.display = 'block';
+        document.getElementById('seed-btn').style.display = 'none';
         document.getElementById('send-btn').style.display = 'block';
         document.getElementById('settings-wallet-addr').textContent = walletAddr.slice(0, 8) + '...' + walletAddr.slice(-6);
-        document.getElementById('settings-wallet-type').textContent = walletType === 'fawn_custodial' ? 'FAWN Custodial' : 'Non-Custodial';
+        document.getElementById('settings-wallet-type').textContent = 'FAWN Custodial · encrypted signing';
         const balance = await authGet('/wallet/balance');
         document.getElementById('settings-wallet-balance').textContent = '$' + (balance?.usdc_balance || 0).toFixed(2);
         localStorage.setItem('fawn_wallet_address', walletAddr);
@@ -2834,7 +2795,7 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
     btn.disabled = true;
     btn.textContent = 'Creating...';
     try {
-      const result = await authPost('/auth/wallets/create', { wallet_type: 'fawn_custodial' });
+      const result = await authPost('/auth/wallets/create', {});
       if (result?.wallet_address) {
         localStorage.setItem('fawn_wallet_address', result.wallet_address);
         await updateSettingsDisplay();
@@ -2964,33 +2925,6 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
     } catch (e) {
       toast('✕ ' + (e?.message || 'Could not remove profile picture'));
     }
-  }
-
-  function downloadSeedPhrase() {
-    const seed = localStorage.getItem('fawn_seed_phrase');
-    if (!seed) {
-      toast('Seed phrase not saved. Create a new non-custodial wallet.');
-      return;
-    }
-    const modal = document.createElement('div');
-    modal.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.8);z-index:2001;align-items:center;justify-content:center;padding:24px;display:flex';
-    modal.innerHTML = `
-      <div style="background:var(--surface);border:1px solid var(--border);border-radius:24px;padding:40px;max-width:500px;width:100%">
-        <div style="font-size:0.8rem;color:var(--red);font-weight:700;margin-bottom:16px;text-transform:uppercase">⚠ Private & Confidential</div>
-        <div style="font-size:1.3rem;font-weight:800;margin-bottom:12px">Your Seed Phrase</div>
-        <div style="color:var(--muted);font-size:0.85rem;margin-bottom:20px">Never share this with anyone. Anyone with this phrase can access your wallet.</div>
-        <div style="background:var(--surface2);border:2px solid var(--red);border-radius:16px;padding:20px;margin-bottom:20px;font-family:monospace;font-size:0.9rem;line-height:2;word-break:break-word;color:var(--green);letter-spacing:1px">
-          ${seed}
-        </div>
-        <button onclick="navigator.clipboard.writeText('${seed}').then(()=>toast('Seed copied!')).catch(()=>toast('Copy failed'))" style="width:100%;padding:12px;background:var(--green);color:#000;font-weight:700;border:none;border-radius:12px;cursor:pointer;margin-bottom:12px">
-          📋 Copy to Clipboard
-        </button>
-        <button onclick="this.closest('div').parentElement.remove()" style="width:100%;padding:12px;background:var(--surface2);color:var(--text);font-weight:700;border:1px solid var(--border);border-radius:12px;cursor:pointer">
-          Close
-        </button>
-      </div>
-    `;
-    document.body.appendChild(modal);
   }
 
   // ── SEND/RECEIVE MODALS ──
@@ -3612,12 +3546,23 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
   if ('serviceWorker' in navigator) {
     navigator.serviceWorker.register('sw.js').catch(() => {});
   }
+
+  document.querySelectorAll('[data-fawn-tilt]').forEach((card) => {
+    card.addEventListener('pointermove', (event) => {
+      if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+      const rect = card.getBoundingClientRect();
+      const rx = ((event.clientY - rect.top) / rect.height - 0.5) * -4;
+      const ry = ((event.clientX - rect.left) / rect.width - 0.5) * 6;
+      card.style.transform = `perspective(760px) rotateX(${rx}deg) rotateY(${ry}deg) translateZ(3px)`;
+    });
+    card.addEventListener('pointerleave', () => { card.style.transform = ''; });
+  });
 </script>
 
 <!-- AI & Legal Footer Disclosure -->
 <footer style="background:var(--surface);border-top:1px solid var(--border);padding:16px 20px;margin-top:32px;font-size:0.75rem;color:var(--muted);line-height:1.5;text-align:center;width:100%">
   <div><strong style="color:var(--text)">🤖 Built with AI</strong> — FAWN was developed with AI assistance. Smart contracts, backend APIs, and frontend utilized AI models.</div>
-  <div style="margin-top:8px">⚠️ Non-custodial • No KYC • Not regulated • You hold your keys • Crypto markets are volatile</div>
+  <div style="margin-top:8px">🔐 Custodial by design • Encrypted signing keys • No seed phrase to manage • Crypto markets are volatile</div>
 </footer>
 
 </body>

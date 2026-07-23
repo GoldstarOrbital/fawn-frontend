@@ -1,0 +1,54 @@
+/* FAWN OS layer: tactile surfaces and motion that feel native to the product. */
+.fawn-custody-card {
+  position: relative;
+  display: grid;
+  grid-template-columns: 58px minmax(0, 1fr) auto;
+  gap: 16px;
+  align-items: center;
+  margin: 16px 0 22px;
+  padding: 16px 18px;
+  overflow: hidden;
+  border: 1px solid rgba(0, 200, 150, 0.28);
+  border-radius: 20px;
+  background: linear-gradient(135deg, rgba(0,200,150,0.16), rgba(255,255,255,0.04));
+  box-shadow: 0 24px 70px rgba(0,0,0,0.22), inset 0 1px 0 rgba(255,255,255,0.08);
+  transform-style: preserve-3d;
+  transition: transform 180ms ease, border-color 180ms ease;
+}
+.fawn-custody-card::after {
+  content: "";
+  position: absolute;
+  inset: -70% 35% auto -15%;
+  height: 180%;
+  background: linear-gradient(115deg, transparent 42%, rgba(255,255,255,0.13) 50%, transparent 58%);
+  transform: rotate(10deg);
+  animation: fawn-os-sheen 7s ease-in-out infinite;
+  pointer-events: none;
+}
+.fawn-custody-card:hover { border-color: rgba(0, 200, 150, 0.7); }
+.fawn-custody-mark {
+  width: 56px;
+  height: 56px;
+  display: grid;
+  place-items: center;
+  border: 1px solid rgba(0,200,150,0.55);
+  border-radius: 17px;
+  color: var(--green);
+  font-size: 1.35rem;
+  background: rgba(0,0,0,0.2);
+  box-shadow: inset 0 0 0 7px rgba(0,200,150,0.08), 0 0 28px rgba(0,200,150,0.2);
+  transform: translateZ(18px);
+}
+.fawn-custody-copy strong { display: block; font-size: 0.96rem; }
+.fawn-custody-copy span { display: block; color: var(--muted); font-size: 0.82rem; line-height: 1.45; margin-top: 4px; }
+.fawn-custody-meta { display: flex; gap: 7px; flex-wrap: wrap; justify-content: flex-end; }
+.fawn-custody-meta span { padding: 7px 9px; border: 1px solid var(--border); border-radius: 999px; color: var(--muted); font-size: 0.68rem; white-space: nowrap; }
+@keyframes fawn-os-sheen { 0%, 55% { transform: translateX(-30%) rotate(10deg); opacity: 0; } 70% { opacity: 1; } 100% { transform: translateX(90%) rotate(10deg); opacity: 0; } }
+@media (max-width: 720px) {
+  .fawn-custody-card { grid-template-columns: 48px minmax(0,1fr); }
+  .fawn-custody-mark { width: 46px; height: 46px; }
+  .fawn-custody-meta { grid-column: 1 / -1; justify-content: flex-start; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .fawn-custody-card::after { animation: none; }
+}
