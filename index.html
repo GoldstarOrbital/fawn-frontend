@@ -59,6 +59,7 @@
     * { box-sizing: border-box; margin: 0; padding: 0; }
     html { scroll-behavior: smooth; }
     body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; }
+    body::before { content: ""; position: fixed; inset: 0; pointer-events: none; opacity: 0.32; background-image: radial-gradient(rgba(0,200,150,0.08) 1px, transparent 1px); background-size: 28px 28px; mask-image: linear-gradient(to bottom, #000, transparent 72%); z-index: -1; }
 
     /* ── UTILS ── */
     .hidden { display: none !important; }
@@ -72,6 +73,9 @@
       background: radial-gradient(ellipse at top, rgba(0,200,150,0.07) 0%, transparent 60%);
     }
 
+    .brand-lockup { display:flex; align-items:center; gap:12px; }
+    .brand-lockup .fawn-mark { width:42px; height:42px; color:var(--green); filter: drop-shadow(0 0 14px rgba(0,200,150,0.34)); }
+    .brand-lockup .fawn-mark path { fill:none; stroke:currentColor; stroke-width:2.3; stroke-linecap:round; stroke-linejoin:round; }
     .auth-logo { font-size: 2.8rem; font-weight: 800; color: var(--green); letter-spacing: -1px; margin-bottom: 6px; }
     .auth-tagline { color: var(--muted); font-size: 0.92rem; margin-bottom: 40px; }
 
@@ -130,6 +134,9 @@
     }
 
     .sidebar-logo { font-size: 1.7rem; font-weight: 800; color: var(--green); letter-spacing: -0.5px; margin-bottom: 36px; padding: 0 8px; }
+    .sidebar-brand { display:flex; align-items:center; gap:9px; }
+    .sidebar-brand .fawn-mark { width:27px; height:27px; color:var(--green); }
+    .sidebar-brand .fawn-mark path { fill:none; stroke:currentColor; stroke-width:2.5; stroke-linecap:round; stroke-linejoin:round; }
 
     .nav-section { font-size: 0.68rem; font-weight: 700; text-transform: uppercase; letter-spacing: 1.5px; color: #444; padding: 0 8px; margin: 16px 0 8px; }
 
@@ -402,6 +409,26 @@
       background: var(--surface); border: 1px solid var(--border);
       border-radius: 16px; padding: 28px;
     }
+    .news-hero { position:relative; display:grid; grid-template-columns:1fr 190px; gap:22px; align-items:center; overflow:hidden; min-height:210px; margin-bottom:20px; padding:28px 30px; border:1px solid rgba(0,200,150,0.28); border-radius:24px; background:radial-gradient(circle at 86% 45%, rgba(0,200,150,0.18), transparent 27%), linear-gradient(135deg, var(--surface), rgba(0,200,150,0.055)); box-shadow:0 18px 55px rgba(0,0,0,0.16), inset 0 1px rgba(255,255,255,0.045); }
+    .news-hero::before, .news-hero::after { content:""; position:absolute; border:1px solid rgba(0,200,150,0.14); border-radius:50%; transform:rotate(-18deg); pointer-events:none; }
+    .news-hero::before { width:360px; height:150px; right:-110px; top:-70px; }
+    .news-hero::after { width:310px; height:130px; right:-72px; bottom:-74px; }
+    .news-kicker { color:var(--green); font-size:0.68rem; font-weight:850; letter-spacing:1.8px; text-transform:uppercase; margin-bottom:10px; }
+    .news-hero h2 { font-size:clamp(1.45rem, 2.6vw, 2.35rem); letter-spacing:-1.2px; line-height:1.04; margin-bottom:10px; max-width:590px; }
+    .news-hero p { color:var(--muted); max-width:540px; font-size:0.88rem; line-height:1.65; }
+    .buck-stage { position:relative; display:grid; place-items:center; height:155px; perspective:700px; }
+    .buck-orbit { position:absolute; width:154px; height:110px; border:1px solid rgba(0,200,150,0.38); border-radius:50%; transform:rotate(-18deg); animation:orbit-breathe 5s ease-in-out infinite; }
+    .buck-orbit::before { content:""; position:absolute; width:7px; height:7px; border-radius:50%; background:var(--green); top:8px; left:28px; box-shadow:0 0 18px var(--green); }
+    .buck-svg { width:112px; height:135px; color:var(--green); transform:translateZ(25px) rotateY(-8deg); filter:drop-shadow(0 14px 16px rgba(0,0,0,0.28)); animation:buck-float 4.5s ease-in-out infinite; }
+    .buck-svg path { fill:none; stroke:currentColor; stroke-width:2.25; stroke-linecap:round; stroke-linejoin:round; }
+    .buck-tag { position:absolute; right:1px; bottom:6px; color:var(--muted); font-size:0.62rem; letter-spacing:1.2px; text-transform:uppercase; }
+    @keyframes buck-float { 0%,100%{transform:translate3d(0,3px,25px) rotateY(-8deg)} 50%{transform:translate3d(0,-7px,25px) rotateY(8deg)} }
+    @keyframes orbit-breathe { 0%,100%{transform:rotate(-18deg) scale(0.96); opacity:.65} 50%{transform:rotate(-10deg) scale(1.04); opacity:1} }
+    .news-feed-shell { perspective:1200px; }
+    .article-card { position:relative; overflow:hidden; transform:perspective(900px) rotateX(var(--rx, 0deg)) rotateY(var(--ry, 0deg)) translateY(var(--lift, 0px)); transform-style:preserve-3d; box-shadow:0 9px 25px rgba(0,0,0,0.09); will-change:transform; transition:transform .18s ease, box-shadow .18s ease, border-color .18s ease !important; }
+    .article-card::after { content:""; position:absolute; inset:0; pointer-events:none; opacity:var(--shine, 0); background:radial-gradient(circle at var(--mx, 50%) var(--my, 0%), rgba(255,255,255,0.16), transparent 30%); transition:opacity .2s; }
+    .article-card:hover, .article-card:focus-visible { --lift:-4px; box-shadow:0 18px 34px rgba(0,0,0,0.18), 0 0 0 1px rgba(0,200,150,0.22); outline:none; }
+    .article-card:focus-visible { box-shadow:0 0 0 3px rgba(0,200,150,0.28), 0 18px 34px rgba(0,0,0,0.18); }
     .news-meta { display: flex; align-items: center; gap: 10px; margin-bottom: 18px; flex-wrap: wrap; }
     .live-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--green); animation: pulse 1.8s infinite; }
     .live-label { font-size: 0.75rem; color: var(--green); font-weight: 700; text-transform: uppercase; letter-spacing: 1px; }
@@ -519,6 +546,12 @@
       .campus-banner { align-items: flex-start; flex-direction: column; }
       .news-query-row { grid-template-columns: 1fr; }
       .news-signal { margin-left: 0; }
+      .news-hero { grid-template-columns:1fr 112px; padding:22px; min-height:175px; }
+      .buck-stage { height:120px; transform:scale(.82); transform-origin:right center; }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after { animation-duration:0.001ms !important; animation-iteration-count:1 !important; scroll-behavior:auto !important; transition-duration:0.001ms !important; }
+      .article-card { transform:none !important; }
     }
   </style>
   <!-- Buy Crypto on-ramp SDKs (Ramp, MoonPay, Transak — Coinbase Onramp needs no client SDK) -->
@@ -532,7 +565,10 @@
 <!-- ── AUTH ── -->
 <div id="auth-screen">
   <a href="https://goldstarorbital.github.io/fawn-landing/" style="text-decoration:none">
-    <div class="auth-logo">fawn</div>
+    <div class="brand-lockup">
+      <svg class="fawn-mark" viewBox="0 0 48 48" aria-hidden="true"><path d="M24 42c-7-8-11-15-8-24 1-4 4-7 8-9 4 2 7 5 8 9 3 9-1 16-8 24Z"/><path d="M18 17 11 9M16 21 7 18M30 17l7-8M32 21l9-3M24 9V4"/><path d="M20 28c2 2 6 2 8 0"/></svg>
+      <div class="auth-logo">fawn</div>
+    </div>
   </a>
   <div class="auth-tagline">Crypto Payments + Investing. Instant transfers. Real stocks.</div>
 
@@ -953,7 +989,10 @@ Available anytime for questions or issues</span>
     <!-- Sidebar -->
     <aside class="sidebar">
       <a href="https://goldstarorbital.github.io/fawn-landing/" style="text-decoration:none" title="Back to fawn.com">
-        <div class="sidebar-logo">fawn</div>
+        <div class="sidebar-logo sidebar-brand">
+          <svg class="fawn-mark" viewBox="0 0 48 48" aria-hidden="true"><path d="M24 42c-7-8-11-15-8-24 1-4 4-7 8-9 4 2 7 5 8 9 3 9-1 16-8 24Z"/><path d="M18 17 11 9M16 21 7 18M30 17l7-8M32 21l9-3M24 9V4"/><path d="M20 28c2 2 6 2 8 0"/></svg>
+          <span>fawn</span>
+        </div>
       </a>
 
       <div class="nav-section">Main</div>
@@ -1119,6 +1158,19 @@ Available anytime for questions or issues</span>
           <p>Live summaries from major outlets. Stays right here — no links, no redirects.</p>
         </div>
 
+        <div class="news-hero">
+          <div>
+            <div class="news-kicker">FAWN signal / live field</div>
+            <h2>Stay curious. Move with the herd.</h2>
+            <p>A crisp, source-diverse pulse for the stories shaping your money, campus, and next move. Tap a card to open its full available takeaway.</p>
+          </div>
+          <div class="buck-stage" aria-hidden="true">
+            <div class="buck-orbit"></div>
+            <svg class="buck-svg" viewBox="0 0 120 150"><path d="M60 137c-17-19-27-37-22-59 2-10 9-18 22-23 13 5 20 13 22 23 5 22-5 40-22 59Z"/><path d="M45 61 27 41M42 72 20 65M75 61 93 41M78 72l22-7M60 55V26M49 43 37 23M71 43 83 23"/><path d="M50 91c6 5 14 5 20 0M53 106h14"/></svg>
+            <span class="buck-tag">the FAWN field</span>
+          </div>
+        </div>
+
         <div class="news-control-panel">
           <div class="news-query-row">
             <input class="news-query-input" id="news-query" type="search"
@@ -1171,8 +1223,11 @@ Available anytime for questions or issues</span>
         </div>
 
         <!-- Article feed -->
+        <div class="news-feed-shell" id="news-feed-shell">
         <div id="news-feed">
           <div style="color:var(--muted);font-size:0.9rem;padding:20px 0;text-align:center">Loading live news…</div>
+        </div>
+
         </div>
 
         <div class="disclaimer-box hidden" id="news-disc" style="margin-top:16px"></div>
@@ -1983,6 +2038,27 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
     return articles.map(a => `${articleIdentity(a)}|${a.summary || ''}`).join('\\n');
   }
 
+  function enhanceArticleCards() {
+    if (window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+    document.querySelectorAll('#news-feed .article-card').forEach(card => {
+      card.onpointermove = event => {
+        const rect = card.getBoundingClientRect();
+        const x = (event.clientX - rect.left) / rect.width;
+        const y = (event.clientY - rect.top) / rect.height;
+        card.style.setProperty('--ry', `${(x - 0.5) * 5}deg`);
+        card.style.setProperty('--rx', `${(0.5 - y) * 4}deg`);
+        card.style.setProperty('--mx', `${x * 100}%`);
+        card.style.setProperty('--my', `${y * 100}%`);
+        card.style.setProperty('--shine', '1');
+      };
+      card.onpointerleave = () => {
+        card.style.setProperty('--ry', '0deg');
+        card.style.setProperty('--rx', '0deg');
+        card.style.setProperty('--shine', '0');
+      };
+    });
+  }
+
   function toggleArticle(i) {
     const body = document.getElementById(`article-body-${i}`);
     const chev = document.getElementById(`chevron-${i}`);
@@ -2025,6 +2101,7 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
       if (signature !== newsRenderSignature) {
         newsRenderSignature = signature;
         feed.innerHTML = renderArticles(articles);
+        enhanceArticleCards();
         if (newsOpenIdentity) {
           const openIndex = articles.findIndex(a => articleIdentity(a) === newsOpenIdentity);
           if (openIndex >= 0) toggleArticle(openIndex);
