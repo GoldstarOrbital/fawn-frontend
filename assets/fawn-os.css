@@ -2,7 +2,7 @@
 .fawn-image,
 .buck-art {
   background: transparent !important;
-  mix-blend-mode: multiply;
+  mix-blend-mode: normal;
 }
 
 .receive-profile {
