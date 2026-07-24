@@ -702,7 +702,7 @@
         </div>
         <div style="margin-bottom:12px">
           <strong>Roadmap</strong><br>
-          <span style="color:var(--muted)">Now: USDC wallet, P2P transfers, trading, stock investing, and Plaid bank linking. Bank funding depends on provider configuration.</span>
+          <span style="color:var(--muted)">Now: USDC wallet, P2P transfers, protected stock investing, and Plaid bank linking. Bank funding depends on provider configuration.</span>
         </div>
         <div style="margin-bottom:12px">
           <strong>Customer Support</strong><br>
@@ -715,7 +715,7 @@ Available anytime for questions or issues</span>
 • Crypto markets are volatile and uninsured<br>
 • Smart contracts carry technical risk<br>
 • FAWN protects encrypted signing keys; you are responsible for account access<br>
-• Trading: Markets open 24/7, settlement varies by asset</span>
+• Investing: Markets are volatile; protective order limits and provider checks apply</span>
         </div>
       </div>
     </div>
@@ -1017,9 +1017,6 @@ Available anytime for questions or issues</span>
       <div class="nav-item" id="nav-investing" onclick="showTab('investing')">
         <span class="icon">📈</span> Investing
       </div>
-      <div class="nav-item" id="nav-trading" onclick="showTab('trading')">
-        <span class="icon">🔄</span> Trading
-      </div>
 
       <div class="nav-section">Discover</div>
       <div class="nav-item" id="nav-news" onclick="showTab('news')">
@@ -1060,7 +1057,7 @@ Available anytime for questions or issues</span>
       <div class="tab active" id="tab-dashboard">
         <div class="page-header">
           <h1 id="greeting">Good morning</h1>
-          <p id="greeting-sub">Your money, your way. Send instantly, trade crypto 24/7, OR invest in real stocks. One account, zero compromises.</p>
+          <p id="greeting-sub">Your money, your way. Send instantly or invest in real stocks. One custodial account, zero seed-phrase anxiety.</p>
         </div>
 
         <!-- Onboarding banner (shown when wallet not initialized) -->
@@ -1316,56 +1313,13 @@ Available anytime for questions or issues</span>
       <div class="tab" id="tab-investing">
         <div class="page-header">
           <h1>Investing</h1>
-          <p>Real stocks, ETFs, and crypto. Fractional shares starting at $1. Same $0.01 fee. One account for payments AND investing.</p>
+          <p>Real stocks and ETFs. Fractional shares starting at $1. Protected order limits. One account for payments and investing.</p>
         </div>
         <div id="investing-body">
           <div style="color:var(--muted);font-size:0.9rem;padding:20px 0;text-align:center">Loading investing…</div>
         </div>
         <div class="disclaimer-box" style="margin-top:16px">
           FAWN uses blockchain-based infrastructure to enable instant transfers. Funds are held in USDC, a USD-backed stablecoin regulated by NYDFS as a licensed money transmitter.
-        </div>
-      </div>
-
-      <!-- TRADING -->
-      <div class="tab" id="tab-trading">
-        <div class="page-header">
-          <h1>Trading</h1>
-          <p>Trade tokens and stablecoins instantly. Swap between USDC, USDT, DAI, and more. Same $0.01 flat fee.</p>
-        </div>
-
-        <div class="quick-actions">
-          <div class="qa-btn" onclick="openTradeModal()">
-            <div class="qa-icon">🔄</div>
-            <div class="qa-label">Trade</div>
-          </div>
-          <div class="qa-btn" onclick="loadTradeHistory()">
-            <div class="qa-icon">📊</div>
-            <div class="qa-label">History</div>
-          </div>
-          <div class="qa-btn" onclick="loadTradeTokens()">
-            <div class="qa-icon">💰</div>
-            <div class="qa-label">Tokens</div>
-          </div>
-          <div class="qa-btn" onclick="showTab('dashboard')">
-            <div class="qa-icon">🏠</div>
-            <div class="qa-label">Dashboard</div>
-          </div>
-        </div>
-
-        <div style="background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:20px;margin-bottom:24px">
-          <div style="font-size:0.7rem;color:var(--muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:12px">Available Tokens</div>
-          <div id="trade-tokens-list">
-            <div style="color:var(--muted);font-size:0.85rem;padding:20px 0;text-align:center">Loading tokens…</div>
-          </div>
-        </div>
-
-        <div class="section-header">
-          <div class="section-title">Recent Trades</div>
-        </div>
-        <div class="tx-list" id="trade-history"></div>
-
-        <div class="disclaimer-box" style="margin-top:16px">
-          Trading stablecoins is instant with FAWN. Each trade costs $0.01. Markets are 24/7. Settlement varies by blockchain network.
         </div>
       </div>
 
@@ -1388,8 +1342,8 @@ Available anytime for questions or issues</span>
           <p>Set it once, never think about it again. Recurring transfers, DCA investing, price alerts, savings goals, webhooks, and batch payouts.</p>
         </div>
         <div class="perk-grid" id="automation-grid"></div>
-        <div class="disclaimer-box" style="margin-top:16px">
-          Automations run on FAWN's infrastructure and execute using your USDC balance. Same $0.01 flat fee applies per triggered action.
+      <div class="disclaimer-box" style="margin-top:16px">
+          Automations are opt-in and should stay within the protective limits shown in Investing. FAWN pauses an order when a limit, quote, balance, or provider check fails.
         </div>
       </div>
 
@@ -1458,10 +1412,10 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
 
   const AUTOMATION_SERVICES = [
     { cat:'Transfers', emoji:'🔄', title:'Recurring Transfers', copy:'Auto-send USDC to friends daily, weekly, or monthly. Perfect for splitting rent or regular payments.', action:'recurring-transfers' },
-    { cat:'Investing', emoji:'💹', title:'DCA Investing', copy:'Dollar-cost averaging: automatically buy crypto at fixed intervals. Remove emotion from timing.', action:'dca-plans' },
+    { cat:'Investing', emoji:'💹', title:'DCA Investing', copy:'Plan recurring investing with the same order caps, quote checks, and provider safeguards as every manual order.', action:'dca-plans' },
     { cat:'Alerts', emoji:'🚨', title:'Price Alerts', copy:'Get notified when tokens hit price thresholds you set.', action:'price-alerts' },
     { cat:'Savings', emoji:'🎯', title:'Savings Goals', copy:'Auto-allocate a percentage of income to savings goals. Track progress toward your targets.', action:'savings-goals' },
-    { cat:'Developer', emoji:'🪝', title:'Webhooks', copy:'Real-time event delivery to your own systems. Subscribe to transfers, trades, and alerts.', action:'webhooks' },
+    { cat:'Developer', emoji:'🪝', title:'Webhooks', copy:'Real-time event delivery to your own systems. Subscribe to transfers and alerts.', action:'webhooks' },
     { cat:'Payouts', emoji:'📦', title:'Batch Transfers', copy:'Send USDC to 100+ recipients in one atomic operation. Perfect for payouts and distributions.', action:'batch-transfers' }
   ];
 
@@ -2208,7 +2162,6 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
     if (name === 'military') renderMilitaryStatus();
     if (name === 'automation') renderAutomation();
     if (name === 'investing' && token) loadInvesting();
-    if (name === 'trading' && token) { loadTradeTokens(); loadTradeHistory(); }
     if (name === 'brief') loadBrief();
     if (name === 'news') {
       initNewsPreferences();
@@ -2376,7 +2329,7 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
         <div style="color:var(--muted);font-size:0.9rem;margin-bottom:16px">Buy real stocks, ETFs, and crypto with fractional shares starting at $1. One-tap setup using your FAWN identity. Same $0.01 flat fee.</div>
         <label style="display:flex;gap:10px;align-items:flex-start;font-size:0.82rem;color:var(--muted);margin-bottom:16px;cursor:pointer">
           <input type="checkbox" id="invest-agree" style="margin-top:3px" />
-          <span>I agree to the brokerage customer, margin, and account agreements, and understand investing involves risk of loss.</span>
+          <span>I agree to the brokerage customer and account agreements, and understand investing involves risk of loss. FAWN does not enable margin or leveraged orders.</span>
         </label>
         <button class="qa-btn" style="width:100%;justify-content:center" id="invest-open-btn" onclick="openInvestingAccount()">Open investing account</button>
       </div>`;
@@ -2390,7 +2343,6 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
       const now = new Date().toISOString();
       const agreements = [
         { agreement: 'customer_agreement', signed_at: now },
-        { agreement: 'margin_agreement', signed_at: now },
         { agreement: 'account_agreement', signed_at: now },
       ];
       await authPost('/investing/account', { agreements });
@@ -2415,10 +2367,14 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
           <div class="balance-pill">${_esc(a.status || '')}</div>
         </div>
       </div>
+      <div class="disclaimer-box" style="margin-bottom:18px">
+        <strong>Protected investing</strong><br>
+        Every order requires a fresh quote and is capped at $1,000. FAWN also applies a rolling $2,500 / 24-hour limit, limits open orders, and never enables margin or leverage.
+      </div>
       <div style="background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:20px;margin-bottom:18px">
-        <div style="font-size:0.7rem;color:var(--muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:12px">Search & buy stocks, ETFs & crypto</div>
+        <div style="font-size:0.7rem;color:var(--muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:12px">Search & buy stocks and ETFs</div>
         <div style="display:flex;gap:10px;margin-bottom:12px">
-          <input id="invest-symbol" placeholder="AAPL, SPY, BTC, ETH..." maxlength="6" style="flex:1;text-transform:uppercase;background:var(--bg);border:1px solid var(--border);border-radius:10px;padding:11px 12px;color:var(--text);font-size:0.95rem" />
+          <input id="invest-symbol" placeholder="AAPL, SPY, QQQ..." maxlength="10" style="flex:1;text-transform:uppercase;background:var(--bg);border:1px solid var(--border);border-radius:10px;padding:11px 12px;color:var(--text);font-size:0.95rem" />
           <button class="qa-btn" onclick="getQuote()">Quote</button>
         </div>
         <div id="invest-quote" style="display:none;background:var(--bg);border:1px solid var(--border);border-radius:10px;padding:12px;margin-bottom:12px;font-size:0.85rem">
@@ -2437,7 +2393,7 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
             <button class="qa-btn" style="background:var(--surface);border:1px solid var(--border);color:var(--text)" onclick="placeInvestOrder('sell')">Sell</button>
           </div>
         </div>
-        <div style="font-size:0.72rem;color:var(--muted);margin-top:10px">💵 $0.01 flat fee per order. Fractional shares: invest with as little as $1.</div>
+        <div style="font-size:0.72rem;color:var(--muted);margin-top:10px">💵 $0.01 flat fee per order · $1,000 max per order · $2,500 rolling 24-hour limit · no margin.</div>
       </div>
 
       <div style="display:flex;gap:12px;margin-bottom:18px;flex-wrap:wrap">
@@ -2521,10 +2477,16 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
   async function placeInvestOrder(side) {
     const symbol = (document.getElementById('invest-symbol')?.value || '').trim().toUpperCase().replace(/[^A-Z0-9.]/g, '');
     const amount = parseFloat(document.getElementById('invest-amount')?.value || '');
+    const quoteSymbol = (document.getElementById('quote-symbol')?.textContent || '').trim().toUpperCase();
     if (!symbol) { toast('Enter a symbol'); return; }
     if (!amount || amount <= 0) { toast('Enter a dollar amount'); return; }
-    if (amount > 50000) { toast('Max $50,000 per order (student limit)'); return; }
-    if (!confirm(`${side === 'buy' ? 'Buy' : 'Sell'} $${amount} of ${symbol}?`)) return;
+    if (amount > 1000) { toast('Protective limit: maximum $1,000 per order'); return; }
+    if (quoteSymbol !== symbol || document.getElementById('invest-quote')?.style.display !== 'block') {
+      toast('Get a fresh quote for this symbol before placing the order');
+      return;
+    }
+    const quotePrice = document.getElementById('quote-price')?.textContent || 'the quoted price';
+    if (!confirm(`${side === 'buy' ? 'Buy' : 'Sell'} $${amount.toFixed(2)} of ${symbol} at about ${quotePrice}?\n\nProtective limits apply. Market prices can move before execution.`)) return;
     try {
       const r = await authPost('/investing/orders', { symbol, side, notional: amount });
       toast(`${side === 'buy' ? 'Bought' : 'Sold'} — order ${r.status}`);
