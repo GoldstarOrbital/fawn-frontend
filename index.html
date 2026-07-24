@@ -583,6 +583,8 @@
       .buck-stage { height:120px; transform:scale(.82); transform-origin:right center; }
       .learn-levels, .learn-steps { grid-template-columns:1fr; }
       .learn-hub-head { flex-direction:column; }
+      #automation-summary { grid-template-columns:repeat(2,minmax(0,1fr)) !important; }
+      #automation-setup [style*="grid-template-columns"] { grid-template-columns:1fr !important; }
     }
     @media (prefers-reduced-motion: reduce) {
       *, *::before, *::after { animation-duration:0.001ms !important; animation-iteration-count:1 !important; scroll-behavior:auto !important; transition-duration:0.001ms !important; }
@@ -1401,11 +1403,14 @@ Available anytime for questions or issues</span>
       <div class="tab" id="tab-automation">
         <div class="page-header">
           <h1>Automation</h1>
-          <p>Set it once, never think about it again. Recurring transfers, DCA investing, price alerts, savings goals, webhooks, and batch payouts.</p>
+          <p>Set guardrails once, then keep control. Build recurring transfer rules, savings goals, price alerts, and review-gated investing plans.</p>
         </div>
+        <div id="automation-summary" style="display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;margin-bottom:18px"></div>
+        <div id="automation-setup" style="display:none;margin-bottom:18px"></div>
         <div class="perk-grid" id="automation-grid"></div>
-      <div class="disclaimer-box" style="margin-top:16px">
-          Automations are opt-in and should stay within the protective limits shown in Investing. FAWN pauses an order when a limit, quote, balance, or provider check fails.
+        <div id="automation-active" style="margin-top:18px"></div>
+        <div class="disclaimer-box" style="margin-top:16px">
+          Automations are opt-in. Every money-moving rule stays subject to balance, transfer-limit, quote, sanctions, and provider checks. Investment plans are review-gated until a brokerage executor is configured; nothing bypasses those controls.
         </div>
       </div>
 
@@ -1959,6 +1964,7 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
   function renderAutomation() {
     const el = document.getElementById('automation-grid');
     if (el) el.innerHTML = AUTOMATION_SERVICES.map(automationCard).join('');
+    loadAutomationCenter();
   }
 
   function automationCard(a) {
@@ -1978,14 +1984,95 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
 
   async function setupAutomation(action) {
     showTab('automation');
-    if (action === 'webhooks') {
-      try {
-        const res = await authGet('/webhooks/subscriptions');
-        toast(`You have ${res.count || 0} active webhook(s). Full setup coming to this screen soon.`);
-      } catch { toast('Sign in required to view webhooks.'); }
+    const host = document.getElementById('automation-setup');
+    if (!host) return;
+    const tomorrow = new Date(Date.now() + 86400000).toISOString().slice(0, 10);
+    const field = (label, id, attrs = '') => `<label style="display:block;font-size:.72rem;color:var(--muted);text-transform:uppercase;letter-spacing:.7px;margin-bottom:6px">${label}<input id="${id}" ${attrs} style="display:block;width:100%;margin-top:6px;background:var(--bg);border:1px solid var(--border);border-radius:10px;padding:11px;color:var(--text);font-size:.9rem"></label>`;
+    const frequency = `<label style="display:block;font-size:.72rem;color:var(--muted);text-transform:uppercase;letter-spacing:.7px;margin-bottom:6px">Frequency<select id="auto-frequency" style="display:block;width:100%;margin-top:6px;background:var(--bg);border:1px solid var(--border);border-radius:10px;padding:11px;color:var(--text);font-size:.9rem"><option value="weekly">Weekly</option><option value="biweekly">Every two weeks</option><option value="monthly">Monthly</option></select></label>`;
+    let title = '', note = '', fields = '';
+    if (action === 'recurring-transfers') {
+      title = 'Create a recurring transfer rule';
+      note = 'Recipient and amount are saved as a rule. A rule must still pass current balance and transfer-limit checks at execution.';
+      fields = `${field('Recipient @username or wallet', 'auto-recipient', 'placeholder="@fawnfriend" maxlength="120"')}${field('Amount per transfer (USD)', 'auto-amount', 'type="number" min="1" max="1000" step="0.01" placeholder="25"')}${frequency}`;
+    } else if (action === 'price-alerts') {
+      title = 'Create a price alert';
+      note = 'Alerts are informational only and never place a trade.';
+      fields = `${field('Token', 'auto-token', 'value="USDC" maxlength="12"')}${field('Price threshold (USD)', 'auto-threshold', 'type="number" min="0.0001" step="0.0001" placeholder="1.00"')}<label style="display:block;font-size:.72rem;color:var(--muted);text-transform:uppercase;letter-spacing:.7px;margin-bottom:6px">Alert when<select id="auto-direction" style="display:block;width:100%;margin-top:6px;background:var(--bg);border:1px solid var(--border);border-radius:10px;padding:11px;color:var(--text);font-size:.9rem"><option value="above">Price rises above</option><option value="below">Price falls below</option></select></label>`;
+    } else if (action === 'savings-goals') {
+      title = 'Create a savings goal';
+      note = 'Goals track your intent. No funds move unless a verified funding path and every safeguard are available.';
+      fields = `${field('Goal name', 'auto-goal-name', 'placeholder="Emergency fund" maxlength="60"')}${field('Target amount (USD)', 'auto-goal-target', 'type="number" min="1" step="1" placeholder="1000"')}${field('Target date', 'auto-goal-date', `type="date" min="${tomorrow}" value="${tomorrow}"`)}${field('Suggested allocation (%)', 'auto-goal-percent', 'type="number" min="0" max="50" step="1" value="10"')}`;
+    } else if (action === 'dca-plans') {
+      title = 'Create a review-gated DCA plan';
+      note = 'This saves your plan. Purchases remain disabled until a supported brokerage executor, fresh quote, balance, and order-limit checks are available.';
+      fields = `${field('Asset symbol', 'auto-dca-token', 'placeholder="VTI" maxlength="12"')}${field('Amount per cycle (USD)', 'auto-dca-amount', 'type="number" min="1" max="1000" step="0.01" placeholder="10"')}${frequency}`;
+    } else {
+      host.style.display = 'block';
+      host.innerHTML = `<div class="disclaimer-box"><strong>${action === 'webhooks' ? 'Webhooks' : 'Batch payouts'} are not self-serve yet.</strong><br>These require additional authentication and operational controls. The Automation center keeps the money-moving rules available now without opening an unsafe path.</div>`;
       return;
     }
-    toast('Setup flow for this automation is coming soon — the API is live at /automation/' + action);
+    host.style.display = 'block';
+    host.innerHTML = `<div style="background:var(--surface);border:1px solid var(--green);border-radius:16px;padding:18px"><div style="display:flex;justify-content:space-between;gap:12px;align-items:flex-start;margin-bottom:14px"><div><div style="color:var(--green);font-size:.7rem;font-weight:800;letter-spacing:1px;text-transform:uppercase">Automation setup</div><div style="font-weight:800;font-size:1rem;margin-top:4px">${title}</div></div><button onclick="closeAutomationSetup()" style="border:none;background:transparent;color:var(--muted);font-size:1.1rem;cursor:pointer" aria-label="Close setup">×</button></div><div style="display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px">${fields}</div><div style="font-size:.76rem;color:var(--muted);line-height:1.45;margin:12px 0">${note}</div><button class="btn" style="max-width:220px" onclick="saveAutomation('${action}')">Save protected rule</button></div>`;
+  }
+
+  function closeAutomationSetup() {
+    const host = document.getElementById('automation-setup');
+    if (host) { host.style.display = 'none'; host.innerHTML = ''; }
+  }
+
+  async function saveAutomation(action) {
+    try {
+      let path = '', payload = {};
+      const start = new Date(Date.now() + 60000).toISOString();
+      if (action === 'recurring-transfers') {
+        const dollars = Number(val('auto-amount'));
+        const recipient = val('auto-recipient');
+        if (!recipient || !Number.isFinite(dollars) || dollars < 1 || dollars > 1000) throw new Error('Enter a recipient and an amount between $1 and $1,000.');
+        path = '/automation/recurring-transfers'; payload = { recipient_address:recipient, amount_cents:Math.round(dollars * 100), frequency:document.getElementById('auto-frequency').value, start_date:start };
+      } else if (action === 'price-alerts') {
+        const threshold = Number(val('auto-threshold'));
+        const tokenName = val('auto-token').toUpperCase();
+        if (!/^[A-Z0-9]{2,12}$/.test(tokenName) || !Number.isFinite(threshold) || threshold <= 0) throw new Error('Enter a valid asset symbol and price threshold.');
+        path = '/automation/price-alerts'; payload = { token:tokenName, threshold_usd:threshold, direction:document.getElementById('auto-direction').value, notify_on_change:true };
+      } else if (action === 'savings-goals') {
+        const target = Number(val('auto-goal-target')), pct = Number(val('auto-goal-percent')), date = val('auto-goal-date');
+        if (!val('auto-goal-name') || !Number.isFinite(target) || target < 1 || !date || !Number.isFinite(pct) || pct < 0 || pct > 50) throw new Error('Enter a goal, positive target, future date, and 0–50% allocation.');
+        path = '/automation/savings-goals'; payload = { name:val('auto-goal-name'), target_amount_cents:Math.round(target * 100), target_date:new Date(`${date}T12:00:00`).toISOString(), auto_allocate_percent:pct };
+      } else if (action === 'dca-plans') {
+        const amount = Number(val('auto-dca-amount')), symbol = val('auto-dca-token').toUpperCase();
+        if (!/^[A-Z0-9]{1,12}$/.test(symbol) || !Number.isFinite(amount) || amount < 1 || amount > 1000) throw new Error('Enter an asset symbol and an amount between $1 and $1,000.');
+        path = '/automation/dca-plans'; payload = { token:symbol, amount_usd:amount, frequency:document.getElementById('auto-frequency').value, start_date:start };
+      }
+      await authPost(path, payload);
+      closeAutomationSetup();
+      toast(action === 'dca-plans' ? 'DCA plan saved for review' : 'Protected rule saved');
+      loadAutomationCenter();
+    } catch (e) { toast(e.message || 'Could not save this automation'); }
+  }
+
+  async function loadAutomationCenter() {
+    const summary = document.getElementById('automation-summary'), active = document.getElementById('automation-active');
+    if (!summary || !active || !token) return;
+    summary.innerHTML = '<div style="grid-column:1/-1;color:var(--muted);font-size:.85rem">Loading your automation rules…</div>';
+    try {
+      const [recurring, alerts, goals, dca] = await Promise.all([
+        authGet('/automation/recurring-transfers'), authGet('/automation/price-alerts'), authGet('/automation/savings-goals'), authGet('/automation/dca-plans')
+      ]);
+      const groups = [
+        ['Recurring', recurring.recurring_transfers || [], '🔄'], ['Alerts', alerts.price_alerts || [], '🚨'], ['Goals', goals.savings_goals || [], '🎯'], ['DCA plans', dca.dca_plans || [], '💹']
+      ];
+      summary.innerHTML = groups.map(([label, rows, icon]) => `<div style="background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:13px"><div style="font-size:.72rem;color:var(--muted)">${icon} ${label}</div><div style="font-size:1.35rem;font-weight:800;color:var(--green);margin-top:4px">${rows.length}</div></div>`).join('');
+      const items = [
+        ...recurring.recurring_transfers.map(x => ['Recurring transfer', `${_esc(x.recipient)} · ${fmt(x.amount_cents / 100)} ${_esc(x.frequency)}`]),
+        ...alerts.price_alerts.map(x => ['Price alert', `${_esc(x.token)} ${_esc(x.direction)} ${fmt(x.threshold_usd)}`]),
+        ...goals.savings_goals.map(x => ['Savings goal', `${_esc(x.name)} · ${fmt(x.target_amount_cents / 100)} target`]),
+        ...dca.dca_plans.map(x => ['DCA plan', `${_esc(x.token)} · ${fmt(x.amount_usd)} ${_esc(x.frequency)} · review-gated`])
+      ];
+      active.innerHTML = `<div class="section-header"><div class="section-title">Saved rules</div><span style="font-size:.76rem;color:var(--muted)">${items.length} active</span></div>${items.length ? `<div class="tx-list">${items.map(([title, detail]) => `<div class="tx-item"><div class="tx-left"><div class="tx-icon">⚙️</div><div><div class="tx-name">${title}</div><div class="tx-meta">${detail}</div></div></div><div style="font-size:.72rem;color:var(--green);font-weight:700">ACTIVE</div></div>`).join('')}</div>` : `<div style="background:var(--surface);border:1px dashed var(--border);border-radius:14px;padding:18px;color:var(--muted);font-size:.86rem">No rules yet. Start with an alert or goal, then add a protected recurring plan when it fits your cash flow.</div>`}`;
+    } catch (e) {
+      summary.innerHTML = '<div style="grid-column:1/-1;color:var(--muted);font-size:.85rem">Could not load automation rules. Try again shortly.</div>';
+      active.innerHTML = '';
+    }
   }
 
   function perkCard(p) {
