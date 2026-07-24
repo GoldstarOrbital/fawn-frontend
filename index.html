@@ -481,6 +481,8 @@
     .modal-close { float: right; cursor: pointer; color: var(--muted); font-size: 1.2rem; line-height: 1; margin-top: -4px; }
 
     .modal-actions { display: flex; gap: 12px; margin-top: 20px; }
+    .feedback-star { width:30px; height:30px; border-radius:9px; border:1px solid var(--border); background:var(--bg); color:var(--text); cursor:pointer; font-size:0.75rem; }
+    .feedback-star:hover { background:var(--accent); color:#fff; border-color:var(--accent); }
     .btn-outline {
       flex: 1; padding: 12px; background: transparent; color: var(--text);
       border: 1px solid var(--border); border-radius: 10px; font-size: 0.9rem;
@@ -1073,6 +1075,22 @@ Available anytime for questions or issues</span>
           </div>
         </div>
 
+        <div id="fawn-first-session" style="display:none;background:linear-gradient(135deg,rgba(201,156,93,0.16),rgba(0,0,0,0.08));border:1px solid rgba(201,156,93,0.45);border-radius:18px;padding:18px 20px;margin-bottom:18px;position:relative;overflow:hidden">
+          <div style="display:flex;gap:16px;align-items:center;position:relative;z-index:1">
+            <img src="assets/fawn-penny-lifelike.png?v=transparent-20260724" alt="" style="width:70px;height:70px;object-fit:contain;filter:drop-shadow(0 8px 14px rgba(0,0,0,.25))" />
+            <div style="flex:1">
+              <div style="font-size:0.68rem;color:var(--accent);text-transform:uppercase;letter-spacing:1.2px;margin-bottom:5px">FAWN in one minute</div>
+              <div style="font-weight:800;font-size:1.05rem;margin-bottom:5px">Your money, clearly accounted for.</div>
+              <div style="font-size:0.82rem;color:var(--muted);line-height:1.45">FAWN is a custodial wallet: we protect the signing key, you control the actions. Add funds, send or receive, and explore investing — every fee, limit, and status stays visible.</div>
+              <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:12px">
+                <button class="qa-btn" style="padding:7px 11px;font-size:0.78rem" onclick="openAddFundsModal(); dismissFirstSession()">Add funds</button>
+                <button class="qa-btn" style="padding:7px 11px;font-size:0.78rem;background:var(--surface);border:1px solid var(--border);color:var(--text)" onclick="openReceiveModal(); dismissFirstSession()">Receive</button>
+                <button style="background:none;border:none;color:var(--muted);font-size:0.78rem;cursor:pointer" onclick="dismissFirstSession()">Got it</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
         <div class="balance-card">
           <div style="display:flex;justify-content:space-between;align-items:flex-start">
             <div class="balance-eyebrow">Your Balance</div>
@@ -1103,6 +1121,11 @@ Available anytime for questions or issues</span>
             <div class="qa-icon">📈</div>
             <div class="qa-label">Invest</div>
           </div>
+        </div>
+
+        <div id="fawn-card-center" style="display:flex;gap:14px;align-items:center;justify-content:space-between;flex-wrap:wrap;background:linear-gradient(135deg,rgba(111,97,255,0.12),transparent);border:1px solid rgba(111,97,255,0.28);border-radius:16px;padding:15px 18px;margin:0 0 20px">
+          <div><div style="font-size:0.68rem;color:var(--accent);text-transform:uppercase;letter-spacing:1px;margin-bottom:5px">FAWN card</div><div style="font-weight:750" id="fawn-card-title">A debit card for your cleared balance</div><div style="font-size:0.78rem;color:var(--muted);margin-top:3px" id="fawn-card-copy">Virtual-first card issuance is being prepared with spend controls and instant freeze.</div></div>
+          <button class="qa-btn" id="fawn-card-btn" onclick="requestFawnCard()">Join card list</button>
         </div>
 
         <div class="stats-row">
@@ -1146,6 +1169,14 @@ Available anytime for questions or issues</span>
           <a class="section-link" onclick="showTab('transactions')">View all →</a>
         </div>
         <div class="tx-list" id="dash-tx"></div>
+
+        <div style="display:flex;gap:14px;align-items:center;justify-content:space-between;flex-wrap:wrap;background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:16px 18px;margin-top:22px">
+          <div><div style="font-weight:700;font-size:0.9rem">How is FAWN working for you?</div><div style="font-size:0.78rem;color:var(--muted);margin-top:3px">Your feedback shapes safer, simpler money tools.</div></div>
+          <div style="display:flex;gap:5px" aria-label="Rate FAWN from 1 to 5">
+            <button class="feedback-star" onclick="sendFawnFeedback(1)">1</button><button class="feedback-star" onclick="sendFawnFeedback(2)">2</button><button class="feedback-star" onclick="sendFawnFeedback(3)">3</button><button class="feedback-star" onclick="sendFawnFeedback(4)">4</button><button class="feedback-star" onclick="sendFawnFeedback(5)">5</button>
+          </div>
+          <button onclick="openSupportTicket('other')" style="background:none;border:1px solid var(--border);color:var(--text);border-radius:9px;padding:8px 12px;cursor:pointer;font-size:0.78rem">Get help</button>
+        </div>
       </div>
 
       <!-- TRANSACTIONS -->
@@ -1365,6 +1396,17 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
 
 <script>
   const API = 'https://web-production-13d5b.up.railway.app';
+  const fawnAnonymousId = localStorage.getItem('fawn_anonymous_id') || (crypto.randomUUID ? crypto.randomUUID() : `anon-${Date.now()}-${Math.random()}`);
+  localStorage.setItem('fawn_anonymous_id', fawnAnonymousId);
+  function recordFawnTelemetry(event_name, details = {}) {
+    try {
+      const payload = { event_name, anonymous_id: fawnAnonymousId, ...details };
+      fetch(`${API}/experience/telemetry`, { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(payload), keepalive:true }).catch(() => {});
+    } catch {}
+  }
+  window.addEventListener('error', e => recordFawnTelemetry('client_error', { success:false, metadata:{ type:'error', message:String(e.message || '').slice(0,120) } }));
+  window.addEventListener('unhandledrejection', e => recordFawnTelemetry('client_error', { success:false, metadata:{ type:'promise', message:String(e.reason || '').slice(0,120) } }));
+  window.addEventListener('load', () => recordFawnTelemetry('page_load', { duration_ms:Math.round(performance.now()), success:true, path:location.pathname }));
   let token = localStorage.getItem('fawn_token');
   let user = null;
   let signupUsernameAvailable = null;
@@ -1505,6 +1547,7 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
     const btn = document.getElementById('reg-btn');
     btn.disabled = true; btn.textContent = 'Creating account…';
     clearErr('reg-err');
+    recordFawnTelemetry('onboarding_started', { success:true, path:'/signup' });
     try {
       // Client-side validation
       const fullName = val('r-name');
@@ -1593,6 +1636,10 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
                `Good evening, ${user.full_name.split(' ')[0]}`;
 
     maybeShowWelcome();
+    if (localStorage.getItem('fawn_new_user') === '1' && !localStorage.getItem('fawn_first_session_seen')) {
+      const first = document.getElementById('fawn-first-session');
+      if (first) first.style.display = 'block';
+    }
     loadSavingsHub();
     initNewsPreferences();
 
@@ -1621,6 +1668,25 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
       loadReferral();
       startAutoRefresh();
     }
+    loadFawnCardStatus();
+  }
+
+  async function loadFawnCardStatus() {
+    try {
+      const d = await authGet('/experience/cards/status');
+      const title = document.getElementById('fawn-card-title');
+      const copy = document.getElementById('fawn-card-copy');
+      const btn = document.getElementById('fawn-card-btn');
+      if (d.status === 'interest') { if (title) title.textContent = 'You are on the FAWN card list'; if (btn) { btn.textContent = 'Requested'; btn.disabled = true; } }
+      if (d.issuer_configured && copy) copy.textContent = 'Virtual-first debit card with cleared-balance funding, spend limits, and instant freeze.';
+    } catch {}
+  }
+
+  async function requestFawnCard() {
+    const btn = document.getElementById('fawn-card-btn');
+    if (btn) { btn.disabled = true; btn.textContent = 'Saving...'; }
+    try { await authPost('/experience/cards/request', {}); if (btn) btn.textContent = 'Requested'; toast('You are on the FAWN card list.'); }
+    catch { if (btn) { btn.disabled = false; btn.textContent = 'Join card list'; } toast('Card signup is temporarily unavailable.'); }
   }
 
   async function loadBalance() {
@@ -2059,6 +2125,25 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
     }).join('');
   }
 
+  function dismissFirstSession() {
+    localStorage.setItem('fawn_first_session_seen', '1');
+    const first = document.getElementById('fawn-first-session');
+    if (first) first.style.display = 'none';
+  }
+
+  async function sendFawnFeedback(score) {
+    try { await authPost('/experience/feedback', { score, context:'dashboard' }); toast('Thanks — feedback received.'); }
+    catch { toast('Feedback could not be sent right now.'); }
+  }
+
+  async function openSupportTicket(category = 'other') {
+    const subject = window.prompt('What do you need help with?');
+    if (!subject) return;
+    const message = window.prompt('Tell FAWN support what happened. Do not include passwords or recovery codes.') || subject;
+    try { await authPost('/experience/support/tickets', { category, subject:subject.slice(0,120), message:message.slice(0,4000) }); toast('Support request opened.'); }
+    catch { toast('Support is temporarily unavailable. Please try again.'); }
+  }
+
   function articleIdentity(article) {
     return `${article.source || ''}|${article.title || ''}|${article.pub_date || ''}`;
   }
@@ -2243,19 +2328,23 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
   }
 
   async function authGet(path) {
+    const started = performance.now();
     const r = await fetch(API + path, { headers: { Authorization: `Bearer ${token}` } });
     const data = await r.json();
+    recordFawnTelemetry('api_request', { duration_ms:Math.round(performance.now() - started), success:r.ok, path, metadata:{ status:String(r.status) } });
     if (!r.ok) throw new Error(data.detail || `Error ${r.status}`);
     return data;
   }
 
   async function authPost(path, body) {
+    const started = performance.now();
     const r = await fetch(API + path, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
       body: JSON.stringify(body),
     });
     const data = await r.json();
+    recordFawnTelemetry('api_request', { duration_ms:Math.round(performance.now() - started), success:r.ok, path, metadata:{ status:String(r.status) } });
     if (!r.ok) {
       let msg = `Error ${r.status}`;
       if (data.detail) {
