@@ -1217,6 +1217,21 @@ Available anytime for questions or issues</span>
           <h1>Transfers</h1>
           <p>All your FAWN transfers in one place. Status, fees, and confirmations stay visible from send to settlement.</p>
         </div>
+        <section id="repayment-center" style="position:relative;overflow:hidden;margin:0 0 22px;padding:22px;border:1px solid rgba(0,200,150,.3);border-radius:18px;background:linear-gradient(120deg,rgba(0,200,150,.12),rgba(14,18,25,.92) 60%);box-shadow:0 18px 50px rgba(0,0,0,.18)">
+          <img src="assets/fawn-penny-lifelike.png?v=transparent-20260724" alt="" aria-hidden="true" style="position:absolute;right:-6px;bottom:-24px;width:154px;opacity:.42;pointer-events:none;filter:drop-shadow(0 14px 16px rgba(0,0,0,.36))" />
+          <div style="position:relative;max-width:660px">
+            <div style="font-size:.68rem;letter-spacing:1.3px;text-transform:uppercase;color:var(--green);font-weight:800;margin-bottom:7px">FAWN Tab / settle up softly</div>
+            <h2 style="font-size:1.28rem;margin:0 0 7px">Keep the friendship. Close the tab.</h2>
+            <p style="color:var(--muted);font-size:.86rem;line-height:1.55;margin:0 0 15px">Fronted dinner, rent, or tickets? Send a private, neutral request. There is no public score, no automatic debit, and every payment needs their clear approval.</p>
+            <div style="display:flex;gap:9px;flex-wrap:wrap"><button onclick="openRepaymentComposer()" style="background:var(--green);color:#04100c;border:0;border-radius:10px;padding:10px 14px;font-weight:800;cursor:pointer">Request a share</button><button onclick="loadRepaymentRequests()" style="background:rgba(255,255,255,.06);color:var(--text);border:1px solid var(--border);border-radius:10px;padding:10px 14px;font-weight:700;cursor:pointer">Refresh requests</button></div>
+            <div id="repayment-composer" style="display:none;margin-top:17px;padding:15px;border:1px solid rgba(255,255,255,.12);border-radius:13px;background:rgba(0,0,0,.2)">
+              <div style="display:grid;grid-template-columns:1fr 130px;gap:10px"><input id="repay-recipient" placeholder="Friend's @username" maxlength="32" style="min-width:0" /><input id="repay-amount" type="number" min="1" max="1000" step=".01" placeholder="$ amount" /></div>
+              <input id="repay-note" placeholder="What was this for? (optional)" maxlength="140" style="width:100%;margin-top:10px" />
+              <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-top:10px"><label style="font-size:.78rem;color:var(--muted)">Gentle due date <input id="repay-due" type="date" style="margin-left:6px" /></label><button onclick="createRepaymentRequest()" style="background:var(--green);color:#04100c;border:0;border-radius:9px;padding:9px 13px;font-weight:800;cursor:pointer">Create private request</button><button onclick="closeRepaymentComposer()" style="background:none;border:0;color:var(--muted);cursor:pointer">Cancel</button></div>
+            </div>
+            <div id="repayment-requests" style="margin-top:16px"></div>
+          </div>
+        </section>
         <div class="tx-search-wrap">
           <span class="tx-search-icon">🔍</span>
           <input class="tx-search" id="tx-search" type="search" placeholder="Search by description or category…" oninput="filterTxns(this.value)" />
@@ -1967,6 +1982,66 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
     loadAutomationCenter();
   }
 
+  function openRepaymentComposer() {
+    const panel = document.getElementById('repayment-composer');
+    if (panel) { panel.style.display = 'block'; document.getElementById('repay-recipient').focus(); }
+  }
+  function closeRepaymentComposer() { document.getElementById('repayment-composer').style.display = 'none'; }
+
+  async function createRepaymentRequest() {
+    const recipient = val('repay-recipient');
+    const amount = Number(val('repay-amount'));
+    const note = val('repay-note');
+    const due = val('repay-due');
+    if (!recipient || !recipient.startsWith('@')) return toast('Use their FAWN username, starting with @.');
+    if (!Number.isFinite(amount) || amount < 1 || amount > 1000) return toast('Choose an amount from $1 to $1,000.');
+    try {
+      const data = await authPost('/repayments/requests', { recipient, amount_cents: Math.round(amount * 100), note: note || null, due_at: due ? `${due}T23:59:59Z` : null });
+      closeRepaymentComposer();
+      ['repay-recipient','repay-amount','repay-note','repay-due'].forEach(id => document.getElementById(id).value = '');
+      toast(data.message || 'Private request created.');
+      loadRepaymentRequests();
+    } catch (e) { toast(e.message || 'Could not create this request.'); }
+  }
+
+  function repaymentCard(r) {
+    const incoming = r.direction === 'incoming';
+    const status = r.status === 'paid' ? 'Settled' : r.status === 'processing' ? 'Settling...' : r.status === 'cancelled' ? 'Cancelled' : incoming ? 'Ready when you are' : 'Awaiting them';
+    const due = r.due_at ? ` · due ${new Date(r.due_at).toLocaleDateString()}` : '';
+    let action = '';
+    if (incoming && r.status === 'pending') action = `<button onclick="payRepaymentRequest('${r.id}')" style="background:var(--green);color:#04100c;border:0;border-radius:8px;padding:8px 11px;font-weight:800;cursor:pointer">Pay ${fmt(r.amount)}</button>`;
+    if (!incoming && r.status === 'pending') action = `<button onclick="prepareRepaymentNudge('${r.id}')" style="background:none;color:var(--text);border:1px solid var(--border);border-radius:8px;padding:8px 11px;font-weight:700;cursor:pointer">Copy gentle nudge</button>`;
+    return `<div style="display:flex;align-items:center;gap:11px;justify-content:space-between;flex-wrap:wrap;padding:12px 0;border-top:1px solid rgba(255,255,255,.1)"><div><div style="font-size:.88rem;font-weight:750">${incoming ? 'Settle with' : 'Request from'} ${escHtml(r.counterparty)} <span style="color:var(--green)">${fmt(r.amount)}</span></div><div style="font-size:.76rem;color:var(--muted);margin-top:3px">${escHtml(r.note || 'Shared expense')}${due} · ${status}</div></div>${action}</div>`;
+  }
+
+  async function loadRepaymentRequests() {
+    const el = document.getElementById('repayment-requests');
+    if (!el || !token) return;
+    try {
+      const data = await authGet('/repayments/requests');
+      const requests = data.requests || [];
+      el.innerHTML = requests.length ? `<div style="font-size:.72rem;text-transform:uppercase;letter-spacing:1px;color:var(--muted);margin-bottom:4px">Your private tabs</div>${requests.map(repaymentCard).join('')}` : '<div style="font-size:.8rem;color:var(--muted);padding-top:3px">No open tabs yet. Ask once, without making it awkward.</div>';
+    } catch (e) { el.innerHTML = '<div style="font-size:.8rem;color:var(--muted)">Requests are temporarily unavailable.</div>'; }
+  }
+
+  async function prepareRepaymentNudge(id) {
+    try {
+      const data = await authPost(`/repayments/requests/${id}/remind`, {});
+      await navigator.clipboard.writeText(data.share_text);
+      toast('Gentle nudge copied — you choose if and where to send it.');
+      loadRepaymentRequests();
+    } catch (e) { toast(e.message || 'Nudge unavailable right now.'); }
+  }
+
+  async function payRepaymentRequest(id) {
+    if (!confirm('Pay this private FAWN Tab request now? This sends money only after you confirm.')) return;
+    try {
+      const data = await authPost(`/repayments/requests/${id}/pay`, {});
+      toast(data.message || 'Tab settled.');
+      loadRepaymentRequests(); loadTxns(); loadBalance();
+    } catch (e) { toast(e.message || 'This payment could not be completed.'); loadRepaymentRequests(); }
+  }
+
   function automationCard(a) {
     const icon = /\p{Extended_Pictographic}/u.test(a.emoji || '') ? a.emoji : '✨';
     return `<div class="perk-card">
@@ -2427,7 +2502,7 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
     document.querySelectorAll('[id^=nav-]').forEach(n => n.classList.remove('active'));
     tabEl.classList.add('active');
     navEl.classList.add('active');
-    if (name === 'transactions' && user?.wallet_initialized) loadTxns();
+    if (name === 'transactions' && user?.wallet_initialized) { loadTxns(); loadRepaymentRequests(); }
     if ((name === 'campus' || name === 'perks' || name === 'military') && token && !savingsLoaded) loadSavingsHub();
     if (name === 'military') renderMilitaryStatus();
     if (name === 'automation') renderAutomation();
