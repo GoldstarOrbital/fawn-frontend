@@ -592,9 +592,10 @@
     <h2>Create your account</h2>
     <div class="auth-sub">One quick setup. FAWN creates your encrypted custodial wallet automatically.</div>
     <div class="field"><label>Full name</label><input type="text" id="r-name" placeholder="Alex Goldsmith" required /></div>
+    <div class="field"><label>Username</label><input type="text" id="r-username" placeholder="alex_goldsmith" autocomplete="username" maxlength="30" required oninput="resetUsernameCheck()" onblur="checkSignupUsername()" /><div id="r-username-status" style="font-size:0.75rem;color:var(--muted);margin-top:5px">3-30 lowercase letters, numbers, or underscores</div></div>
     <div class="field"><label>Email</label><input type="email" id="r-email" placeholder="you@example.com" required /></div>
     <div class="field"><label>Phone <span style="color:var(--muted);font-size:0.75rem">(optional)</span></label><input type="tel" id="r-phone" placeholder="(optional) 555-123-4567" /></div>
-    <div class="field"><label>Password</label><input type="password" id="r-pass" placeholder="At least 8 characters" required /></div>
+    <div class="field"><label>Password</label><input type="password" id="r-pass" placeholder="At least 8 characters" autocomplete="new-password" required /><div style="font-size:0.75rem;color:var(--muted);margin-top:5px">Use 8+ characters. It cannot contain your username or any username part.</div></div>
     <div class="field">
       <label class="checkbox-row">
         <input type="checkbox" id="r-student" checked />
@@ -1366,6 +1367,7 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
   const API = 'https://web-production-13d5b.up.railway.app';
   let token = localStorage.getItem('fawn_token');
   let user = null;
+  let signupUsernameAvailable = null;
   let allTxns = [];
   let schoolDirectory = [];
   let selectedSchoolKey = null;
@@ -1449,6 +1451,36 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
     document.getElementById('reg-card').classList.remove('hidden');
   }
 
+  function resetUsernameCheck() {
+    signupUsernameAvailable = null;
+    const status = document.getElementById('r-username-status');
+    if (status) { status.textContent = '3-30 lowercase letters, numbers, or underscores'; status.style.color = 'var(--muted)'; }
+  }
+
+  async function checkSignupUsername() {
+    const input = document.getElementById('r-username');
+    const status = document.getElementById('r-username-status');
+    const username = (input?.value || '').trim().toLowerCase();
+    if (!status || !username) return resetUsernameCheck();
+    if (!/^[a-z0-9_]{3,30}$/.test(username)) {
+      signupUsernameAvailable = false;
+      status.textContent = 'Use 3-30 lowercase letters, numbers, or underscores.';
+      status.style.color = 'var(--red)';
+      return;
+    }
+    status.textContent = 'Checking availability…';
+    try {
+      const result = await fetch(`${API}/accounts/check-username/${encodeURIComponent(username)}`).then(r => r.json());
+      signupUsernameAvailable = !!result.available;
+      status.textContent = result.available ? `@${username} is available` : (result.reason || 'Username is taken');
+      status.style.color = result.available ? 'var(--green)' : 'var(--red)';
+    } catch {
+      signupUsernameAvailable = null;
+      status.textContent = 'We will check this when you create your account.';
+      status.style.color = 'var(--muted)';
+    }
+  }
+
   function showLogin() {
     document.getElementById('reg-card').classList.add('hidden');
     document.getElementById('login-card').classList.remove('hidden');
@@ -1476,18 +1508,24 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
     try {
       // Client-side validation
       const fullName = val('r-name');
+      const username = val('r-username').toLowerCase();
       const email = val('r-email');
       const password = val('r-pass');
 
       if (!fullName) throw new Error('Full name is required');
+      if (!/^[a-z0-9_]{3,30}$/.test(username)) throw new Error('Choose a username with 3-30 lowercase letters, numbers, or underscores');
+      if (signupUsernameAvailable === false) throw new Error('Please choose an available username');
       if (!email) throw new Error('Email is required');
       if (!email.includes('@')) throw new Error('Please enter a valid email address');
       if (!password) throw new Error('Password is required');
       if (password.length < 8) throw new Error('Password must be at least 8 characters');
+      const usernameParts = [username, ...username.split('_').filter(part => part.length >= 3)];
+      if (usernameParts.some(part => password.toLowerCase().includes(part))) throw new Error('Password cannot contain your username or a username part');
       if (!document.getElementById('r-agree').checked) throw new Error('Please agree to the Terms and Privacy Policy to continue');
 
       const r = await post('/auth/register', {
         full_name: fullName,
+        username,
         email: email,
         phone: val('r-phone'),
         password: password,
