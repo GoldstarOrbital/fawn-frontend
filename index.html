@@ -590,7 +590,7 @@
   <!-- REGISTER -->
   <div class="auth-card hidden" id="reg-card">
     <h2>Create your account</h2>
-    <div class="auth-sub">Takes about 60 seconds. Your account is ready to use instantly.</div>
+    <div class="auth-sub">One quick setup. FAWN creates your encrypted custodial wallet automatically.</div>
     <div class="field"><label>Full name</label><input type="text" id="r-name" placeholder="Alex Goldsmith" required /></div>
     <div class="field"><label>Email</label><input type="email" id="r-email" placeholder="you@example.com" required /></div>
     <div class="field"><label>Phone <span style="color:var(--muted);font-size:0.75rem">(optional)</span></label><input type="tel" id="r-phone" placeholder="(optional) 555-123-4567" /></div>
@@ -1542,6 +1542,18 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
       token = r.access_token;
       localStorage.setItem('fawn_token', token);
       localStorage.setItem('fawn_new_user', '1');
+      // Finish the only account setup step in the background of signup. The
+      // dashboard still keeps its retry banner if a transient wallet error
+      // occurs, but a new user should not have to discover and click it.
+      try {
+        const wallet = await authPost('/auth/wallets/create', {});
+        if (wallet.wallet_address) {
+          localStorage.setItem('fawn_wallet_address', wallet.wallet_address);
+          localStorage.setItem('fawn_wallet_type', 'fawn_custodial');
+        }
+      } catch (walletError) {
+        sessionStorage.setItem('fawn_wallet_setup_error', walletError.message || 'Wallet setup needs one more try');
+      }
       // Apply referral code if one was in the URL
       const ref = sessionStorage.getItem('fawn_ref');
       if (ref) {
@@ -1602,6 +1614,11 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
       // Enable create wallet buttons
       const btn = document.getElementById('create-wallet-custodial-btn');
       if (btn) { btn.disabled = false; btn.textContent = 'Create wallet (instant)'; }
+      const walletSetupError = sessionStorage.getItem('fawn_wallet_setup_error');
+      if (walletSetupError) {
+        sessionStorage.removeItem('fawn_wallet_setup_error');
+        setTimeout(() => toast('Your account is ready. Tap Create wallet to finish setup.'), 350);
+      }
     } else {
       document.getElementById('onboard-banner').classList.add('hidden');
       // Disable create wallet buttons if wallet already exists
@@ -2300,8 +2317,7 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
   function maybeShowWelcome() {
     if (localStorage.getItem('fawn_new_user') === '1') {
       localStorage.removeItem('fawn_new_user');
-      const modal = document.getElementById('welcome-modal');
-      if (modal) modal.style.display = 'flex';
+      setTimeout(() => toast('Welcome to FAWN — your custodial wallet is ready.'), 350);
     }
     // Handle PWA deep-link tab
     const startTab = sessionStorage.getItem('fawn_start_tab');
