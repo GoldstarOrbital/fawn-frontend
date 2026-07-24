@@ -1406,7 +1406,7 @@ Available anytime for questions or issues</span>
       <div class="tab" id="tab-brief">
         <div class="page-header">
           <h1>FAWN Daily Brief</h1>
-          <p>Your AI-compiled financial & markets rundown. Fresh every morning at 3:30 AM Pacific.</p>
+          <p>Your AI-compiled financial & markets rundown. Published by FAWN each morning at 3:30 AM Pacific and refreshed here automatically.</p>
         </div>
         <div id="brief-body">
           <div style="color:var(--muted);font-size:0.9rem;padding:20px 0;text-align:center">Loading today's brief…</div>
@@ -2521,7 +2521,8 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
     if (name === 'military') renderMilitaryStatus();
     if (name === 'automation') renderAutomation();
     if (name === 'investing' && token) loadInvesting();
-    if (name === 'brief') loadBrief();
+    if (name === 'brief') { loadBrief(); startBriefAutoRefresh(); }
+    else stopBriefAutoRefresh();
     if (name === 'news') {
       initNewsPreferences();
       if (token) { fetchNews(true); startNewsAutoRefresh(); }
@@ -3050,15 +3051,25 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
     try {
       const r = await fetch(API + '/podcast/latest');
       if (r.status === 404) {
-        renderBriefEpisode(body, disc, STATIC_DAILY_BRIEF, 'latest static episode');
+        body.innerHTML = '<div style="background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:22px;color:var(--muted);line-height:1.55">Today\'s Daily Brief is still being prepared. FAWN will refresh this view automatically; no browser or Codex session is required.</div>';
+        if (disc) disc.style.display = 'none';
         return;
       }
       if (!r.ok) throw new Error('Error ' + r.status);
       const e = await r.json();
       renderBriefEpisode(body, disc, e, 'backend episode');
     } catch (e) {
-      renderBriefEpisode(body, disc, STATIC_DAILY_BRIEF, 'latest static episode');
+      body.innerHTML = '<div style="background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:22px;color:var(--muted);line-height:1.55">The Daily Brief is temporarily unavailable. FAWN will retry automatically; please check back shortly.</div>';
+      if (disc) disc.style.display = 'none';
     }
+  }
+  let briefRefreshInterval = null;
+  function startBriefAutoRefresh() {
+    stopBriefAutoRefresh();
+    briefRefreshInterval = setInterval(loadBrief, 60000);
+  }
+  function stopBriefAutoRefresh() {
+    if (briefRefreshInterval) { clearInterval(briefRefreshInterval); briefRefreshInterval = null; }
   }
   // ── CRYPTO WALLET CREATION (CRYPTO-NATIVE ARCHITECTURE) ──
 
