@@ -1017,6 +1017,10 @@ Available anytime for questions or issues</span>
         <div class="page-header">
           <h1 id="greeting">Good morning</h1>
           <p id="greeting-sub">Your money, your way. Send USDC instantly OR invest in real stocks. One account, zero compromises.</p>
+          <button id="location-chip" onclick="detectLocation(true)" class="hidden" title="Tailor FAWN to where you are"
+            style="margin-top:10px;display:inline-flex;align-items:center;gap:6px;background:var(--green-faint);color:var(--green);border:1px solid rgba(0,200,150,0.3);border-radius:999px;padding:6px 13px;font-size:0.78rem;font-weight:700;cursor:pointer">
+            <span aria-hidden="true">📍</span><span id="location-chip-text">Set your location</span>
+          </button>
         </div>
 
         <!-- Onboarding banner (shown when wallet not initialized) -->
@@ -1199,6 +1203,9 @@ Available anytime for questions or issues</span>
         <div class="savings-layout">
           <aside class="savings-panel">
             <div class="savings-panel-title">Schools</div>
+            <button onclick="detectLocation(true)" style="width:100%;margin-bottom:10px;display:inline-flex;align-items:center;justify-content:center;gap:7px;background:var(--green-faint);color:var(--green);border:1px solid rgba(0,200,150,0.3);border-radius:10px;padding:9px;font-size:0.82rem;font-weight:700;cursor:pointer">
+              <span aria-hidden="true">📍</span> Use my location
+            </button>
             <div class="school-list" id="school-list">
               <div style="color:var(--muted);font-size:0.85rem">Loading campuses...</div>
             </div>
@@ -1509,6 +1516,7 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
       h < 12 ? `Good morning, ${user.full_name.split(' ')[0]}` :
       h < 17 ? `Good afternoon, ${user.full_name.split(' ')[0]}` :
                `Good evening, ${user.full_name.split(' ')[0]}`;
+    refreshLocationChip();
 
     maybeShowWelcome();
     loadSavingsHub();
@@ -1675,7 +1683,53 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
     </div>`;
   }
 
-  // ── NEWS ──
+  // ── LOCATION TAILORING ──
+  // Privacy-respecting: the chip just shows the user's saved location. GPS is
+  // only requested on an explicit click; coordinates are reverse-geocoded to a
+  // coarse city/state label (never stored raw, never put in a URL), which is
+  // saved to the profile and used to auto-pick the nearest campus.
+  function refreshLocationChip() {
+    const chip = document.getElementById('location-chip');
+    const txt = document.getElementById('location-chip-text');
+    if (!chip || !txt) return;
+    txt.textContent = user?.location ? user.location : 'Set your location';
+    chip.classList.remove('hidden');
+  }
+
+  async function detectLocation() {
+    if (!('geolocation' in navigator)) { toast("Location isn't available on this device", { type: 'info' }); return; }
+    toast('Getting your location…', { type: 'info' });
+    navigator.geolocation.getCurrentPosition(async (pos) => {
+      const { latitude, longitude } = pos.coords;
+      let label = '', region = '';
+      try {
+        const r = await fetch(`https://api.bigdatacloud.net/data/reverse-geocode-client?latitude=${latitude}&longitude=${longitude}&localityLanguage=en`);
+        const g = await r.json();
+        region = g.principalSubdivision || '';
+        const city = g.city || g.locality || '';
+        const stateCode = (g.principalSubdivisionCode || '').split('-').pop();
+        label = [city, stateCode || region].filter(Boolean).join(', ');
+      } catch { label = ''; }
+      if (!label) { toast("Couldn't resolve your location", { type: 'error' }); return; }
+
+      try {
+        await authPatch('/auth/me', { location: label });
+        user = { ...user, location: label };
+      } catch {}
+      refreshLocationChip();
+      toast(`Location set to ${label}`, { type: 'success' });
+
+      // Best-effort: jump to the nearest campus by matching state/region.
+      if (Array.isArray(schoolDirectory) && schoolDirectory.length && region) {
+        const rl = region.toLowerCase();
+        const match = schoolDirectory.find(s => (s.region || '').toLowerCase().includes(rl) || rl.includes((s.region || '').toLowerCase().split(',')[0]));
+        if (match) { showTab('campus'); selectSchool(match.key, true); }
+      }
+    }, (err) => {
+      toast(err.code === 1 ? 'Location permission denied' : "Couldn't get your location", { type: 'info' });
+    }, { enableHighAccuracy: false, timeout: 10000, maximumAge: 600000 });
+  }
+
   // ── NEWS ──
   async function loadSavingsHub() {
     renderEduPerks();
@@ -1949,40 +2003,7 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
     clearInterval(newsCountdownTimer);
   }
 
-  function renderArticles(articles) {
-    if (!articles.length) {
-      return '<div style="color:var(--muted);font-size:0.9rem;padding:24px 0;text-align:center">No stories matched your filters — try different keywords or clear all chips.</div>';
-    }
-    return articles.map((a, i) => `
-      <div class="article-card" id="article-${i}" style="background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:18px 20px;margin-bottom:10px;cursor:pointer;transition:border-color 0.15s" onclick="toggleArticle(${i})">
-        <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:12px">
-          <div style="flex:1">
-            <div style="font-size:0.88rem;font-weight:600;line-height:1.45;margin-bottom:6px">${escHtml(a.title)}</div>
-            <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">
-              ${a.source ? `<span style="font-size:0.7rem;color:var(--green);font-weight:700;text-transform:uppercase;letter-spacing:0.5px">${escHtml(a.source)}</span>` : ''}
-              ${a.pub_date ? `<span style="font-size:0.7rem;color:var(--muted)">${escHtml(a.pub_date)}</span>` : ''}
-            </div>
-          </div>
-          <span style="color:var(--muted);font-size:0.8rem;flex-shrink:0;margin-top:2px" id="chevron-${i}">▾</span>
-        </div>
-        <div id="article-body-${i}" style="display:none;margin-top:12px;padding-top:12px;border-top:1px solid var(--border);font-size:0.875rem;line-height:1.7;color:#ccc">
-          ${escHtml(a.summary)}
-        </div>
-      </div>`).join('');
-  }
-
-  function toggleArticle(i) {
-    const body = document.getElementById(`article-body-${i}`);
-    const chev = document.getElementById(`chevron-${i}`);
-    const card = document.getElementById(`article-${i}`);
-    const open = body.style.display === 'none';
-    body.style.display = open ? 'block' : 'none';
-    chev.textContent = open ? '▴' : '▾';
-    card.style.borderColor = open ? 'var(--green)' : 'var(--border)';
-  }
-
-  // 3D news wall: the latest declaration intentionally replaces the legacy
-  // flat-card renderer above while keeping its public toggleArticle contract.
+  // 3D news wall renderer. `toggleArticle` remains the public onclick contract.
   function renderArticles(articles) {
     if (!articles.length) {
       return '<div style="color:var(--muted);font-size:0.9rem;padding:24px 0;text-align:center">No stories matched your filters — try different keywords or clear all chips.</div>';
@@ -1990,8 +2011,9 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
     const cards = articles.map((a, i) => {
       const angle = (i % 5) - 2;
       const depth = 4 + ((i * 13) % 22);
+      const key = `${a.source || ''}::${a.title || ''}`;
       return `
-        <div class="news-3d-card" id="article-${i}" role="button" tabindex="0" aria-expanded="false"
+        <div class="news-3d-card" id="article-${i}" data-key="${escHtml(key)}" role="button" tabindex="0" aria-expanded="false"
           style="--card-z:${depth}px;--card-x:${angle}deg;--card-y:${-angle}deg"
           onclick="toggleArticle(${i})" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();toggleArticle(${i})}">
           <div class="news-card-title">${escHtml(a.title)}</div>
@@ -2034,6 +2056,40 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
     };
   }
 
+  // Renders the news wall while preserving interaction state across the 1s
+  // refresh. The server caches feeds ~45s, so second-to-second the article
+  // set is usually identical — in that case we leave the DOM completely
+  // untouched, so an open/hovered/focused card doesn't snap shut every
+  // second (the whole point of an interactive wall). When the set genuinely
+  // changes, open cards are re-opened by their stable data-key and keyboard
+  // focus is restored, so a reader is never interrupted mid-story.
+  function renderNewsFeed(feed, articles) {
+    const newKeys = articles.map(a => `${a.source || ''}::${a.title || ''}`).join('|');
+    const existing = feed.querySelector('#news-3d-scene');
+    if (existing && existing.dataset.keys === newKeys) return; // unchanged — keep DOM + state
+
+    const openKeys = new Set([...feed.querySelectorAll('.news-3d-card.is-open')].map(c => c.dataset.key));
+    const active = document.activeElement;
+    const focusedKey = active && active.classList && active.classList.contains('news-3d-card') ? active.dataset.key : null;
+
+    feed.innerHTML = renderArticles(articles);
+    const scene = feed.querySelector('#news-3d-scene');
+    if (scene) scene.dataset.keys = newKeys;
+
+    if (openKeys.size || focusedKey) {
+      feed.querySelectorAll('.news-3d-card').forEach(card => {
+        if (openKeys.has(card.dataset.key)) {
+          card.classList.add('is-open');
+          card.setAttribute('aria-expanded', 'true');
+          const hint = card.querySelector('.news-card-hint');
+          if (hint) hint.textContent = 'Close';
+        }
+        if (focusedKey && card.dataset.key === focusedKey) card.focus();
+      });
+    }
+    setupNews3D();
+  }
+
   async function fetchNews(manual = false) {
     if (newsInFlight && !manual) return;
     newsInFlight = true;
@@ -2064,8 +2120,7 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
       if (signal) signal.textContent = sources.size > 1
         ? `${sources.size} sources - 1s live refresh`
         : 'Live refresh - source diversity limited right now';
-      feed.innerHTML = renderArticles(articles);
-      setupNews3D();
+      renderNewsFeed(feed, articles);
       feed.style.opacity = '1';
 
       const disc = document.getElementById('news-disc');
