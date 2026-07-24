@@ -3242,7 +3242,7 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
       if (walletAddr) {
         document.getElementById('wallet-info').style.display = 'block';
         document.getElementById('create-wallet-btn').style.display = 'none';
-        document.getElementById('seed-btn').style.display = 'none';
+        { const _sb = document.getElementById('seed-btn'); if (_sb) _sb.style.display = 'none'; }
         document.getElementById('send-btn').style.display = 'block';
         document.getElementById('settings-wallet-addr').textContent = walletAddr;
         document.getElementById('copy-settings-wallet-btn').style.display = 'inline-block';
@@ -3253,7 +3253,7 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
       } else {
         document.getElementById('wallet-info').style.display = 'none';
         document.getElementById('create-wallet-btn').style.display = 'block';
-        document.getElementById('seed-btn').style.display = 'none';
+        { const _sb = document.getElementById('seed-btn'); if (_sb) _sb.style.display = 'none'; }
         document.getElementById('send-btn').style.display = 'none';
         document.getElementById('copy-settings-wallet-btn').style.display = 'none';
       }
