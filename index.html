@@ -2006,9 +2006,15 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
       title = 'Create a review-gated DCA plan';
       note = 'This saves your plan. Purchases remain disabled until a supported brokerage executor, fresh quote, balance, and order-limit checks are available.';
       fields = `${field('Asset symbol', 'auto-dca-token', 'placeholder="VTI" maxlength="12"')}${field('Amount per cycle (USD)', 'auto-dca-amount', 'type="number" min="1" max="1000" step="0.01" placeholder="10"')}${frequency}`;
+    } else if (action === 'webhooks') {
+      title = 'Connect a signed webhook';
+      note = 'FAWN signs each JSON delivery with your one-time webhook secret. Store that secret now—it is not shown again. HTTPS public endpoints only.';
+      fields = `${field('HTTPS endpoint URL', 'auto-webhook-url', 'type="url" placeholder="https://example.com/fawn-events"')}<div style="font-size:.82rem;color:var(--muted);padding-top:4px"><div style="font-size:.72rem;text-transform:uppercase;letter-spacing:.7px;margin-bottom:8px">Events</div><label style="display:block;margin:7px 0"><input id="auto-wh-price" type="checkbox" checked> Price alert triggered</label><label style="display:block;margin:7px 0"><input id="auto-wh-batch" type="checkbox"> Batch queued for review</label><label style="display:block;margin:7px 0"><input id="auto-wh-test" type="checkbox" checked> Test ping</label></div>`;
+    } else if (action === 'batch-transfers') {
+      title = 'Prepare a batch transfer';
+      note = 'A batch is capped at 25 recipients and $5,000. Saving it never sends funds—it creates a reviewable batch and can notify your webhook.';
+      fields = `<label style="display:block;grid-column:1/-1;font-size:.72rem;color:var(--muted);text-transform:uppercase;letter-spacing:.7px">Recipients — one per line: @username or wallet address, amount in USD<textarea id="auto-batch-recipients" rows="7" placeholder="@alex, 12.50&#10;0x1234..., 5.00" style="display:block;width:100%;margin-top:6px;background:var(--bg);border:1px solid var(--border);border-radius:10px;padding:11px;color:var(--text);font-size:.88rem;resize:vertical"></textarea></label>`;
     } else {
-      host.style.display = 'block';
-      host.innerHTML = `<div class="disclaimer-box"><strong>${action === 'webhooks' ? 'Webhooks' : 'Batch payouts'} are not self-serve yet.</strong><br>These require additional authentication and operational controls. The Automation center keeps the money-moving rules available now without opening an unsafe path.</div>`;
       return;
     }
     host.style.display = 'block';
@@ -2042,10 +2048,32 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
         const amount = Number(val('auto-dca-amount')), symbol = val('auto-dca-token').toUpperCase();
         if (!/^[A-Z0-9]{1,12}$/.test(symbol) || !Number.isFinite(amount) || amount < 1 || amount > 1000) throw new Error('Enter an asset symbol and an amount between $1 and $1,000.');
         path = '/automation/dca-plans'; payload = { token:symbol, amount_usd:amount, frequency:document.getElementById('auto-frequency').value, start_date:start };
+      } else if (action === 'webhooks') {
+        const url = val('auto-webhook-url');
+        const events = [document.getElementById('auto-wh-price')?.checked && 'price_alert.triggered', document.getElementById('auto-wh-batch')?.checked && 'batch_transfer.queued', document.getElementById('auto-wh-test')?.checked && 'test.ping'].filter(Boolean);
+        if (!/^https:\/\//i.test(url) || !events.length) throw new Error('Enter a public HTTPS URL and select at least one event.');
+        path = '/webhooks/subscribe'; payload = { url, events, active:true };
+      } else if (action === 'batch-transfers') {
+        const lines = val('auto-batch-recipients').split(/\r?\n/).map(line => line.trim()).filter(Boolean);
+        const recipients = lines.map(line => {
+          const parts = line.split(',').map(part => part.trim());
+          const amount = Number(parts.pop());
+          return { address:parts.join(','), amount_cents:Math.round(amount * 100) };
+        });
+        const total = recipients.reduce((sum, item) => sum + item.amount_cents, 0);
+        if (recipients.length < 2 || recipients.length > 25 || recipients.some(item => !item.address || !Number.isFinite(item.amount_cents) || item.amount_cents < 100) || total > 500000) throw new Error('Use 2–25 lines in “recipient, amount” format; total must be $5,000 or less.');
+        path = '/webhooks/batch/transfers'; payload = { recipients, metadata:{ source:'automation_center' } };
       }
-      await authPost(path, payload);
-      closeAutomationSetup();
-      toast(action === 'dca-plans' ? 'DCA plan saved for review' : 'Protected rule saved');
+      const response = await authPost(path, payload);
+      const host = document.getElementById('automation-setup');
+      if (action === 'webhooks' && host) {
+        host.style.display = 'block';
+        host.innerHTML = `<div class="disclaimer-box"><strong>Webhook connected.</strong><br>Copy this signing secret now—it is shown only once.<div style="margin-top:10px;padding:10px;background:var(--bg);border:1px solid var(--border);border-radius:8px;word-break:break-all;color:var(--green);font-family:ui-monospace,monospace">${_esc(response.signing_secret)}</div><div style="margin-top:8px;font-size:.76rem;color:var(--muted)">FAWN signs the raw JSON body in <code>X-FAWN-Signature</code> using HMAC-SHA256.</div></div>`;
+      } else closeAutomationSetup();
+      if (action === 'dca-plans') toast('DCA plan saved for review');
+      else if (action === 'webhooks') toast('Webhook saved — copy the signing secret');
+      else if (action === 'batch-transfers') toast('Batch saved for review');
+      else toast('Protected rule saved');
       loadAutomationCenter();
     } catch (e) { toast(e.message || 'Could not save this automation'); }
   }
@@ -2055,8 +2083,8 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
     if (!summary || !active || !token) return;
     summary.innerHTML = '<div style="grid-column:1/-1;color:var(--muted);font-size:.85rem">Loading your automation rules…</div>';
     try {
-      const [recurring, alerts, goals, dca] = await Promise.all([
-        authGet('/automation/recurring-transfers'), authGet('/automation/price-alerts'), authGet('/automation/savings-goals'), authGet('/automation/dca-plans')
+      const [recurring, alerts, goals, dca, webhooks, events] = await Promise.all([
+        authGet('/automation/recurring-transfers'), authGet('/automation/price-alerts'), authGet('/automation/savings-goals'), authGet('/automation/dca-plans'), authGet('/webhooks/subscriptions'), authGet('/webhooks/events?limit=10')
       ]);
       const groups = [
         ['Recurring', recurring.recurring_transfers || [], '🔄'], ['Alerts', alerts.price_alerts || [], '🚨'], ['Goals', goals.savings_goals || [], '🎯'], ['DCA plans', dca.dca_plans || [], '💹']
@@ -2066,7 +2094,9 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
         ...recurring.recurring_transfers.map(x => ['Recurring transfer', `${_esc(x.recipient)} · ${fmt(x.amount_cents / 100)} ${_esc(x.frequency)}`]),
         ...alerts.price_alerts.map(x => ['Price alert', `${_esc(x.token)} ${_esc(x.direction)} ${fmt(x.threshold_usd)}`]),
         ...goals.savings_goals.map(x => ['Savings goal', `${_esc(x.name)} · ${fmt(x.target_amount_cents / 100)} target`]),
-        ...dca.dca_plans.map(x => ['DCA plan', `${_esc(x.token)} · ${fmt(x.amount_usd)} ${_esc(x.frequency)} · review-gated`])
+        ...dca.dca_plans.map(x => ['DCA plan', `${_esc(x.token)} · ${fmt(x.amount_usd)} ${_esc(x.frequency)} · review-gated`]),
+        ...(webhooks.webhooks || []).map(x => ['Webhook', `${_esc(x.url)} · ${(x.events || []).map(_esc).join(', ')}`]),
+        ...(events.events || []).filter(x => x.action === 'batch_transfer_queued' || x.action === 'price_alert_triggered').map(x => [x.action === 'batch_transfer_queued' ? 'Batch queued' : 'Price alert fired', new Date(x.timestamp).toLocaleString()])
       ];
       active.innerHTML = `<div class="section-header"><div class="section-title">Saved rules</div><span style="font-size:.76rem;color:var(--muted)">${items.length} saved</span></div>${items.length ? `<div class="tx-list">${items.map(([title, detail]) => `<div class="tx-item"><div class="tx-left"><div class="tx-icon">⚙️</div><div><div class="tx-name">${title}</div><div class="tx-meta">${detail}</div></div></div><div style="font-size:.72rem;color:var(--green);font-weight:700">SAVED</div></div>`).join('')}</div>` : `<div style="background:var(--surface);border:1px dashed var(--border);border-radius:14px;padding:18px;color:var(--muted);font-size:.86rem">No rules yet. Start with an alert or goal, then add a protected recurring plan when it fits your cash flow.</div>`}`;
     } catch (e) {
