@@ -2434,6 +2434,18 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
         <div style="font-size:0.72rem;color:var(--muted);margin-top:10px">💵 $0.01 flat fee per order · $1,000 max per order · $2,500 rolling 24-hour limit · no margin.</div>
       </div>
 
+      <div id="brokerage-connections" style="background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:18px;margin-bottom:18px">
+        <div style="display:flex;justify-content:space-between;gap:14px;align-items:center;flex-wrap:wrap">
+          <div>
+            <div style="font-size:0.7rem;color:var(--muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:6px">Connect a brokerage</div>
+            <div style="font-weight:700">Bring your existing investments to FAWN</div>
+            <div style="font-size:0.8rem;color:var(--muted);margin-top:5px">Securely connect a supported brokerage through SnapTrade. FAWN never sees your brokerage password.</div>
+          </div>
+          <button class="qa-btn" id="brokerage-connect-btn" onclick="connectBrokerage()">Connect brokerage</button>
+        </div>
+        <div id="brokerage-connection-list" style="margin-top:12px;color:var(--muted);font-size:0.82rem">Loading connections…</div>
+      </div>
+
       <div style="display:flex;gap:12px;margin-bottom:18px;flex-wrap:wrap">
         <button class="qa-btn" style="flex:1;min-width:100px" onclick="showInvestTab('positions')">Positions</button>
         <button class="qa-btn" style="flex:1;min-width:100px;background:var(--surface);border:1px solid var(--border);color:var(--text)" onclick="showInvestTab('history')">History</button>
@@ -2457,6 +2469,33 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
     loadPositions();
     loadOrders();
     loadWatchlist();
+    loadBrokerageConnections();
+  }
+
+  async function loadBrokerageConnections() {
+    const el = document.getElementById('brokerage-connection-list');
+    if (!el) return;
+    try {
+      const d = await authGet('/brokerage/connections');
+      const items = d.connections || [];
+      el.innerHTML = items.length ? items.map(c => `<div style="display:flex;justify-content:space-between;padding:9px 0;border-top:1px solid var(--border)"><span>${_esc(c.institution_name || 'Brokerage')}</span><span style="color:var(--muted)">${_esc(c.status || 'connected')}</span></div>`).join('') : 'No brokerages connected yet.';
+    } catch (e) {
+      const m = e?.message || '';
+      el.textContent = /503|not configured/i.test(m) ? 'Brokerage connections are being prepared. Check back soon.' : 'Could not load brokerage connections.';
+    }
+  }
+
+  async function connectBrokerage() {
+    const btn = document.getElementById('brokerage-connect-btn');
+    if (btn) { btn.disabled = true; btn.textContent = 'Opening…'; }
+    try {
+      const d = await authPost('/brokerage/connect', { redirect_uri: window.location.href });
+      if (!d.redirect_uri) throw new Error('No connection portal was returned.');
+      window.location.href = d.redirect_uri;
+    } catch (e) {
+      toast(e?.message || 'Brokerage connections are not available yet.');
+      if (btn) { btn.disabled = false; btn.textContent = 'Connect brokerage'; }
+    }
   }
 
   function showInvestTab(tab) {
