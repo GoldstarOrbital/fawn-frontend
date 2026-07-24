@@ -1655,6 +1655,11 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
     stopNewsAutoRefresh();
     token = null; user = null; allTxns = [];
     localStorage.removeItem('fawn_token');
+    // Account-specific data must never survive a sign-out on a shared device.
+    localStorage.removeItem('fawn_wallet_address');
+    localStorage.removeItem('fawn_wallet_type');
+    const receiveAddress = document.getElementById('receive-address');
+    if (receiveAddress) receiveAddress.value = '';
     showAuthScreen();
   }
 
@@ -1663,12 +1668,12 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
     document.getElementById('auth-screen').style.display = 'none';
     document.getElementById('app-screen').style.display = 'block';
 
-    // Load the public wallet address from the account profile.
-    loadSavedWalletData();
-
     try {
       user = await authGet('/auth/me');
     } catch { logout(); return; }
+
+    // Read wallet details only after the authenticated identity is known.
+    await loadSavedWalletData();
 
     handlePayLink();
 
@@ -1755,6 +1760,9 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
         // rather than continuing to show a stale localStorage value.
         const receiveAddress = document.getElementById('receive-address');
         if (receiveAddress) receiveAddress.value = d.wallet_address;
+      } else {
+        localStorage.removeItem('fawn_wallet_address');
+        localStorage.removeItem('fawn_wallet_type');
       }
       // Update account address pill
       const pill = document.getElementById('acct-pill');
@@ -3148,15 +3156,19 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
         const receiveAddr = document.getElementById('receive-address');
         if (receiveAddr) receiveAddr.value = addr;
         console.log(`[wallet] Loaded wallet from profile: ✓ address ${addr?.slice(0, 8)}...`);
+      } else {
+        localStorage.removeItem('fawn_wallet_address');
+        localStorage.removeItem('fawn_wallet_type');
+        const receiveAddr = document.getElementById('receive-address');
+        if (receiveAddr) receiveAddr.value = '';
       }
     } catch (e) {
-      // Fallback to localStorage if API fails
-      const savedAddr = localStorage.getItem('fawn_wallet_address');
-      if (savedAddr) {
-        const receiveAddr = document.getElementById('receive-address');
-        if (receiveAddr) receiveAddr.value = savedAddr;
-        console.log(`[wallet] Loaded from localStorage (offline): ${savedAddr?.slice(0, 8)}...`);
-      }
+      // Never surface a prior account's cached address if profile loading
+      // fails. Wallet details are displayed only from the authenticated API.
+      localStorage.removeItem('fawn_wallet_address');
+      localStorage.removeItem('fawn_wallet_type');
+      const receiveAddr = document.getElementById('receive-address');
+      if (receiveAddr) receiveAddr.value = '';
     }
   }
 
