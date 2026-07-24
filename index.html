@@ -695,9 +695,12 @@
       </div>
 
       <div id="wallet-info" style="background:var(--surface2);border:1px solid var(--border);border-radius:12px;padding:14px;margin-bottom:12px;font-size:0.85rem;display:none">
-        <div style="display:flex;justify-content:space-between;margin-bottom:8px">
-          <div style="color:var(--muted)">Address</div>
-          <div style="font-family:monospace;font-size:0.75rem" id="settings-wallet-addr">—</div>
+        <div style="margin-bottom:10px">
+          <div style="color:var(--muted);margin-bottom:5px">Address</div>
+          <div style="display:flex;gap:8px;align-items:center">
+            <div style="font-family:monospace;font-size:0.72rem;overflow-wrap:anywhere;flex:1;line-height:1.4" id="settings-wallet-addr">—</div>
+            <button id="copy-settings-wallet-btn" onclick="copySettingsWalletAddress()" type="button" style="padding:6px 9px;background:var(--surface);border:1px solid var(--border);border-radius:7px;color:var(--text);font-size:0.72rem;font-weight:700;cursor:pointer">Copy</button>
+          </div>
         </div>
         <div style="display:flex;justify-content:space-between;margin-bottom:8px">
           <div style="color:var(--muted)">Balance</div>
@@ -815,9 +818,17 @@ Available anytime for questions or issues</span>
     <!-- Security -->
     <div style="margin-bottom:28px;padding-bottom:24px;border-bottom:1px solid var(--border)">
       <div style="font-size:0.8rem;font-weight:700;text-transform:uppercase;color:var(--muted);letter-spacing:1px;margin-bottom:12px">Security</div>
-      <button style="width:100%;padding:12px;background:var(--surface2);border:1px solid var(--border);border-radius:10px;cursor:pointer;font-weight:600;color:var(--text)" onclick="toast('Coming soon: Change password')">
+      <button style="width:100%;padding:12px;background:var(--surface2);border:1px solid var(--border);border-radius:10px;cursor:pointer;font-weight:600;color:var(--text)" onclick="toggleChangePassword()">
         Change Password
       </button>
+      <form id="change-password-form" onsubmit="changePassword(event)" style="display:none;margin-top:12px;background:var(--surface2);border:1px solid var(--border);border-radius:12px;padding:14px">
+        <label style="display:block;font-size:0.75rem;color:var(--muted);margin-bottom:6px" for="current-password-input">Current password</label>
+        <input id="current-password-input" type="password" autocomplete="current-password" required style="box-sizing:border-box;width:100%;margin-bottom:10px;background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:10px;color:var(--text)" />
+        <label style="display:block;font-size:0.75rem;color:var(--muted);margin-bottom:6px" for="new-password-input">New password</label>
+        <input id="new-password-input" type="password" autocomplete="new-password" minlength="8" required style="box-sizing:border-box;width:100%;background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:10px;color:var(--text)" />
+        <div style="font-size:0.72rem;color:var(--muted);line-height:1.4;margin:8px 0 12px">At least 8 characters. It cannot contain your username or a meaningful part of it.</div>
+        <button id="change-password-submit" type="submit" style="width:100%;padding:10px;background:var(--green);color:#000;border:0;border-radius:8px;font-weight:800;cursor:pointer">Update password</button>
+      </form>
     </div>
 
     <!-- Sign Out -->
@@ -3197,8 +3208,16 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
 
   async function updateSettingsDisplay() {
     try {
-      const userProfile = await authGet('/auth/me');
-      const walletAddr = userProfile?.crypto_wallet_address;
+      const [profileResult, balanceResult] = await Promise.allSettled([
+        authGet('/auth/me'),
+        authGet('/wallet/balance'),
+      ]);
+      if (profileResult.status !== 'fulfilled') throw profileResult.reason;
+      const userProfile = profileResult.value;
+      const balance = balanceResult.status === 'fulfilled' ? balanceResult.value : null;
+      // Wallet balance is scoped to the authenticated JWT and is authoritative
+      // for a custodial wallet reissued after an older wallet was retired.
+      const walletAddr = balance?.wallet_address || userProfile?.crypto_wallet_address;
       const walletType = userProfile?.wallet_type;
       const username = userProfile?.username;
 
@@ -3212,10 +3231,10 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
         document.getElementById('create-wallet-btn').style.display = 'none';
         document.getElementById('seed-btn').style.display = 'none';
         document.getElementById('send-btn').style.display = 'block';
-        document.getElementById('settings-wallet-addr').textContent = walletAddr.slice(0, 8) + '...' + walletAddr.slice(-6);
-        document.getElementById('settings-wallet-type').textContent = 'FAWN Custodial · encrypted signing';
-        const balance = await authGet('/wallet/balance');
-        document.getElementById('settings-wallet-balance').textContent = '$' + (balance?.usdc_balance || 0).toFixed(2);
+        document.getElementById('settings-wallet-addr').textContent = walletAddr;
+        document.getElementById('copy-settings-wallet-btn').style.display = 'inline-block';
+        document.getElementById('settings-wallet-type').textContent = walletType === 'fawn_custodial' ? 'FAWN Custodial · encrypted signing' : 'Wallet status needs attention';
+        document.getElementById('settings-wallet-balance').textContent = balance ? '$' + Number(balance.usdc_balance || 0).toFixed(2) : 'Temporarily unavailable';
         localStorage.setItem('fawn_wallet_address', walletAddr);
         document.getElementById('receive-address').value = walletAddr;
       } else {
@@ -3223,6 +3242,7 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
         document.getElementById('create-wallet-btn').style.display = 'block';
         document.getElementById('seed-btn').style.display = 'none';
         document.getElementById('send-btn').style.display = 'none';
+        document.getElementById('copy-settings-wallet-btn').style.display = 'none';
       }
       return userProfile;
     } catch (e) {
@@ -3278,6 +3298,44 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
     } catch (e) {
       errorDiv.textContent = e?.message || 'Failed to save username';
       errorDiv.style.display = 'block';
+    }
+  }
+
+  async function copySettingsWalletAddress() {
+    const address = document.getElementById('settings-wallet-addr').textContent;
+    if (!address || address === '—') return;
+    try {
+      await navigator.clipboard.writeText(address);
+      toast('Wallet address copied');
+    } catch {
+      toast('Could not copy the wallet address');
+    }
+  }
+
+  function toggleChangePassword() {
+    const form = document.getElementById('change-password-form');
+    const opening = form.style.display === 'none';
+    form.style.display = opening ? 'block' : 'none';
+    if (opening) document.getElementById('current-password-input').focus();
+  }
+
+  async function changePassword(event) {
+    event.preventDefault();
+    const current = document.getElementById('current-password-input').value;
+    const next = document.getElementById('new-password-input').value;
+    const button = document.getElementById('change-password-submit');
+    button.disabled = true;
+    button.textContent = 'Updating…';
+    try {
+      const result = await authPost('/auth/change-password', { current_password: current, new_password: next });
+      document.getElementById('change-password-form').reset();
+      document.getElementById('change-password-form').style.display = 'none';
+      toast(result.message || 'Password updated.');
+    } catch (e) {
+      toast(e.message || 'Could not update password.');
+    } finally {
+      button.disabled = false;
+      button.textContent = 'Update password';
     }
   }
 
