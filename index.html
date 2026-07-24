@@ -1104,6 +1104,10 @@ Available anytime for questions or issues</span>
         <div class="page-header">
           <h1 id="greeting">Good morning</h1>
           <p id="greeting-sub">Your money, your way. Send instantly or invest in real stocks. One custodial account, zero seed-phrase anxiety.</p>
+          <button id="location-chip" onclick="detectLocation()" class="hidden" title="Tailor FAWN to where you are"
+            style="margin-top:10px;display:inline-flex;align-items:center;gap:6px;background:var(--green-faint);color:var(--green);border:1px solid rgba(0,200,150,0.3);border-radius:999px;padding:6px 13px;font-size:0.78rem;font-weight:700;cursor:pointer">
+            <span aria-hidden="true">📍</span><span id="location-chip-text">Set your location</span>
+          </button>
         </div>
 
         <!-- Onboarding banner (shown when wallet not initialized) -->
@@ -1352,6 +1356,9 @@ Available anytime for questions or issues</span>
         <div class="savings-layout">
           <aside class="savings-panel">
             <div class="savings-panel-title">Schools</div>
+            <button onclick="detectLocation()" style="width:100%;margin-bottom:10px;display:inline-flex;align-items:center;justify-content:center;gap:7px;background:var(--green-faint);color:var(--green);border:1px solid rgba(0,200,150,0.3);border-radius:10px;padding:9px;font-size:0.82rem;font-weight:700;cursor:pointer">
+              <span aria-hidden="true">📍</span> Use my location
+            </button>
             <div class="school-list" id="school-list">
               <div style="color:var(--muted);font-size:0.85rem">Loading campuses...</div>
             </div>
@@ -1700,6 +1707,7 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
       h < 12 ? `Good morning, ${user.full_name.split(' ')[0]}` :
       h < 17 ? `Good afternoon, ${user.full_name.split(' ')[0]}` :
                `Good evening, ${user.full_name.split(' ')[0]}`;
+    refreshLocationChip();
 
     maybeShowWelcome();
     if (localStorage.getItem('fawn_new_user') === '1' && !localStorage.getItem('fawn_first_session_seen')) {
@@ -1902,7 +1910,52 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
     </div>`;
   }
 
-  // ── NEWS ──
+  // ── LOCATION TAILORING ──
+  // Privacy-respecting: the chip just shows the user's saved location. GPS is
+  // only requested on an explicit click; coordinates are reverse-geocoded to a
+  // coarse city/state label (never stored raw, never put in a URL), saved to
+  // the profile, and used to auto-pick the nearest campus.
+  function refreshLocationChip() {
+    const chip = document.getElementById('location-chip');
+    const txt = document.getElementById('location-chip-text');
+    if (!chip || !txt) return;
+    txt.textContent = user?.location ? user.location : 'Set your location';
+    chip.classList.remove('hidden');
+  }
+
+  async function detectLocation() {
+    if (!('geolocation' in navigator)) { toast("Location isn't available on this device"); return; }
+    toast('Getting your location…');
+    navigator.geolocation.getCurrentPosition(async (pos) => {
+      const { latitude, longitude } = pos.coords;
+      let label = '', region = '';
+      try {
+        const r = await fetch(`https://api.bigdatacloud.net/data/reverse-geocode-client?latitude=${latitude}&longitude=${longitude}&localityLanguage=en`);
+        const g = await r.json();
+        region = g.principalSubdivision || '';
+        const city = g.city || g.locality || '';
+        const stateCode = (g.principalSubdivisionCode || '').split('-').pop();
+        label = [city, stateCode || region].filter(Boolean).join(', ');
+      } catch { label = ''; }
+      if (!label) { toast("Couldn't resolve your location"); return; }
+
+      try {
+        await authPatch('/auth/me', { location: label });
+        user = { ...user, location: label };
+      } catch {}
+      refreshLocationChip();
+      toast(`📍 Location set to ${label}`);
+
+      if (Array.isArray(schoolDirectory) && schoolDirectory.length && region) {
+        const rl = region.toLowerCase();
+        const match = schoolDirectory.find(s => (s.region || '').toLowerCase().includes(rl) || rl.includes((s.region || '').toLowerCase().split(',')[0]));
+        if (match) { showTab('campus'); selectSchool(match.key, true); }
+      }
+    }, (err) => {
+      toast(err.code === 1 ? 'Location permission denied' : "Couldn't get your location");
+    }, { enableHighAccuracy: false, timeout: 10000, maximumAge: 600000 });
+  }
+
   // ── NEWS ──
   async function loadSavingsHub() {
     renderEduPerks();

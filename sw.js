@@ -1,7 +1,7 @@
-// FAWN Service Worker — offline shell + background sync
-// Bump this whenever the app shell changes. The previous cache-first shell
-// could keep returning an old index.html after a GitHub Pages deployment.
-const CACHE = 'fawn-v2-8183290';
+// FAWN Service Worker — offline shell only. API responses are NEVER cached.
+// Bump CACHE on every shell change (activate purges every other cache), which
+// also flushes any API responses an older SW wrongly cached.
+const CACHE = 'fawn-v3-8183290';
 const BASE = self.registration.scope;
 const SHELL = [BASE, `${BASE}index.html`, `${BASE}manifest.json`];
 
@@ -18,15 +18,22 @@ self.addEventListener('activate', e => {
 });
 
 self.addEventListener('fetch', e => {
+  if (e.request.method !== 'GET') return; // never intercept POST/PUT/PATCH/etc.
   const url = new URL(e.request.url);
-  // Always fetch API calls live; serve cached data only when offline.
-  if (url.pathname.startsWith('/auth') || url.pathname.startsWith('/accounts') ||
-      url.pathname.startsWith('/transactions') || url.pathname.startsWith('/news')) {
+
+  // Cross-origin requests ARE the FAWN API (and third-party SDKs). NEVER cache
+  // them: serving a stale balance or transfer list on a payments app is a real
+  // hazard (it made a reissued wallet keep showing its old balance). Go to the
+  // network; fall back to a clear offline marker only when actually offline.
+  if (url.origin !== self.location.origin) {
     e.respondWith(fetch(e.request).catch(() => new Response('{"error":"offline"}', {
       headers: { 'Content-Type': 'application/json' }
     })));
     return;
   }
+
+  // Same-origin shell/assets: network-first for the shell (so a new deploy is
+  // picked up immediately), cache-first for static assets (icons/images).
   const networkFirst = e.request.mode === 'navigate' ||
     ['document', 'script', 'style'].includes(e.request.destination);
   e.respondWith((networkFirst ? fetch(e.request) : caches.match(e.request).then(cached => cached || fetch(e.request)))
