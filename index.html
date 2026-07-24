@@ -228,6 +228,31 @@
     .stat-value.pos { color: var(--green); }
     .stat-value.neg { color: var(--red); }
 
+    /* INVESTING LEARNING HUB */
+    .learn-hub { background:linear-gradient(135deg,rgba(0,200,150,0.12),rgba(0,200,150,0.025)); border:1px solid rgba(0,200,150,0.28); border-radius:18px; padding:22px; margin:18px 0; overflow:hidden; position:relative; }
+    .learn-hub::after { content:''; position:absolute; width:190px; height:190px; right:-72px; top:-105px; border:1px solid rgba(0,200,150,0.22); border-radius:50%; box-shadow:0 0 0 25px rgba(0,200,150,0.03),0 0 0 50px rgba(0,200,150,0.02); pointer-events:none; }
+    .learn-hub-head { display:flex; justify-content:space-between; align-items:flex-start; gap:16px; position:relative; z-index:1; }
+    .learn-kicker { color:var(--green); font-size:0.68rem; font-weight:800; letter-spacing:1.4px; text-transform:uppercase; margin-bottom:6px; }
+    .learn-hub h2 { font-size:1.15rem; letter-spacing:-0.3px; margin-bottom:5px; }
+    .learn-hub-copy { color:var(--muted); font-size:0.84rem; line-height:1.5; max-width:600px; }
+    .learn-progress { font-size:0.72rem; white-space:nowrap; padding:7px 10px; background:rgba(0,0,0,0.2); border:1px solid rgba(0,200,150,0.2); border-radius:999px; color:var(--green); }
+    .learn-levels { display:grid; grid-template-columns:repeat(3,1fr); gap:10px; margin-top:18px; position:relative; z-index:1; }
+    .learn-level { text-align:left; border:1px solid var(--border); background:var(--surface); color:var(--text); border-radius:13px; padding:14px; cursor:pointer; transition:transform .18s,border-color .18s,background .18s; }
+    .learn-level:hover,.learn-level.active { border-color:var(--green); transform:translateY(-2px); background:var(--green-faint); }
+    .learn-level-num { color:var(--green); font-size:0.68rem; font-weight:800; letter-spacing:1px; }
+    .learn-level-title { font-size:0.88rem; font-weight:800; margin:5px 0; }
+    .learn-level-desc { color:var(--muted); font-size:0.75rem; line-height:1.4; }
+    .learn-detail { position:relative; z-index:1; background:rgba(0,0,0,0.14); border:1px solid rgba(255,255,255,0.07); border-radius:14px; padding:16px; margin-top:12px; }
+    .learn-detail-top { display:flex; justify-content:space-between; align-items:center; gap:12px; }
+    .learn-detail-title { font-weight:800; font-size:0.98rem; }
+    .learn-minutes { color:var(--green); font-size:0.72rem; font-weight:700; }
+    .learn-steps { display:grid; grid-template-columns:repeat(3,1fr); gap:9px; margin:14px 0; }
+    .learn-step { padding:10px; background:var(--surface); border:1px solid var(--border); border-radius:10px; color:var(--muted); font-size:0.77rem; line-height:1.35; }
+    .learn-step b { display:block; color:var(--text); font-size:0.7rem; text-transform:uppercase; letter-spacing:.7px; margin-bottom:4px; }
+    .learn-actions { display:flex; gap:10px; align-items:center; flex-wrap:wrap; }
+    .learn-link { color:var(--green); text-decoration:none; font-size:0.78rem; font-weight:700; }
+    .learn-complete { border:1px solid rgba(0,200,150,0.42); background:var(--green); color:#062218; border-radius:9px; padding:8px 11px; font-size:0.76rem; font-weight:800; cursor:pointer; }
+
     /* ── TRANSACTIONS ── */
     .section-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; }
     .section-title { font-size: 0.95rem; font-weight: 700; }
@@ -553,6 +578,8 @@
       .news-signal { margin-left: 0; }
       .news-hero { grid-template-columns:1fr 112px; padding:22px; min-height:175px; }
       .buck-stage { height:120px; transform:scale(.82); transform-origin:right center; }
+      .learn-levels, .learn-steps { grid-template-columns:1fr; }
+      .learn-hub-head { flex-direction:column; }
     }
     @media (prefers-reduced-motion: reduce) {
       *, *::before, *::after { animation-duration:0.001ms !important; animation-iteration-count:1 !important; scroll-behavior:auto !important; transition-duration:0.001ms !important; }
@@ -2425,6 +2452,37 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
   // ── INVESTING (brokerage via partner) ──
   const _esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 
+  const investingLessons = {
+    beginner: { label:'Beginner', minutes:'6 min', title:'Build your first investing habit', description:'Start with the difference between saving and investing, then decide what money should stay liquid.', steps:[['1. Protect','Keep short-term needs and an emergency buffer separate.'],['2. Set a goal','Name the timeline before choosing an investment.'],['3. Start small','A consistent amount can be easier to manage than chasing a perfect entry.']], source:'https://www.investor.gov/introduction-investing' },
+    intermediate: { label:'Intermediate', minutes:'8 min', title:'Diversify with intention', description:'Learn how time horizon, risk tolerance, and diversification fit together before you buy an ETF or stock.', steps:[['1. Map your horizon','Short deadlines generally call for less market exposure.'],['2. Know concentration','One company or narrow fund can add more risk than it appears to.'],['3. Review the mix','Check whether your holdings still match the goal you named.']], source:'https://www.investor.gov/introduction-investing/getting-started/asset-allocation' },
+    advanced: { label:'Advanced', minutes:'10 min', title:'Make a repeatable decision process', description:'Use a pre-trade checklist: understand the investment, its risks, costs, and why it belongs in your plan.', steps:[['1. Read first','Understand the product and its disclosures before placing an order.'],['2. Check trade-offs','Higher potential return can also mean higher potential loss.'],['3. Avoid urgency','A fast-moving pitch is not a reason to skip due diligence.']], source:'https://www.investor.gov/introduction-investing/getting-started/five-questions-ask-you-invest' }
+  };
+
+  function investingLearningHub() {
+    const selected = localStorage.getItem('fawn_investing_lesson') || 'beginner';
+    const completed = JSON.parse(localStorage.getItem('fawn_investing_lessons_done') || '[]');
+    const lesson = investingLessons[selected] || investingLessons.beginner;
+    return `<section class="learn-hub" aria-label="FAWN investing learning hub">
+      <div class="learn-hub-head"><div><div class="learn-kicker">FAWN Learn</div><h2>Understand it before you own it.</h2><p class="learn-hub-copy">Three short pathways for building a calmer investing practice. Educational only—never personalized investment advice.</p></div><div class="learn-progress">${completed.length}/3 paths complete</div></div>
+      <div class="learn-levels">${Object.entries(investingLessons).map(([key, item], index) => `<button class="learn-level ${key === selected ? 'active' : ''}" onclick="selectInvestingLesson('${key}')"><div class="learn-level-num">0${index + 1} · ${item.minutes}</div><div class="learn-level-title">${item.label}</div><div class="learn-level-desc">${item.description}</div></button>`).join('')}</div>
+      <div class="learn-detail"><div class="learn-detail-top"><div><div class="learn-kicker">${lesson.label} path</div><div class="learn-detail-title">${lesson.title}</div></div><div class="learn-minutes">${lesson.minutes}</div></div><div class="learn-steps">${lesson.steps.map(([title, copy]) => `<div class="learn-step"><b>${title}</b>${copy}</div>`).join('')}</div><div class="learn-actions"><button class="learn-complete" onclick="completeInvestingLesson('${selected}')">${completed.includes(selected) ? 'Completed ✓' : 'Mark complete'}</button><a class="learn-link" href="${lesson.source}" target="_blank" rel="noopener noreferrer">Read the SEC Investor.gov guide ↗</a></div></div>
+    </section>`;
+  }
+
+  function selectInvestingLesson(level) {
+    localStorage.setItem('fawn_investing_lesson', level);
+    const hub = document.querySelector('.learn-hub');
+    if (hub) hub.outerHTML = investingLearningHub();
+  }
+
+  function completeInvestingLesson(level) {
+    const completed = new Set(JSON.parse(localStorage.getItem('fawn_investing_lessons_done') || '[]'));
+    completed.add(level);
+    localStorage.setItem('fawn_investing_lessons_done', JSON.stringify([...completed]));
+    selectInvestingLesson(level);
+    toast('Learning path saved');
+  }
+
   async function loadInvesting() {
     const body = document.getElementById('investing-body');
     body.innerHTML = '<div style="color:var(--muted);font-size:0.9rem;padding:20px 0;text-align:center">Loading investing…</div>';
@@ -2446,7 +2504,7 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
         <div style="font-size:2rem;margin-bottom:8px">📈</div>
         <div style="font-weight:700;font-size:1.05rem;margin-bottom:6px">Real stocks & ETFs launching soon</div>
         <div style="color:var(--muted);font-size:0.9rem;max-width:420px;margin:0 auto">Buy fractional shares straight from your FAWN account when a configured brokerage provider is available. Start with $1, with quote checks and protective limits before execution.</div>
-      </div>`;
+      </div>${investingLearningHub()}`;
   }
 
   function renderInvestingOnboard(body) {
@@ -2459,7 +2517,7 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
           <span>I agree to the brokerage customer and account agreements, and understand investing involves risk of loss. FAWN does not enable margin or leveraged orders.</span>
         </label>
         <button class="qa-btn" style="width:100%;justify-content:center" id="invest-open-btn" onclick="openInvestingAccount()">Open investing account</button>
-      </div>`;
+      </div>${investingLearningHub()}`;
   }
 
   async function openInvestingAccount() {
@@ -2498,6 +2556,7 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
         <strong>Protected investing</strong><br>
         Every order requires a fresh quote and is capped at $1,000. FAWN also applies a rolling $2,500 / 24-hour limit, limits open orders, and never enables margin or leverage.
       </div>
+      ${investingLearningHub()}
       <div style="background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:20px;margin-bottom:18px">
         <div style="font-size:0.7rem;color:var(--muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:12px">Search & buy stocks and ETFs</div>
         <div style="display:flex;gap:10px;margin-bottom:12px">
