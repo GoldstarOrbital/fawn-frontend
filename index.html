@@ -3055,6 +3055,14 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
     if (disc && e.disclaimer) { disc.textContent = e.disclaimer; disc.style.display = 'block'; }
   }
 
+  function renderPublishedBriefFallback(body, disc) {
+    // The public archive is intentionally displayed when the production
+    // generator has not published a newer episode yet. Hiding the most
+    // recent real brief makes the Daily Brief tab look broken on restarts.
+    renderBriefEpisode(body, disc, STATIC_DAILY_BRIEF, 'latest published archive');
+    body.insertAdjacentHTML('afterbegin', '<div style="margin-bottom:12px;padding:11px 13px;background:rgba(0,200,150,0.08);border:1px solid rgba(0,200,150,0.28);border-radius:10px;color:var(--muted);font-size:0.8rem;line-height:1.45">Showing the latest published FAWN Daily Brief while the next edition is prepared. This view refreshes automatically.</div>');
+  }
+
   async function loadBrief() {
     const body = document.getElementById('brief-body');
     const disc = document.getElementById('brief-disc');
@@ -3062,16 +3070,14 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
     try {
       const r = await fetch(API + '/podcast/latest');
       if (r.status === 404) {
-        body.innerHTML = '<div style="background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:22px;color:var(--muted);line-height:1.55">Today\'s Daily Brief is still being prepared. FAWN will refresh this view automatically; no browser or Codex session is required.</div>';
-        if (disc) disc.style.display = 'none';
+        renderPublishedBriefFallback(body, disc);
         return;
       }
       if (!r.ok) throw new Error('Error ' + r.status);
       const e = await r.json();
       renderBriefEpisode(body, disc, e, 'backend episode');
     } catch (e) {
-      body.innerHTML = '<div style="background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:22px;color:var(--muted);line-height:1.55">The Daily Brief is temporarily unavailable. FAWN will retry automatically; please check back shortly.</div>';
-      if (disc) disc.style.display = 'none';
+      renderPublishedBriefFallback(body, disc);
     }
   }
   let briefRefreshInterval = null;
