@@ -1645,18 +1645,6 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
       token = r.access_token;
       localStorage.setItem('fawn_token', token);
       localStorage.setItem('fawn_new_user', '1');
-      // Finish the only account setup step in the background of signup. The
-      // dashboard still keeps its retry banner if a transient wallet error
-      // occurs, but a new user should not have to discover and click it.
-      try {
-        const wallet = await authPost('/auth/wallets/create', {});
-        if (wallet.wallet_address) {
-          localStorage.setItem('fawn_wallet_address', wallet.wallet_address);
-          localStorage.setItem('fawn_wallet_type', 'fawn_custodial');
-        }
-      } catch (walletError) {
-        sessionStorage.setItem('fawn_wallet_setup_error', walletError.message || 'Wallet setup needs one more try');
-      }
       // Apply referral code if one was in the URL
       const ref = sessionStorage.getItem('fawn_ref');
       if (ref) {
