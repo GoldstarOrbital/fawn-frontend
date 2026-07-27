@@ -974,6 +974,7 @@ Available anytime for questions or issues</span>
         <div>Securely connect an external bank account via Plaid. FAWN never sees or stores your bank credentials — only Plaid does.</div>
       </div>
       <div id="bank-accounts-list" style="margin-bottom:16px"></div>
+      <div id="bank-link-status" style="color:var(--muted);font-size:0.78rem;line-height:1.45;margin-bottom:12px"></div>
       <button id="plaid-link-btn" onclick="openPlaidLink()" style="width:100%;padding:13px;background:var(--green);color:#000;font-weight:700;font-size:0.9rem;border:none;border-radius:10px;cursor:pointer">
         + Link a bank account
       </button>
@@ -3752,9 +3753,25 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
   // ── BANK ACCOUNT LINKING (Plaid) ──
   async function loadBankAccounts() {
     const list = document.getElementById('bank-accounts-list');
+    const status = document.getElementById('bank-link-status');
+    const btn = document.getElementById('plaid-link-btn');
     list.innerHTML = '<div style="color:var(--muted);font-size:0.85rem;padding:8px 0">Loading linked accounts…</div>';
     try {
-      const data = await authGet('/plaid/items');
+      const [data, readiness] = await Promise.all([
+        authGet('/plaid/items'),
+        authGet('/plaid/status'),
+      ]);
+      if (readiness.can_link) {
+        status.textContent = readiness.can_fund
+          ? 'Bank linking and funding are available for this account.'
+          : readiness.funding_message;
+        btn.disabled = false;
+        btn.style.opacity = '1';
+      } else {
+        status.textContent = 'Bank linking is waiting for FAWN\'s Plaid connection. You can still use the supported on-ramp or FAWN-to-FAWN transfers.';
+        btn.disabled = true;
+        btn.style.opacity = '0.55';
+      }
       if (!data.items || !data.items.length) {
         list.innerHTML = '<div style="color:var(--muted);font-size:0.85rem;padding:8px 0">No bank accounts linked yet.</div>';
         return;
@@ -3770,6 +3787,7 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
       `).join('');
     } catch (e) {
       list.innerHTML = '<div style="color:var(--muted);font-size:0.85rem;padding:8px 0">Could not load linked accounts.</div>';
+      status.textContent = 'Bank-linking status is temporarily unavailable.';
     }
   }
 
