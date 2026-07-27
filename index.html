@@ -2625,11 +2625,11 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
     return data;
   }
 
-  async function authPost(path, body) {
+  async function authPost(path, body, extraHeaders = {}) {
     const started = performance.now();
     const r = await fetch(API + path, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}`, ...extraHeaders },
       body: JSON.stringify(body),
     });
     const data = await r.json();
@@ -3842,7 +3842,7 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
         recipient: recipient,
         amount_cents: Math.round(amount * 100),
         memo: memo || undefined
-      });
+      }, { 'Idempotency-Key': (window.crypto && crypto.randomUUID) ? crypto.randomUUID() : ('fawn-' + Date.now() + '-' + Math.random().toString(16).slice(2)) });
 
       const displayName = isUsername ? recipient : (recipient.slice(0, 6) + '...');
       toast(`✓ Sent $${amount.toFixed(2)} to ${displayName}`);
