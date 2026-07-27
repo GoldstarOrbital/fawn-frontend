@@ -3800,10 +3800,13 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
 
       const handler = window.Plaid.create({
         token: link_token,
-        onSuccess: async (public_token) => {
+        onSuccess: async (public_token, metadata) => {
           btn.textContent = 'Linking account…';
           try {
-            await authPost('/plaid/exchange', { public_token });
+            const account_id = metadata && metadata.accounts && metadata.accounts[0]
+              ? (metadata.accounts[0].id || metadata.accounts[0].account_id || null)
+              : null;
+            await authPost('/plaid/exchange', { public_token, account_id });
             toast('Bank account linked ✓');
             loadBankAccounts();
           } catch (e) {
