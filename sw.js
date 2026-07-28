@@ -1,7 +1,7 @@
 // FAWN Service Worker — offline shell only. API responses are NEVER cached.
 // Bump CACHE on every shell change (activate purges every other cache), which
 // also flushes any API responses an older SW wrongly cached.
-const CACHE = 'fawn-v3-8183290';
+const CACHE = 'fawn-v3-layout-20260728';
 const BASE = self.registration.scope;
 const SHELL = [BASE, `${BASE}index.html`, `${BASE}manifest.json`];
 

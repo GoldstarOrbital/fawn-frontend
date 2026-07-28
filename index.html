@@ -626,6 +626,10 @@
     .nav-item:nth-of-type(3n) .icon::before, .quick-actions .qa-btn:nth-child(3) .qa-icon::before { border-radius: 50% 50% 2px 50%; transform: rotate(-35deg); }
     .news-hero { background: #1a2117; }
     .article-card { box-shadow: none; border-radius: 10px; }
+    .user-chip, .balance-pill, .chip, .news-pill-btn, #location-chip, .receive-qr-avatar {
+      transform: none !important;
+      rotate: 0deg;
+    }
     @media (max-width: 768px) {
       .quick-actions, .stats-row { grid-template-columns: 1fr 1fr; }
       .qa-btn:nth-child(2), .qa-btn:nth-child(4), .article-card:nth-child(2n), .article-card:nth-child(3n) { transform: none; }
@@ -640,7 +644,7 @@
   <script async src="https://static.moonpay.com/web-sdk/v1/moonpay-web-sdk.min.js"></script>
   <script async src="https://global.transak.com/sdk/v1.1/widget.js"></script>
   <script async src="https://cdn.plaid.com/link/v2/stable/link-initialize.js"></script>
-  <link rel="stylesheet" href="assets/fawn-os.css" />
+  <link rel="stylesheet" href="assets/fawn-os.css?v=layout-20260728" />
 </head>
 <body>
 
