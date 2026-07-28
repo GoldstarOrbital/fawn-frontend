@@ -673,15 +673,15 @@
     <div style="display:flex;flex-direction:column;gap:12px;margin-bottom:32px;text-align:left">
       <div style="display:flex;gap:14px;align-items:flex-start">
         <span style="font-size:1.3rem">⚡</span>
-          <div><strong>Fast transfers</strong> — send money to FAWN friends or supported external destinations. Fees and limits are shown before you confirm.</div>
+          <div><strong>Fast transfers</strong>. Send money to FAWN friends or supported external destinations. Fees and limits are shown before you confirm.</div>
       </div>
       <div style="display:flex;gap:14px;align-items:flex-start">
         <span style="font-size:1.3rem">📈</span>
-        <div><strong>Real stocks & ETFs</strong> — invest in fractional shares straight from your FAWN account. Same $0.01 fee.</div>
+        <div><strong>Real stocks & ETFs</strong>. Invest in fractional shares straight from your FAWN account. Same $0.01 fee.</div>
       </div>
       <div style="display:flex;gap:14px;align-items:flex-start">
         <span style="font-size:1.3rem">📰</span>
-        <div><strong>Live news</strong> — filter real financial & market headlines by any keyword. Housing, tech, your favorite stock.</div>
+        <div><strong>Live news</strong>. Filter financial and market headlines by any keyword. Housing, tech, or your favorite stock.</div>
       </div>
     </div>
     <button onclick="closeWelcome()" style="width:100%;padding:14px;background:var(--green);color:#000;font-weight:800;font-size:1rem;border:none;border-radius:12px;cursor:pointer">
@@ -962,7 +962,7 @@ Available anytime for questions or issues</span>
     <div id="funds-panel-buy" class="hidden">
       <div id="onramp-status-box" style="background:rgba(0,200,150,0.1);border:1px solid rgba(0,200,150,0.3);border-radius:12px;padding:12px;font-size:0.8rem;color:var(--text);margin-bottom:16px">
         <div style="font-weight:600;margin-bottom:4px">💳 Buy USDC with your card</div>
-        <div>Pay with card, Apple Pay, or Google Pay. USDC is sent directly to your FAWN wallet on Polygon — FAWN never sees or stores your card details.</div>
+        <div>Pay with card, Apple Pay, or Google Pay. USDC is sent directly to your FAWN wallet on Polygon. FAWN never sees or stores your card details.</div>
       </div>
       <div id="onramp-widget-container" style="min-height:60px;border-radius:12px;overflow:hidden"></div>
 
@@ -970,11 +970,11 @@ Available anytime for questions or issues</span>
       <div id="deposit-tracker" class="hidden" style="margin-top:16px;background:var(--surface2);border:1px solid var(--border);border-radius:12px;padding:16px;text-align:center">
         <div id="deposit-tracker-spinner" style="font-size:1.5rem;margin-bottom:8px">⏳</div>
         <div id="deposit-tracker-title" style="font-weight:700;font-size:0.9rem;margin-bottom:4px">Watching your wallet for the deposit…</div>
-        <div id="deposit-tracker-sub" style="color:var(--muted);font-size:0.78rem">USDC usually arrives within a minute of completing checkout. We're checking on-chain via Alchemy every few seconds — this page will update automatically, you don't need to refresh.</div>
+        <div id="deposit-tracker-sub" style="color:var(--muted);font-size:0.78rem">USDC usually arrives within a minute of completing checkout. We're checking on-chain via Alchemy every few seconds. This page updates automatically.</div>
       </div>
 
       <div style="font-size:0.7rem;color:var(--muted);text-align:center;margin-top:14px">
-        This is a real purchase — you pay MoonPay directly, and the USDC lands in your FAWN wallet on-chain. FAWN never holds your card or bank details.
+        This is a real purchase. You pay MoonPay directly, and the USDC lands in your FAWN wallet on-chain. FAWN never holds your card or bank details.
       </div>
     </div>
 
@@ -982,7 +982,7 @@ Available anytime for questions or issues</span>
     <div id="funds-panel-bank" class="hidden">
       <div style="background:rgba(0,200,150,0.1);border:1px solid rgba(0,200,150,0.3);border-radius:12px;padding:12px;font-size:0.8rem;color:var(--text);margin-bottom:16px">
         <div style="font-weight:600;margin-bottom:4px">🏦 Link a bank account</div>
-        <div>Securely connect an external bank account via Plaid. FAWN never sees or stores your bank credentials — only Plaid does.</div>
+        <div>Securely connect an external bank account via Plaid. FAWN never sees or stores your bank credentials. Plaid handles that connection.</div>
       </div>
       <div id="bank-accounts-list" style="margin-bottom:16px"></div>
       <div id="bank-link-status" style="color:var(--muted);font-size:0.78rem;line-height:1.45;margin-bottom:12px"></div>
@@ -1140,7 +1140,7 @@ Available anytime for questions or issues</span>
             <div style="flex:1">
               <div style="font-size:0.68rem;color:var(--accent);text-transform:uppercase;letter-spacing:1.2px;margin-bottom:5px">FAWN in one minute</div>
               <div style="font-weight:800;font-size:1.05rem;margin-bottom:5px">Your money, clearly accounted for.</div>
-              <div style="font-size:0.82rem;color:var(--muted);line-height:1.45">FAWN is a custodial wallet: we protect the signing key, you control the actions. Add funds, send or receive, and explore investing — every fee, limit, and status stays visible.</div>
+              <div style="font-size:0.82rem;color:var(--muted);line-height:1.45">FAWN is a custodial wallet. We protect the signing key while you control the actions. Add funds, send or receive, and explore investing. Fees, limits, and status stay visible.</div>
               <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:12px">
                 <button class="qa-btn" style="padding:7px 11px;font-size:0.78rem" onclick="openAddFundsModal(); dismissFirstSession()">Add funds</button>
                 <button class="qa-btn" style="padding:7px 11px;font-size:0.78rem;background:var(--surface);border:1px solid var(--border);color:var(--text)" onclick="openReceiveModal(); dismissFirstSession()">Receive</button>
@@ -1270,7 +1270,7 @@ Available anytime for questions or issues</span>
       <div class="tab" id="tab-news">
         <div class="page-header">
           <h1>Financial News</h1>
-          <p>Live summaries from major outlets. Stays right here — no links, no redirects.</p>
+          <p>Live summaries from major outlets. Read them here without extra tabs or redirects.</p>
         </div>
 
         <div class="news-hero">
@@ -1436,7 +1436,7 @@ Available anytime for questions or issues</span>
       <div class="tab" id="tab-brief">
         <div class="page-header">
           <h1>FAWN Daily Brief</h1>
-          <p>Your AI-compiled financial & markets rundown. Published by FAWN each morning at 3:30 AM Pacific and refreshed here automatically.</p>
+          <p>Your daily financial and markets rundown. Published by FAWN each morning at 3:30 AM Pacific and refreshed here automatically.</p>
         </div>
         <div id="brief-body">
           <div style="color:var(--muted);font-size:0.9rem;padding:20px 0;text-align:center">Loading today's brief…</div>
@@ -2143,7 +2143,7 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
     try {
       const data = await authPost(`/repayments/requests/${id}/remind`, {});
       await navigator.clipboard.writeText(data.share_text);
-      toast('Gentle nudge copied — you choose if and where to send it.');
+      toast('Gentle nudge copied. You choose if and where to send it.');
       loadRepaymentRequests();
     } catch (e) { toast(e.message || 'Nudge unavailable right now.'); }
   }
@@ -2198,11 +2198,11 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
       fields = `${field('Asset symbol', 'auto-dca-token', 'placeholder="VTI" maxlength="12"')}${field('Amount per cycle (USD)', 'auto-dca-amount', 'type="number" min="1" max="1000" step="0.01" placeholder="10"')}${frequency}`;
     } else if (action === 'webhooks') {
       title = 'Connect a signed webhook';
-      note = 'FAWN signs each JSON delivery with your one-time webhook secret. Store that secret now—it is not shown again. HTTPS public endpoints only.';
+      note = 'FAWN signs each JSON delivery with your one-time webhook secret. Store that secret now. It is not shown again. HTTPS public endpoints only.';
       fields = `${field('HTTPS endpoint URL', 'auto-webhook-url', 'type="url" placeholder="https://example.com/fawn-events"')}<div style="font-size:.82rem;color:var(--muted);padding-top:4px"><div style="font-size:.72rem;text-transform:uppercase;letter-spacing:.7px;margin-bottom:8px">Events</div><label style="display:block;margin:7px 0"><input id="auto-wh-price" type="checkbox" checked> Price alert triggered</label><label style="display:block;margin:7px 0"><input id="auto-wh-batch" type="checkbox"> Batch queued for review</label><label style="display:block;margin:7px 0"><input id="auto-wh-test" type="checkbox" checked> Test ping</label></div>`;
     } else if (action === 'batch-transfers') {
       title = 'Prepare a batch transfer';
-      note = 'A batch is capped at 25 recipients and $5,000. Saving it never sends funds—it creates a reviewable batch and can notify your webhook.';
+      note = 'A batch is capped at 25 recipients and $5,000. Saving it never sends funds. It creates a reviewable batch and can notify your webhook.';
       fields = `<label style="display:block;grid-column:1/-1;font-size:.72rem;color:var(--muted);text-transform:uppercase;letter-spacing:.7px">Recipients — one per line: @username or wallet address, amount in USD<textarea id="auto-batch-recipients" rows="7" placeholder="@alex, 12.50&#10;0x1234..., 5.00" style="display:block;width:100%;margin-top:6px;background:var(--bg);border:1px solid var(--border);border-radius:10px;padding:11px;color:var(--text);font-size:.88rem;resize:vertical"></textarea></label>`;
     } else {
       return;
@@ -2261,7 +2261,7 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
         host.innerHTML = `<div class="disclaimer-box"><strong>Webhook connected.</strong><br>Copy this signing secret now—it is shown only once.<div style="margin-top:10px;padding:10px;background:var(--bg);border:1px solid var(--border);border-radius:8px;word-break:break-all;color:var(--green);font-family:ui-monospace,monospace">${_esc(response.signing_secret)}</div><div style="margin-top:8px;font-size:.76rem;color:var(--muted)">FAWN signs the raw JSON body in <code>X-FAWN-Signature</code> using HMAC-SHA256.</div></div>`;
       } else closeAutomationSetup();
       if (action === 'dca-plans') toast('DCA plan saved for review');
-      else if (action === 'webhooks') toast('Webhook saved — copy the signing secret');
+      else if (action === 'webhooks') toast('Webhook saved. Copy the signing secret.');
       else if (action === 'batch-transfers') toast('Batch saved for review');
       else toast('Protected rule saved');
       loadAutomationCenter();
@@ -2439,7 +2439,7 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
 
   function renderArticles(articles) {
     if (!articles.length) {
-      return '<div style="color:var(--muted);font-size:0.9rem;padding:24px 0;text-align:center">No stories matched your filters — try different keywords or clear all chips.</div>';
+      return '<div style="color:var(--muted);font-size:0.9rem;padding:24px 0;text-align:center">No stories matched your filters. Try different keywords or clear all chips.</div>';
     }
     return articles.map((a, i) => {
       const identity = articleIdentity(a);
@@ -2735,7 +2735,7 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
   function maybeShowWelcome() {
     if (localStorage.getItem('fawn_new_user') === '1') {
       localStorage.removeItem('fawn_new_user');
-      setTimeout(() => toast('Welcome to FAWN — your custodial wallet is ready.'), 350);
+      setTimeout(() => toast('Welcome to FAWN. Your custodial wallet is ready.'), 350);
     }
     // Handle PWA deep-link tab
     const startTab = sessionStorage.getItem('fawn_start_tab');
@@ -2774,7 +2774,7 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
     const completed = JSON.parse(localStorage.getItem('fawn_investing_lessons_done') || '[]');
     const lesson = investingLessons[selected] || investingLessons.beginner;
     return `<section class="learn-hub" aria-label="FAWN investing learning hub">
-      <div class="learn-hub-head"><div><div class="learn-kicker">FAWN Learn</div><h2>Understand it before you own it.</h2><p class="learn-hub-copy">Three short pathways for building a calmer investing practice. Educational only—never personalized investment advice.</p></div><div class="learn-progress">${completed.length}/3 paths complete</div></div>
+      <div class="learn-hub-head"><div><div class="learn-kicker">FAWN Learn</div><h2>Understand it before you own it.</h2><p class="learn-hub-copy">Three short pathways for building a calmer investing practice. Educational only. This is not personalized investment advice.</p></div><div class="learn-progress">${completed.length}/3 paths complete</div></div>
       <div class="learn-levels">${Object.entries(investingLessons).map(([key, item], index) => `<button class="learn-level ${key === selected ? 'active' : ''}" onclick="selectInvestingLesson('${key}')"><div class="learn-level-num">0${index + 1} · ${item.minutes}</div><div class="learn-level-title">${item.label}</div><div class="learn-level-desc">${item.description}</div></button>`).join('')}</div>
       <div class="learn-detail"><div class="learn-detail-top"><div><div class="learn-kicker">${lesson.label} path</div><div class="learn-detail-title">${lesson.title}</div></div><div class="learn-minutes">${lesson.minutes}</div></div><div class="learn-steps">${lesson.steps.map(([title, copy]) => `<div class="learn-step"><b>${title}</b>${copy}</div>`).join('')}</div><div class="learn-actions"><button class="learn-complete" onclick="completeInvestingLesson('${selected}')">${completed.includes(selected) ? 'Completed ✓' : 'Mark complete'}</button><a class="learn-link" href="${lesson.source}" target="_blank" rel="noopener noreferrer">Read the SEC Investor.gov guide ↗</a></div></div>
       <div class="learn-video"><iframe src="https://www.youtube-nocookie.com/embed/${lesson.videoId}?rel=0&modestbranding=1" title="${lesson.videoTitle}" loading="lazy" referrerpolicy="strict-origin-when-cross-origin" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe></div><div class="learn-video-note">Third-party educational video. Investing involves risk; FAWN does not endorse individual securities mentioned in the video.</div>
@@ -3026,7 +3026,7 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
     if (!confirm(`${side === 'buy' ? 'Buy' : 'Sell'} $${amount.toFixed(2)} of ${symbol} at about ${quotePrice}?\n\nProtective limits apply. Market prices can move before execution.`)) return;
     try {
       const r = await authPost('/investing/orders', { symbol, side, notional: amount });
-      toast(`${side === 'buy' ? 'Bought' : 'Sold'} — order ${r.status}`);
+      toast(`${side === 'buy' ? 'Bought' : 'Sold'}. Order status: ${r.status}`);
       document.getElementById('invest-symbol').value = '';
       document.getElementById('invest-amount').value = '';
       document.getElementById('invest-quote').style.display = 'none';
@@ -3042,7 +3042,7 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
     try {
       const d = await authGet('/investing/positions');
       const ps = d.positions || [];
-      if (!ps.length) { el.innerHTML = '<div style="color:var(--muted);font-size:0.85rem">No positions yet — place your first order above.</div>'; return; }
+      if (!ps.length) { el.innerHTML = '<div style="color:var(--muted);font-size:0.85rem">No positions yet. Place your first order above.</div>'; return; }
       el.innerHTML = ps.map(p => {
         const up = Number(p.unrealized_pl || 0);
         const col = up >= 0 ? 'var(--green)' : '#ff6b6b';
@@ -3088,7 +3088,7 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
     try {
       const d = await authGet('/investing/watchlist');
       const items = d.watchlist || [];
-      if (!items.length) { el.innerHTML = '<div style="color:var(--muted);font-size:0.85rem">No watchlist items yet — save a symbol above.</div>'; return; }
+      if (!items.length) { el.innerHTML = '<div style="color:var(--muted);font-size:0.85rem">No watchlist items yet. Save a symbol above.</div>'; return; }
       el.innerHTML = items.map(item => {
         return `<div style="display:flex;justify-content:space-between;align-items:center;background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:12px 16px;margin-bottom:8px">
           <div style="font-weight:700;cursor:pointer;color:var(--accent)" onclick="loadSymbol('${_esc(item.symbol)}')">${_esc(item.symbol)}</div>
@@ -4112,7 +4112,7 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
       document.getElementById('trade-quote-amount').textContent = toAmount + ' ' + toToken;
       document.getElementById('trade-quote-rate').textContent = '1 ' + fromToken + ' = ' + rate + ' ' + toToken;
 
-      toast('Quote loaded — valid for 30 seconds');
+      toast('Quote loaded. Valid for 30 seconds.');
     } catch (e) {
       errDiv.textContent = 'Could not fetch quote: ' + String(e.message || 'Error');
       errDiv.classList.remove('hidden');
