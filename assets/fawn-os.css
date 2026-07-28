@@ -180,6 +180,22 @@ h1, h2, h3, h4, .page-header h1, .balance-amount {
 .quick-actions .qa-btn:nth-child(3) .qa-icon::before {
   border-radius: 50% 50% 2px 50%; transform: rotate(-35deg);
 }
+.nav-item .icon:has(svg)::before, .qa-icon:has(svg)::before { display: none; }
+.nav-item .icon svg, .qa-icon svg {
+  width: 17px; height: 17px; display: block;
+  fill: none; stroke: currentColor; stroke-width: 1.7;
+  stroke-linecap: round; stroke-linejoin: round;
+}
+.nav-item .icon, .qa-icon {
+  border-radius: 10px;
+  background: transparent;
+  border-color: transparent;
+}
+.nav-item:hover .icon, .nav-item.active .icon, .qa-btn:hover .qa-icon {
+  color: var(--fawn-lime);
+  background: var(--fawn-moss);
+  border-color: #4a5a38;
+}
 
 .article-card:nth-child(2n) { transform: translateY(8px) rotate(.2deg); }
 .article-card:nth-child(3n) { transform: translateY(-5px) rotate(-.2deg); }
