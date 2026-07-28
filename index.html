@@ -593,6 +593,46 @@
       #automation-summary { grid-template-columns:repeat(2,minmax(0,1fr)) !important; }
       #automation-setup [style*="grid-template-columns"] { grid-template-columns:1fr !important; }
     }
+    /* Human-designed app shell: editorial headings, flat surfaces, and a
+       restrained moss/ink palette. The uneven card offsets are intentional. */
+    body {
+      font-family: "Avenir Next", "Segoe UI", sans-serif;
+      background: #10130f;
+    }
+    h1, h2, h3, .page-header h1, .balance-amount {
+      font-family: Georgia, "Times New Roman", serif;
+      font-weight: 600;
+      letter-spacing: -.035em;
+    }
+    .sidebar { background: #141812; border-right-color: #35402d; }
+    .main { max-width: 1260px; }
+    .page-header { max-width: 720px; padding-left: 2%; }
+    .page-header h1 { font-size: clamp(2.4rem, 5vw, 4.8rem); line-height: .98; }
+    .balance-card { border-radius: 13px; box-shadow: none; transform: rotate(-.35deg); }
+    .quick-actions { grid-template-columns: 1.2fr .9fr .9fr 1.1fr; }
+    .qa-btn:nth-child(2) { transform: translateY(10px); }
+    .qa-btn:nth-child(4) { transform: translateY(-6px); }
+    .stats-row { grid-template-columns: 1.2fr .85fr 1fr; }
+    .stat-card { box-shadow: none; border-radius: 11px; }
+    .tab-section, .panel, .news-hero, .learn-hub, .campus-banner { box-shadow: none; border-radius: 12px; }
+    .icon, .qa-icon, .onboard-icon {
+      font-size: 0 !important; width: 28px; height: 28px; display: grid; place-items: center;
+      border: 1px solid #4a5a38; border-radius: 8px; color: var(--green);
+      background: #20291a;
+    }
+    .icon::before, .qa-icon::before, .onboard-icon::before {
+      content: ""; width: 11px; height: 11px; border: 1.5px solid currentColor; border-radius: 50%;
+    }
+    .nav-item:nth-of-type(2n) .icon::before, .quick-actions .qa-btn:nth-child(2) .qa-icon::before { border-radius: 2px; transform: rotate(45deg); }
+    .nav-item:nth-of-type(3n) .icon::before, .quick-actions .qa-btn:nth-child(3) .qa-icon::before { border-radius: 50% 50% 2px 50%; transform: rotate(-35deg); }
+    .news-hero { background: #1a2117; }
+    .article-card { box-shadow: none; border-radius: 10px; }
+    .article-card:nth-child(2n) { transform: translateY(8px) rotate(.2deg); }
+    .article-card:nth-child(3n) { transform: translateY(-5px) rotate(-.2deg); }
+    @media (max-width: 768px) {
+      .quick-actions, .stats-row { grid-template-columns: 1fr 1fr; }
+      .qa-btn:nth-child(2), .qa-btn:nth-child(4), .article-card:nth-child(2n), .article-card:nth-child(3n) { transform: none; }
+    }
     @media (prefers-reduced-motion: reduce) {
       *, *::before, *::after { animation-duration:0.001ms !important; animation-iteration-count:1 !important; scroll-behavior:auto !important; transition-duration:0.001ms !important; }
       .article-card { transform:none !important; }
