@@ -113,3 +113,79 @@
 @media (prefers-reduced-motion: reduce) {
   .fawn-custody-card::after { animation: none; }
 }
+/* FAWN frontend design system
+   This layer removes stock dashboard cues: flat ink surfaces, editorial type,
+   small asymmetries, and a consistent line-mark language. */
+:root {
+  --fawn-ink: #10130f;
+  --fawn-moss: #20291a;
+  --fawn-lime: #b8e04b;
+  --fawn-line: #36402d;
+}
+
+body {
+  background-color: var(--fawn-ink);
+  background-image: none !important;
+  font-family: "Avenir Next", "Segoe UI", sans-serif;
+}
+
+h1, h2, h3, h4, .page-header h1, .balance-amount {
+  font-family: Georgia, "Times New Roman", serif;
+  font-weight: 600;
+  letter-spacing: -.035em;
+}
+
+.sidebar {
+  background: #141812 !important;
+  border-right-color: var(--fawn-line) !important;
+}
+
+.main { max-width: 1260px; }
+.page-header { max-width: 720px; padding-left: 2%; }
+.page-header h1 { font-size: clamp(2.4rem, 5vw, 4.8rem); line-height: .98; }
+
+.balance-card, .stat-card, .panel, .tab-section, .news-hero, .learn-hub,
+.campus-banner, .article-card, .modal-card {
+  box-shadow: none !important;
+  border-radius: 12px !important;
+}
+
+.balance-card { transform: rotate(-.35deg); }
+.quick-actions { grid-template-columns: 1.2fr .9fr .9fr 1.1fr !important; }
+.quick-actions .qa-btn:nth-child(2) { transform: translateY(10px); }
+.quick-actions .qa-btn:nth-child(4) { transform: translateY(-6px); }
+.stats-row { grid-template-columns: 1.2fr .85fr 1fr !important; }
+
+/* Replace emoji navigation glyphs with quiet line marks. */
+.nav-item .icon, .qa-icon, .onboard-icon {
+  font-size: 0 !important;
+  width: 28px; height: 28px;
+  display: grid; place-items: center;
+  border: 1px solid #4a5a38;
+  border-radius: 8px;
+  color: var(--fawn-lime);
+  background: var(--fawn-moss);
+}
+.nav-item .icon::before, .qa-icon::before, .onboard-icon::before {
+  content: "";
+  width: 11px; height: 11px;
+  border: 1.5px solid currentColor;
+  border-radius: 50%;
+}
+.nav-item:nth-child(2n) .icon::before,
+.quick-actions .qa-btn:nth-child(2) .qa-icon::before {
+  border-radius: 2px; transform: rotate(45deg);
+}
+.nav-item:nth-child(3n) .icon::before,
+.quick-actions .qa-btn:nth-child(3) .qa-icon::before {
+  border-radius: 50% 50% 2px 50%; transform: rotate(-35deg);
+}
+
+.article-card:nth-child(2n) { transform: translateY(8px) rotate(.2deg); }
+.article-card:nth-child(3n) { transform: translateY(-5px) rotate(-.2deg); }
+
+@media (max-width: 768px) {
+  .quick-actions, .stats-row { grid-template-columns: 1fr 1fr !important; }
+  .quick-actions .qa-btn:nth-child(2), .quick-actions .qa-btn:nth-child(4),
+  .article-card:nth-child(2n), .article-card:nth-child(3n) { transform: none; }
+}
