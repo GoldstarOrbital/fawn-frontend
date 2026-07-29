@@ -1111,6 +1111,7 @@ Available anytime for questions or issues</span>
     <div style="display:flex;gap:9px;flex-wrap:wrap">
       <button class="qa-btn" id="fawn-tap-btn" onclick="toast('Open a merchant checkout first so the tap credential is bound to the merchant and amount.')">How tap works</button>
       <button class="qa-btn" id="fawn-google-wallet-btn" onclick="addFawnToGoogleWallet()" style="display:none;background:var(--surface2);border:1px solid var(--border);color:var(--text)">Add to Google Wallet</button>
+      <button class="qa-btn" id="fawn-apple-wallet-btn" onclick="addFawnToAppleWallet()" style="display:none;background:var(--surface2);border:1px solid var(--border);color:var(--text)">Add to Apple Wallet</button>
       <button class="qa-btn" id="fawn-freeze-btn" onclick="toggleFawnCardFreeze()" style="background:var(--surface2);border:1px solid var(--border);color:var(--text)">Freeze card</button>
     </div>
     <div style="color:var(--muted);font-size:.7rem;line-height:1.45;margin-top:14px">The phone credential is a short-lived FAWN token for FAWN-controlled checkout. It is not a Visa, Mastercard, Apple Pay, or Google Pay payment card.</div>
@@ -1915,6 +1916,7 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
     document.getElementById('fawn-freeze-btn').textContent = card.status === 'frozen' ? 'Unfreeze card' : 'Freeze card';
     document.getElementById('fawn-tap-btn').disabled = card.status !== 'active';
     document.getElementById('fawn-google-wallet-btn').style.display = card.phone_wallet?.google_wallet_pass_available ? '' : 'none';
+    document.getElementById('fawn-apple-wallet-btn').style.display = card.phone_wallet?.apple_wallet_pass_available ? '' : 'none';
     const qr = document.getElementById('fawn-card-qr');
     if (qr) { qr.style.display = 'none'; qr.innerHTML = ''; }
   }
@@ -1945,6 +1947,20 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
     } catch (e) {
       toast(e?.message || 'Google Wallet pass is not configured yet.');
       btn.textContent = 'Add to Google Wallet';
+    } finally { btn.disabled = false; }
+  }
+
+  async function addFawnToAppleWallet() {
+    const btn = document.getElementById('fawn-apple-wallet-btn');
+    if (!btn) return;
+    btn.disabled = true; btn.textContent = 'Preparing wallet pass…';
+    try {
+      const pass = await authPost('/closed-loop/cards/me/apple-wallet', {});
+      window.location.assign(pass.add_url);
+      btn.textContent = 'Add to Apple Wallet';
+    } catch (e) {
+      toast(e?.message || 'Apple Wallet pass is not configured yet.');
+      btn.textContent = 'Add to Apple Wallet';
     } finally { btn.disabled = false; }
   }
 
