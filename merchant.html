@@ -12,7 +12,7 @@
 <body>
   <header><a class="brand" href="index.html">FAWN</a><a href="index.html">Back to wallet</a></header>
   <main>
-    <div class="hero"><div><div class="kicker">Merchant loop</div><h1>FAWN terminal.</h1></div><p>Create a checkout, show the customer the secure link, or accept their rotating FAWN tap credential. Each side pays exactly one cent.</p></div>
+    <div class="hero"><div><div class="kicker">Merchant loop</div><h1>FAWN terminal.</h1></div><p>Create a checkout, show the customer the secure link, write it to an NFC tag, or accept their rotating FAWN credential. Each side pays exactly one cent.</p></div>
     <div id="signed-out" class="panel hidden"><h2>Sign in first</h2><p class="copy">Merchant access belongs to a FAWN account with a custodial wallet.</p><a href="index.html">Sign in to FAWN</a></div>
     <div id="workspace" class="grid hidden">
       <section class="panel">
@@ -33,7 +33,7 @@
         <button onclick="createCheckout()">Create checkout</button>
         <div id="checkout" class="checkout">
           <div class="fee-line"><span>Purchase</span><span id="purchase-amount">$0.00</span></div><div class="fee-line"><span>Customer fee</span><span>$0.01</span></div><div class="fee-line"><span>Your fee</span><span>$0.01</span></div><div class="fee-line total"><span>You receive</span><span id="merchant-net">$0.00</span></div>
-          <div id="checkout-url" class="checkout-url"></div><div class="row"><button onclick="copyCheckout()">Copy customer link</button><button class="secondary" onclick="openCheckout()">Open link</button></div>
+          <div id="checkout-url" class="checkout-url"></div><div class="row"><button onclick="copyCheckout()">Copy customer link</button><button class="secondary" onclick="openCheckout()">Open link</button><button id="write-nfc" class="secondary hidden" onclick="writeCheckoutTag()">Write checkout to NFC tag</button></div>
           <div style="margin-top:18px" class="field"><label for="tap-token">NFC reader / rotating token</label><input id="tap-token" autocomplete="off" placeholder="Tap phone or paste FAWN token" /></div>
           <button onclick="acceptTap()">Accept tap credential</button><div id="checkout-status" class="status" role="status"></div>
         </div>
@@ -49,7 +49,9 @@
     async function createMerchant(){const status=document.getElementById('merchant-status');status.textContent='Submitting…';try{merchant=await api('/closed-loop/merchants',{method:'POST',body:JSON.stringify({business_name:document.getElementById('business-name').value.trim(),display_name:document.getElementById('display-name').value.trim(),support_email:document.getElementById('support-email').value.trim(),website:document.getElementById('website').value.trim()||null})});status.textContent='';renderMerchant()}catch(error){status.textContent=error.message}}
     async function createCheckout(){const cents=Math.round(Number(document.getElementById('amount').value)*100);const status=document.getElementById('checkout-status');try{checkout=await api('/closed-loop/merchant/checkouts',{method:'POST',body:JSON.stringify({amount_cents:cents,order_reference:document.getElementById('order-ref').value.trim()||null})});document.getElementById('checkout').style.display='block';document.getElementById('purchase-amount').textContent=money(checkout.amount_cents);document.getElementById('merchant-net').textContent=money(checkout.amount_cents-1);document.getElementById('checkout-url').textContent=checkout.checkout_url;status.textContent='Checkout is open for 15 minutes.'}catch(error){status.textContent=error.message}}
     function copyCheckout(){if(checkout)navigator.clipboard.writeText(checkout.checkout_url)}function openCheckout(){if(checkout)window.open(checkout.checkout_url,'_blank','noopener')}
+    async function writeCheckoutTag(){if(!checkout||!('NDEFReader' in window))return;const status=document.getElementById('checkout-status');status.style.color='var(--muted)';status.textContent='Hold an NFC tag near this device…';try{const writer=new NDEFReader();await writer.write({records:[{recordType:'url',data:checkout.checkout_url}]});status.style.color='var(--green)';status.textContent='NFC tag updated. The customer can tap it to open this exact checkout.'}catch(error){status.style.color='var(--danger)';status.textContent=error.name==='NotAllowedError'?'NFC permission was not granted. Use the customer link instead.':`Could not write the NFC tag: ${error.message}`}}
     async function acceptTap(){if(!checkout)return;const status=document.getElementById('checkout-status');let raw=document.getElementById('tap-token').value.trim();raw=raw.replace(/^fawn:\/\/tap\//,'');status.textContent='Authorizing…';try{const result=await api(`/closed-loop/merchant/checkouts/${encodeURIComponent(checkout.checkout_token)}/tap`,{method:'POST',body:JSON.stringify({tap_token:raw})});status.style.color='var(--green)';status.textContent=`Paid. ${money(result.merchant_net_cents)} reached your FAWN balance.`;document.getElementById('tap-token').value='';merchant=await api('/closed-loop/merchants/me');renderMerchant()}catch(error){status.style.color='var(--danger)';status.textContent=error.message}}
+    if('NDEFReader' in window)document.getElementById('write-nfc').classList.remove('hidden');
     init();
   </script>
 </body>

@@ -1110,6 +1110,7 @@ Available anytime for questions or issues</span>
     <div id="fawn-card-modal-copy" style="color:var(--muted);font-size:.82rem;line-height:1.5;margin-bottom:16px">Use this card only at FAWN-enabled merchants. Each completed purchase costs you 1¢; the merchant also pays 1¢.</div>
     <div style="display:flex;gap:9px;flex-wrap:wrap">
       <button class="qa-btn" id="fawn-tap-btn" onclick="toast('Open a merchant checkout first so the tap credential is bound to the merchant and amount.')">How tap works</button>
+      <button class="qa-btn" id="fawn-google-wallet-btn" onclick="addFawnToGoogleWallet()" style="display:none;background:var(--surface2);border:1px solid var(--border);color:var(--text)">Add to Google Wallet</button>
       <button class="qa-btn" id="fawn-freeze-btn" onclick="toggleFawnCardFreeze()" style="background:var(--surface2);border:1px solid var(--border);color:var(--text)">Freeze card</button>
     </div>
     <div style="color:var(--muted);font-size:.7rem;line-height:1.45;margin-top:14px">The phone credential is a short-lived FAWN token for FAWN-controlled checkout. It is not a Visa, Mastercard, Apple Pay, or Google Pay payment card.</div>
@@ -1125,6 +1126,7 @@ Available anytime for questions or issues</span>
     <div style="display:flex;justify-content:space-between;padding:14px 0;border-top:1px solid var(--border);font-size:1.05rem"><strong>Total</strong><strong id="fawn-checkout-total">$0.01</strong></div>
     <div id="fawn-checkout-status" style="color:var(--muted);font-size:.8rem;line-height:1.45;margin:12px 0"></div>
     <button id="fawn-checkout-pay-btn" onclick="authorizeFawnCheckout()" style="width:100%;padding:14px;background:var(--green);color:#03110d;border:0;border-radius:11px;font-weight:850;cursor:pointer">Pay with FAWN card</button>
+    <button id="fawn-checkout-app-btn" onclick="openFawnPhoneWallet()" style="width:100%;padding:12px;margin-top:9px;background:var(--surface2);color:var(--text);border:1px solid var(--border);border-radius:11px;font-weight:750;cursor:pointer">Open in FAWN phone wallet</button>
     <button id="fawn-checkout-tap-btn" onclick="mintFawnTapCredential()" style="width:100%;padding:12px;margin-top:9px;background:var(--surface2);color:var(--text);border:1px solid var(--border);border-radius:11px;font-weight:750;cursor:pointer">Present tap credential</button>
     <div id="fawn-checkout-tap-qr" style="display:none;justify-content:center;background:#fff;border-radius:14px;padding:12px;width:max-content;margin:14px auto 0"></div>
   </div>
@@ -1912,6 +1914,7 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
     document.getElementById('fawn-card-state').textContent = String(card.status || 'active').toUpperCase();
     document.getElementById('fawn-freeze-btn').textContent = card.status === 'frozen' ? 'Unfreeze card' : 'Freeze card';
     document.getElementById('fawn-tap-btn').disabled = card.status !== 'active';
+    document.getElementById('fawn-google-wallet-btn').style.display = card.phone_wallet?.google_wallet_pass_available ? '' : 'none';
     const qr = document.getElementById('fawn-card-qr');
     if (qr) { qr.style.display = 'none'; qr.innerHTML = ''; }
   }
@@ -1929,6 +1932,20 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
       loadFawnCardStatus();
       toast(window.fawnClosedLoopCard.status === 'frozen' ? 'Card frozen.' : 'Card active.');
     } catch (e) { toast(e?.message || 'Could not update card.'); }
+  }
+
+  async function addFawnToGoogleWallet() {
+    const btn = document.getElementById('fawn-google-wallet-btn');
+    if (!btn) return;
+    btn.disabled = true; btn.textContent = 'Preparing wallet pass…';
+    try {
+      const pass = await authPost('/closed-loop/cards/me/google-wallet', {});
+      window.open(pass.add_url, '_blank', 'noopener');
+      btn.textContent = 'Add to Google Wallet';
+    } catch (e) {
+      toast(e?.message || 'Google Wallet pass is not configured yet.');
+      btn.textContent = 'Add to Google Wallet';
+    } finally { btn.disabled = false; }
   }
 
   async function mintFawnTapCredential() {
@@ -1982,6 +1999,11 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
   function closeFawnCheckout() {
     document.getElementById('fawn-checkout-modal').style.display = 'none';
     activeFawnCheckoutToken = null;
+  }
+
+  function openFawnPhoneWallet() {
+    if (!activeFawnCheckoutToken) return;
+    window.location.href = `fawn://card?checkout=${encodeURIComponent(activeFawnCheckoutToken)}`;
   }
 
   async function authorizeFawnCheckout() {
