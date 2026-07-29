@@ -862,7 +862,7 @@ Available anytime for questions or issues</span>
       <button style="width:100%;padding:12px;background:var(--green);color:#000;border:1px solid var(--green);border-radius:10px;cursor:pointer;font-weight:700;margin-bottom:8px" onclick="openAddFundsModal(); switchFundsTab('bank')">
         + Link Bank Account
       </button>
-      <button style="width:100%;padding:12px;background:var(--surface2);border:1px solid var(--border);border-radius:10px;cursor:pointer;font-weight:600;color:var(--text)" onclick="toast('Coming soon: Apple Pay integration')">
+      <button style="width:100%;padding:12px;background:var(--surface2);border:1px solid var(--border);border-radius:10px;cursor:pointer;font-weight:600;color:var(--text)" onclick="toast('Apple Pay is unavailable until FAWN has its own licensed card and network program')">
         + Add Apple Pay
       </button>
     </div>
@@ -1094,6 +1094,42 @@ Available anytime for questions or issues</span>
 </div>
 
 <!-- ── APP ── -->
+<!-- FAWN CLOSED-LOOP CARD -->
+<div id="fawn-card-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.76);z-index:1100;align-items:center;justify-content:center;padding:24px">
+  <div style="background:var(--surface);border:1px solid var(--border);border-radius:22px;padding:28px;max-width:460px;width:100%;position:relative">
+    <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:16px;margin-bottom:20px">
+      <div><div style="font-size:.68rem;color:var(--green);font-weight:800;letter-spacing:1.2px;text-transform:uppercase">FAWN balance card</div><div id="fawn-card-modal-title" style="font-size:1.3rem;font-weight:800;margin-top:5px">Your closed-loop card</div></div>
+      <button onclick="closeFawnCardModal()" aria-label="Close card" style="background:none;border:none;font-size:1.45rem;cursor:pointer;color:var(--muted)">×</button>
+    </div>
+    <div style="background:#111814;border:1px solid rgba(0,200,150,.32);border-radius:18px;padding:22px;margin-bottom:18px;min-height:170px;display:flex;flex-direction:column;justify-content:space-between">
+      <div style="display:flex;justify-content:space-between"><span style="font-weight:900;letter-spacing:.08em">FAWN</span><span style="color:var(--gold);font-size:.75rem">BALANCE</span></div>
+      <div><div style="font-size:.75rem;color:var(--muted)">FAWN-only credential</div><div id="fawn-card-number" style="font-size:1.15rem;letter-spacing:.16em;margin-top:5px">•••• •••• ••••</div></div>
+      <div style="display:flex;justify-content:space-between;color:var(--muted);font-size:.72rem"><span id="fawn-card-holder">CARDHOLDER</span><span id="fawn-card-state">ACTIVE</span></div>
+    </div>
+    <div id="fawn-card-qr" style="display:none;justify-content:center;background:#fff;border-radius:14px;padding:12px;width:max-content;margin:0 auto 12px"></div>
+    <div id="fawn-card-modal-copy" style="color:var(--muted);font-size:.82rem;line-height:1.5;margin-bottom:16px">Use this card only at FAWN-enabled merchants. Each completed purchase costs you 1¢; the merchant also pays 1¢.</div>
+    <div style="display:flex;gap:9px;flex-wrap:wrap">
+      <button class="qa-btn" id="fawn-tap-btn" onclick="toast('Open a merchant checkout first so the tap credential is bound to the merchant and amount.')">How tap works</button>
+      <button class="qa-btn" id="fawn-freeze-btn" onclick="toggleFawnCardFreeze()" style="background:var(--surface2);border:1px solid var(--border);color:var(--text)">Freeze card</button>
+    </div>
+    <div style="color:var(--muted);font-size:.7rem;line-height:1.45;margin-top:14px">The phone credential is a short-lived FAWN token for FAWN-controlled checkout. It is not a Visa, Mastercard, Apple Pay, or Google Pay payment card.</div>
+  </div>
+</div>
+
+<!-- FAWN MERCHANT CHECKOUT -->
+<div id="fawn-checkout-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.76);z-index:1150;align-items:center;justify-content:center;padding:24px">
+  <div style="background:var(--surface);border:1px solid var(--border);border-radius:22px;padding:28px;max-width:440px;width:100%">
+    <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:20px"><div><div style="font-size:.68rem;color:var(--green);font-weight:800;letter-spacing:1.2px;text-transform:uppercase">FAWN checkout</div><div id="fawn-checkout-merchant" style="font-size:1.25rem;font-weight:800;margin-top:5px">Merchant</div></div><button onclick="closeFawnCheckout()" aria-label="Close checkout" style="background:none;border:none;font-size:1.45rem;color:var(--muted);cursor:pointer">×</button></div>
+    <div style="display:flex;justify-content:space-between;padding:14px 0;border-top:1px solid var(--border)"><span>Purchase</span><strong id="fawn-checkout-amount">$0.00</strong></div>
+    <div style="display:flex;justify-content:space-between;padding:10px 0;color:var(--muted)"><span>FAWN user fee</span><span>$0.01</span></div>
+    <div style="display:flex;justify-content:space-between;padding:14px 0;border-top:1px solid var(--border);font-size:1.05rem"><strong>Total</strong><strong id="fawn-checkout-total">$0.01</strong></div>
+    <div id="fawn-checkout-status" style="color:var(--muted);font-size:.8rem;line-height:1.45;margin:12px 0"></div>
+    <button id="fawn-checkout-pay-btn" onclick="authorizeFawnCheckout()" style="width:100%;padding:14px;background:var(--green);color:#03110d;border:0;border-radius:11px;font-weight:850;cursor:pointer">Pay with FAWN card</button>
+    <button id="fawn-checkout-tap-btn" onclick="mintFawnTapCredential()" style="width:100%;padding:12px;margin-top:9px;background:var(--surface2);color:var(--text);border:1px solid var(--border);border-radius:11px;font-weight:750;cursor:pointer">Present tap credential</button>
+    <div id="fawn-checkout-tap-qr" style="display:none;justify-content:center;background:#fff;border-radius:14px;padding:12px;width:max-content;margin:14px auto 0"></div>
+  </div>
+</div>
+
 <div id="app-screen">
   <div class="shell">
 
@@ -1113,6 +1149,9 @@ Available anytime for questions or issues</span>
       <div class="nav-item" id="nav-transactions" onclick="showTab('transactions')">
         <span class="icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M7 5v14M7 5l-3 3M7 5l3 3M17 19V5m0 14 3-3m-3 3-3-3"/></svg></span> Transactions
       </div>
+      <a class="nav-item" href="merchant.html" style="text-decoration:none">
+        <span class="icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M4 9h16l-1-4H5z"/><path d="M5 9v10h14V9M9 19v-5h6v5"/></svg></span> Merchant
+      </a>
       <div class="nav-item" id="nav-investing" onclick="showTab('investing')">
         <span class="icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M4 18 10 12l4 3 6-8"/><path d="M16 7h4v4"/></svg></span> Investing
       </div>
@@ -1223,9 +1262,9 @@ Available anytime for questions or issues</span>
           </div>
         </div>
 
-        <div id="fawn-card-center" style="display:flex;gap:14px;align-items:center;justify-content:space-between;flex-wrap:wrap;background:linear-gradient(135deg,rgba(111,97,255,0.12),transparent);border:1px solid rgba(111,97,255,0.28);border-radius:16px;padding:15px 18px;margin:0 0 20px">
-          <div><div style="font-size:0.68rem;color:var(--accent);text-transform:uppercase;letter-spacing:1px;margin-bottom:5px">FAWN card</div><div style="font-weight:750" id="fawn-card-title">A debit card for your cleared balance</div><div style="font-size:0.78rem;color:var(--muted);margin-top:3px" id="fawn-card-copy">Virtual-first card issuance is being prepared with spend controls and instant freeze.</div></div>
-          <button class="qa-btn" id="fawn-card-btn" onclick="requestFawnCard()">Join card list</button>
+        <div id="fawn-card-center" style="display:flex;gap:14px;align-items:center;justify-content:space-between;flex-wrap:wrap;background:#111814;border:1px solid rgba(0,200,150,.28);border-radius:16px;padding:15px 18px;margin:0 0 20px">
+          <div><div style="font-size:0.68rem;color:var(--green);text-transform:uppercase;letter-spacing:1px;margin-bottom:5px">FAWN balance card</div><div style="font-weight:750" id="fawn-card-title">Pay inside the FAWN merchant loop</div><div style="font-size:0.78rem;color:var(--muted);margin-top:3px" id="fawn-card-copy">Issue a virtual FAWN-only card for your cleared balance. You and the merchant each pay exactly 1¢ per completed purchase.</div></div>
+          <button class="qa-btn" id="fawn-card-btn" onclick="requestFawnCard()">Issue my card</button>
         </div>
 
         <div class="stats-row">
@@ -1463,7 +1502,7 @@ Available anytime for questions or issues</span>
       <div class="tab" id="tab-investing">
         <div class="page-header">
           <h1>Investing</h1>
-          <p>Real stocks and ETFs. Fractional shares starting at $1. Protected order limits. One account for payments and investing.</p>
+          <p>Learn the basics, build a calmer investing habit, and keep your money moving on your terms. Investment capabilities are coming soon.</p>
         </div>
         <div id="investing-body">
           <div style="color:var(--muted);font-size:0.9rem;padding:20px 0;text-align:center">Loading investing…</div>
@@ -1825,20 +1864,141 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
 
   async function loadFawnCardStatus() {
     try {
-      const d = await authGet('/experience/cards/status');
+      const d = await authGet('/closed-loop/cards/me');
       const title = document.getElementById('fawn-card-title');
       const copy = document.getElementById('fawn-card-copy');
       const btn = document.getElementById('fawn-card-btn');
-      if (d.status === 'interest') { if (title) title.textContent = 'You are on the FAWN card list'; if (btn) { btn.textContent = 'Requested'; btn.disabled = true; } }
-      if (d.issuer_configured && copy) copy.textContent = 'Virtual-first debit card with cleared-balance funding, spend limits, and instant freeze.';
-    } catch {}
+      if (title) title.textContent = `FAWN card •••• ${d.last_four}`;
+      if (copy) copy.textContent = d.status === 'frozen' ? 'Card frozen. Open it to restore payments.' : 'Ready at FAWN-enabled merchants. 1¢ user fee and 1¢ merchant fee per completed purchase.';
+      if (btn) { btn.textContent = 'Open card'; btn.disabled = false; btn.onclick = openFawnCardModal; }
+      window.fawnClosedLoopCard = d;
+    } catch (e) {
+      const btn = document.getElementById('fawn-card-btn');
+      if (btn) { btn.textContent = 'Issue my card'; btn.disabled = false; btn.onclick = requestFawnCard; }
+    }
   }
 
   async function requestFawnCard() {
     const btn = document.getElementById('fawn-card-btn');
-    if (btn) { btn.disabled = true; btn.textContent = 'Saving...'; }
-    try { await authPost('/experience/cards/request', {}); if (btn) btn.textContent = 'Requested'; toast('You are on the FAWN card list.'); }
-    catch { if (btn) { btn.disabled = false; btn.textContent = 'Join card list'; } toast('Card signup is temporarily unavailable.'); }
+    if (btn) { btn.disabled = true; btn.textContent = 'Issuing…'; }
+    try {
+      window.fawnClosedLoopCard = await authPost('/closed-loop/cards', {});
+      await loadFawnCardStatus();
+      openFawnCardModal();
+      toast('Your FAWN balance card is ready.');
+    } catch (e) {
+      if (btn) { btn.disabled = false; btn.textContent = 'Issue my card'; }
+      toast(e?.message || 'Card issuance is temporarily unavailable.');
+    }
+  }
+
+  function renderClosedLoopQR(payload, containerId = 'fawn-card-qr') {
+    const container = document.getElementById(containerId);
+    if (!container || !payload) return;
+    const qr = qrcode(0, 'H');
+    qr.addData(payload);
+    qr.make();
+    const cellSize = Math.max(2, Math.floor(210 / (qr.getModuleCount() + 8)));
+    container.innerHTML = qr.createSvgTag({ cellSize, margin: cellSize * 4, alt: 'FAWN tap credential' });
+    container.style.display = 'flex';
+  }
+
+  function openFawnCardModal() {
+    const card = window.fawnClosedLoopCard;
+    if (!card) return requestFawnCard();
+    document.getElementById('fawn-card-modal').style.display = 'flex';
+    document.getElementById('fawn-card-number').textContent = `FAWN •••• ${card.last_four}`;
+    document.getElementById('fawn-card-holder').textContent = (user?.full_name || 'CARDHOLDER').toUpperCase();
+    document.getElementById('fawn-card-state').textContent = String(card.status || 'active').toUpperCase();
+    document.getElementById('fawn-freeze-btn').textContent = card.status === 'frozen' ? 'Unfreeze card' : 'Freeze card';
+    document.getElementById('fawn-tap-btn').disabled = card.status !== 'active';
+    const qr = document.getElementById('fawn-card-qr');
+    if (qr) { qr.style.display = 'none'; qr.innerHTML = ''; }
+  }
+
+  function closeFawnCardModal() {
+    document.getElementById('fawn-card-modal').style.display = 'none';
+  }
+
+  async function toggleFawnCardFreeze() {
+    const card = window.fawnClosedLoopCard;
+    if (!card) return;
+    try {
+      window.fawnClosedLoopCard = await authPatch('/closed-loop/cards/me', { status: card.status === 'frozen' ? 'active' : 'frozen' });
+      openFawnCardModal();
+      loadFawnCardStatus();
+      toast(window.fawnClosedLoopCard.status === 'frozen' ? 'Card frozen.' : 'Card active.');
+    } catch (e) { toast(e?.message || 'Could not update card.'); }
+  }
+
+  async function mintFawnTapCredential() {
+    if (!activeFawnCheckoutToken) return toast('Open a merchant checkout first.');
+    const btn = document.getElementById('fawn-checkout-tap-btn');
+    if (btn) { btn.disabled = true; btn.textContent = 'Preparing…'; }
+    try {
+      const credential = await authPost('/closed-loop/cards/me/tap-token', { checkout_token: activeFawnCheckoutToken });
+      renderClosedLoopQR(credential.qr_payload, 'fawn-checkout-tap-qr');
+      document.getElementById('fawn-checkout-status').textContent = `Credential locked to ${credential.merchant_name} for ${fmt(credential.payer_total_cents / 100)}. It expires in 60 seconds and works once.`;
+      if (btn) btn.textContent = 'Refresh tap credential';
+      setTimeout(() => {
+        const qr = document.getElementById('fawn-checkout-tap-qr');
+        if (qr) { qr.style.display = 'none'; qr.innerHTML = ''; }
+        const copy = document.getElementById('fawn-checkout-status');
+        if (copy) copy.textContent = 'Tap credential expired. Create a fresh one after confirming this checkout.';
+        if (btn) btn.disabled = false;
+      }, 60000);
+    } catch (e) {
+      toast(e?.message || 'Could not prepare tap credential.');
+      if (btn) { btn.disabled = false; btn.textContent = 'Ready to tap'; }
+    }
+  }
+
+  let activeFawnCheckoutToken = null;
+
+  async function openClosedLoopCheckout(checkoutToken) {
+    activeFawnCheckoutToken = checkoutToken;
+    const modal = document.getElementById('fawn-checkout-modal');
+    modal.style.display = 'flex';
+    const status = document.getElementById('fawn-checkout-status');
+    status.textContent = 'Loading secure FAWN checkout…';
+    try {
+      const r = await fetch(`${API}/closed-loop/checkouts/${encodeURIComponent(checkoutToken)}`);
+      const d = await r.json();
+      if (!r.ok) throw new Error(d.detail || 'Checkout unavailable');
+      document.getElementById('fawn-checkout-merchant').textContent = d.merchant_name || 'FAWN merchant';
+      document.getElementById('fawn-checkout-amount').textContent = fmt(d.amount_cents / 100);
+      document.getElementById('fawn-checkout-total').textContent = fmt(d.payer_total_cents / 100);
+      status.textContent = d.status === 'open' ? 'Confirm the merchant and total before paying.' : `This checkout is ${d.status}.`;
+      document.getElementById('fawn-checkout-pay-btn').disabled = d.status !== 'open';
+      document.getElementById('fawn-checkout-tap-btn').disabled = d.status !== 'open';
+      const tapQr = document.getElementById('fawn-checkout-tap-qr');
+      if (tapQr) { tapQr.style.display = 'none'; tapQr.innerHTML = ''; }
+    } catch (e) {
+      status.textContent = e?.message || 'Checkout unavailable.';
+      document.getElementById('fawn-checkout-pay-btn').disabled = true;
+    }
+  }
+
+  function closeFawnCheckout() {
+    document.getElementById('fawn-checkout-modal').style.display = 'none';
+    activeFawnCheckoutToken = null;
+  }
+
+  async function authorizeFawnCheckout() {
+    if (!activeFawnCheckoutToken) return;
+    const btn = document.getElementById('fawn-checkout-pay-btn');
+    btn.disabled = true; btn.textContent = 'Paying…';
+    try {
+      const d = await authPost(`/closed-loop/checkouts/${encodeURIComponent(activeFawnCheckoutToken)}/authorize`, {});
+      document.getElementById('fawn-checkout-status').textContent = `Paid. The merchant received ${fmt(d.merchant_net_cents / 100)} after its 1¢ fee.`;
+      btn.textContent = 'Paid';
+      document.getElementById('fawn-checkout-tap-btn').disabled = true;
+      loadBalance();
+      loadTxns();
+    } catch (e) {
+      document.getElementById('fawn-checkout-status').textContent = e?.message || 'Payment failed.';
+      btn.disabled = false; btn.textContent = 'Pay with FAWN card';
+    }
   }
 
   async function loadBalance() {
@@ -1879,8 +2039,13 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
     if (fullEl) fullEl.innerHTML = '<div style="padding:32px;text-align:center"><span class="spinner"></span></div>';
     if (dashEl) dashEl.innerHTML = '<div style="padding:32px;text-align:center"><span class="spinner"></span></div>';
     try {
-      // CRYPTO-NATIVE: Load USDC transfers instead of bank transactions
-      const d = await authGet('/transfers/history?limit=50');
+      // Merge P2P/on-chain activity with closed-loop card purchases and sales.
+      const [transferResult, cardResult] = await Promise.allSettled([
+        authGet('/transfers/history?limit=50'),
+        authGet('/closed-loop/activity'),
+      ]);
+      const d = transferResult.status === 'fulfilled' ? transferResult.value : [];
+      const cardActivity = cardResult.status === 'fulfilled' ? (cardResult.value.activity || []) : [];
       // Convert crypto transfers to tx format
       allTxns = (d || []).map(t => ({
         id: t.transfer_id,
@@ -1893,7 +2058,16 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
         memo: t.memo,
         chain: t.chain,
         txHash: t.tx_hash,
-      }));
+      })).concat(cardActivity.map(item => ({
+        id: `card-${item.id}`,
+        type: item.type === 'merchant_sale' ? 'receive' : 'send',
+        amount: item.amount_cents / 100,
+        description: item.type === 'merchant_sale' ? 'FAWN merchant sale' : `Purchase at ${item.counterparty}`,
+        category: 'card',
+        date: item.created_at ? item.created_at.split('T')[0] : '',
+        status: item.status,
+        memo: `${item.type === 'merchant_sale' ? 'Merchant' : 'User'} fee: $0.01`,
+      }))).sort((a, b) => String(b.date).localeCompare(String(a.date)));
       setDashTx(allTxns.slice(0, 5));
       setFullTx(allTxns);
       setStats(allTxns);
@@ -2810,9 +2984,18 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
     advanced: { label:'Advanced', minutes:'10 min', title:'Make a repeatable decision process', description:'Use a pre-trade checklist: understand the investment, its risks, costs, and why it belongs in your plan.', steps:[['1. Read first','Understand the product and its disclosures before placing an order.'],['2. Check trade-offs','Higher potential return can also mean higher potential loss.'],['3. Avoid urgency','A fast-moving pitch is not a reason to skip due diligence.']], source:'https://www.investor.gov/introduction-investing/getting-started/five-questions-ask-you-invest', videoId:'mv5zucjq60k', videoTitle:'Risk and reward introduction — Khan Academy' }
   };
 
+  function readInvestingProgress() {
+    try {
+      const saved = JSON.parse(localStorage.getItem('fawn_investing_lessons_done') || '[]');
+      return Array.isArray(saved) ? saved.filter(level => investingLessons[level]) : [];
+    } catch {
+      return [];
+    }
+  }
+
   function investingLearningHub() {
     const selected = localStorage.getItem('fawn_investing_lesson') || 'beginner';
-    const completed = JSON.parse(localStorage.getItem('fawn_investing_lessons_done') || '[]');
+    const completed = readInvestingProgress();
     const lesson = investingLessons[selected] || investingLessons.beginner;
     return `<section class="learn-hub" aria-label="FAWN investing learning hub">
       <div class="learn-hub-head"><div><div class="learn-kicker">FAWN Learn</div><h2>Understand it before you own it.</h2><p class="learn-hub-copy">Three short pathways for building a calmer investing practice. Educational only. This is not personalized investment advice.</p></div><div class="learn-progress">${completed.length}/3 paths complete</div></div>
@@ -2829,7 +3012,7 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
   }
 
   function completeInvestingLesson(level) {
-    const completed = new Set(JSON.parse(localStorage.getItem('fawn_investing_lessons_done') || '[]'));
+    const completed = new Set(readInvestingProgress());
     completed.add(level);
     localStorage.setItem('fawn_investing_lessons_done', JSON.stringify([...completed]));
     selectInvestingLesson(level);
@@ -2838,26 +3021,20 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
 
   async function loadInvesting() {
     const body = document.getElementById('investing-body');
-    body.innerHTML = '<div style="color:var(--muted);font-size:0.9rem;padding:20px 0;text-align:center">Loading investing…</div>';
-    try {
-      const account = await authGet('/investing/account');
-      renderInvestingAccount(body, account);
-      loadPositions();
-    } catch (e) {
-      const m = String(e.message || '');
-      if (/503|available/i.test(m)) return renderInvestingComingSoon(body);
-      if (/404|no investing account/i.test(m)) return renderInvestingOnboard(body);
-      body.innerHTML = `<div class="disclaimer-box">Couldn't load investing. ${_esc(m)}</div>`;
-    }
+    // Keep education available even while execution is disabled. Do not call
+    // account, quote, brokerage, or order endpoints until the capability is
+    // intentionally launched and its safeguards are production-approved.
+    renderInvestingComingSoon(body);
   }
 
   function renderInvestingComingSoon(body) {
     body.innerHTML = `
+      ${investingLearningHub()}
       <div style="background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:28px;text-align:center">
-        <div style="font-size:2rem;margin-bottom:8px">📈</div>
-        <div style="font-weight:700;font-size:1.05rem;margin-bottom:6px">Real stocks & ETFs launching soon</div>
-        <div style="color:var(--muted);font-size:0.9rem;max-width:420px;margin:0 auto">Buy fractional shares straight from your FAWN account when a configured brokerage provider is available. Start with $1, with quote checks and protective limits before execution.</div>
-      </div>${investingLearningHub()}`;
+        <div class="qa-icon" aria-hidden="true" style="margin:0 auto 10px"><svg viewBox="0 0 24 24"><path d="M4 18 10 12l4 3 6-8"/><path d="M16 7h4v4"/></svg></div>
+        <div style="font-weight:700;font-size:1.05rem;margin-bottom:6px">Investing capabilities are coming soon</div>
+        <div style="color:var(--muted);font-size:0.9rem;max-width:460px;margin:0 auto">FAWN is building the safeguards first. Stock and ETF accounts, quotes, brokerage connections, and order execution will appear here only when they are ready.</div>
+      </div>`;
   }
 
   function renderInvestingOnboard(body) {
@@ -4242,6 +4419,8 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
     if (e.target.id === 'receive-modal') closeReceiveModal();
     if (e.target.id === 'add-funds-modal') closeAddFundsModal();
     if (e.target.id === 'trade-modal') closeTradeModal();
+    if (e.target.id === 'fawn-card-modal') closeFawnCardModal();
+    if (e.target.id === 'fawn-checkout-modal') closeFawnCheckout();
   });
 
   // Register service worker for PWA install support
@@ -4250,7 +4429,13 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
   }
 
   function handlePayLink() {
-    const pay = new URLSearchParams(window.location.search).get('pay');
+    const params = new URLSearchParams(window.location.search);
+    const checkout = params.get('checkout');
+    if (checkout && /^[A-Za-z0-9_-]{20,120}$/.test(checkout)) {
+      openClosedLoopCheckout(checkout);
+      return;
+    }
+    const pay = params.get('pay');
     if (!pay) return;
     const username = String(pay).trim().replace(/^@/, '');
     if (!/^[a-z0-9_]{3,30}$/i.test(username)) return;
