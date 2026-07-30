@@ -2874,7 +2874,9 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
     if ((name === 'campus' || name === 'perks' || name === 'military') && token && !savingsLoaded) loadSavingsHub();
     if (name === 'military') renderMilitaryStatus();
     if (name === 'automation') renderAutomation();
-    if (name === 'investing' && token) loadInvesting();
+    // FAWN Learn is available independently of brokerage availability. Render
+    // it even when an auth token is being refreshed or has just expired.
+    if (name === 'investing') loadInvesting();
     if (name === 'brief') { loadBrief(); startBriefAutoRefresh(); }
     else stopBriefAutoRefresh();
     if (name === 'news') {
@@ -3036,7 +3038,7 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
     const completed = readInvestingProgress();
     const lesson = investingLessons[selected] || investingLessons.beginner;
     return `<section class="learn-hub" aria-label="FAWN investing learning hub">
-      <div class="learn-hub-head"><div><div class="learn-kicker">FAWN Learn</div><h2>Understand it before you own it.</h2><p class="learn-hub-copy">Three short pathways for building a calmer investing practice. Educational only. This is not personalized investment advice.</p></div><div class="learn-progress">${completed.length}/3 paths complete</div></div>
+      <div class="learn-hub-head"><div><div class="learn-kicker">FAWN Learn · available now</div><h2>Understand it before you own it.</h2><p class="learn-hub-copy">Three short pathways for building a calmer investing practice. Educational only. This is not personalized investment advice.</p></div><div class="learn-progress">${completed.length}/3 paths complete</div></div>
       <div class="learn-levels">${Object.entries(investingLessons).map(([key, item], index) => `<button class="learn-level ${key === selected ? 'active' : ''}" onclick="selectInvestingLesson('${key}')"><div class="learn-level-num">0${index + 1} · ${item.minutes}</div><div class="learn-level-title">${item.label}</div><div class="learn-level-desc">${item.description}</div></button>`).join('')}</div>
       <div class="learn-detail"><div class="learn-detail-top"><div><div class="learn-kicker">${lesson.label} path</div><div class="learn-detail-title">${lesson.title}</div></div><div class="learn-minutes">${lesson.minutes}</div></div><div class="learn-steps">${lesson.steps.map(([title, copy]) => `<div class="learn-step"><b>${title}</b>${copy}</div>`).join('')}</div><div class="learn-actions"><button class="learn-complete" onclick="completeInvestingLesson('${selected}')">${completed.includes(selected) ? 'Completed ✓' : 'Mark complete'}</button><a class="learn-link" href="${lesson.source}" target="_blank" rel="noopener noreferrer">Read the SEC Investor.gov guide ↗</a></div></div>
       <div class="learn-video"><iframe src="https://www.youtube-nocookie.com/embed/${lesson.videoId}?rel=0&modestbranding=1" title="${lesson.videoTitle}" loading="lazy" referrerpolicy="strict-origin-when-cross-origin" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe></div><div class="learn-video-note">Third-party educational video. Investing involves risk; FAWN does not endorse individual securities mentioned in the video.</div>
@@ -3067,6 +3069,10 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
 
   function renderInvestingComingSoon(body) {
     body.innerHTML = `
+      <div role="status" style="display:flex;align-items:center;justify-content:space-between;gap:14px;flex-wrap:wrap;background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:13px 15px;margin-bottom:14px">
+        <div><strong>Learning is open.</strong> <span style="color:var(--muted);font-size:.84rem">Lessons and progress tracking work today.</span></div>
+        <span style="color:var(--gold);border:1px solid rgba(230,180,76,.38);border-radius:999px;padding:5px 9px;font-size:.7rem;font-weight:800;letter-spacing:.7px;text-transform:uppercase">Investing coming soon</span>
+      </div>
       ${investingLearningHub()}
       <div style="background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:28px;text-align:center">
         <div class="qa-icon" aria-hidden="true" style="margin:0 auto 10px"><svg viewBox="0 0 24 24"><path d="M4 18 10 12l4 3 6-8"/><path d="M16 7h4v4"/></svg></div>
@@ -3074,6 +3080,11 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
         <div style="color:var(--muted);font-size:0.9rem;max-width:460px;margin:0 auto">FAWN is building the safeguards first. Stock and ETF accounts, quotes, brokerage connections, and order execution will appear here only when they are ready.</div>
       </div>`;
   }
+
+  // Pre-render the educational experience so it can never be replaced by a
+  // stale loading state while authentication or another dashboard request is
+  // settling. showTab() renders it again when the user opens Investing.
+  loadInvesting();
 
   function renderInvestingOnboard(body) {
     body.innerHTML = `
