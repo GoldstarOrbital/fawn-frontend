@@ -979,6 +979,7 @@ Available anytime for questions or issues</span>
 <!-- ── ADD FUNDS MODAL ── -->
 <div id="add-funds-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.7);z-index:1000;align-items:center;justify-content:center;padding:24px">
   <div style="background:var(--surface);border:1px solid var(--border);border-radius:24px;padding:32px;max-width:520px;width:100%;max-height:90vh;overflow-y:auto;position:relative">
+    <div style="background:linear-gradient(135deg,rgba(0,200,150,.12),rgba(255,214,94,.08));border:1px solid rgba(0,200,150,.35);border-radius:14px;padding:16px;margin-bottom:18px"><div style="font-size:.72rem;color:var(--green);font-weight:800;text-transform:uppercase;letter-spacing:1px">Fawn Bucks</div><div style="font-size:1.05rem;font-weight:800;margin:5px 0">Fund service credits with Stripe</div><div style="font-size:.8rem;color:var(--muted);line-height:1.5;margin-bottom:12px">Buy whole-dollar Bucks for Fawn services. Fee: $0.01 per dollar funded, shown before confirmation. Bucks are off-chain, non-transferable, and non-redeemable.</div><div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap"><input id="bucks-dollars" type="number" min="1" max="10000" step="1" value="10" oninput="updateBucksQuote()" style="width:110px;padding:10px;background:var(--surface2);color:var(--text);border:1px solid var(--border);border-radius:9px"><button id="bucks-checkout-btn" onclick="startBucksCheckout()" style="padding:10px 14px;background:var(--green);color:#000;border:0;border-radius:9px;font-weight:800;cursor:pointer">Continue to Stripe</button></div><div id="bucks-quote" style="font-size:.75rem;color:var(--muted);margin-top:9px">10 Bucks · $0.10 fee · $10.10 total</div><div id="bucks-status" style="font-size:.75rem;color:var(--muted);margin-top:6px"></div></div>
     <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px">
       <div style="font-size:1.3rem;font-weight:800">Add Funds</div>
       <button onclick="closeAddFundsModal()" style="background:none;border:none;font-size:1.5rem;cursor:pointer;color:var(--muted)">✕</button>
@@ -1264,6 +1265,8 @@ Available anytime for questions or issues</span>
             <div class="qa-label">Invest</div>
           </div>
         </div>
+
+        <div id="fawn-bucks-card" style="background:linear-gradient(135deg,rgba(0,200,150,.1),rgba(255,214,94,.06));border:1px solid rgba(0,200,150,.25);border-radius:16px;padding:15px 18px;margin:0 0 20px"><div style="display:flex;justify-content:space-between;gap:12px;align-items:center;flex-wrap:wrap"><div><div style="font-size:.68rem;color:var(--green);text-transform:uppercase;letter-spacing:1px">Fawn Bucks</div><div style="font-weight:800" id="bucks-balance">Loading…</div></div><button onclick="openAddFundsModal()" style="padding:9px 12px;background:var(--green);color:#000;border:0;border-radius:8px;font-weight:800;cursor:pointer">Fund Bucks</button></div><div id="bucks-history" style="font-size:.75rem;color:var(--muted);margin-top:8px">Your payment history is visible here after sign-in.</div></div>
 
         <div id="fawn-card-center" style="display:flex;gap:14px;align-items:center;justify-content:space-between;flex-wrap:wrap;background:#111814;border:1px solid rgba(0,200,150,.28);border-radius:16px;padding:15px 18px;margin:0 0 20px">
           <div><div style="font-size:0.68rem;color:var(--green);text-transform:uppercase;letter-spacing:1px;margin-bottom:5px">FAWN balance card</div><div style="font-weight:750" id="fawn-card-title">Pay inside the FAWN merchant loop</div><div style="font-size:0.78rem;color:var(--muted);margin-top:3px" id="fawn-card-copy">Issue a virtual FAWN-only card for your cleared balance. You and the merchant each pay exactly 1¢ per completed purchase.</div></div>
@@ -4512,5 +4515,12 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
   <div style="margin-top:8px">🔐 Custodial by design • Encrypted signing keys • No seed phrase to manage • Crypto markets are volatile</div>
 </footer>
 
+<script>
+  async function loadBucks() { try { const r=await authGet('/bucks'); const b=document.getElementById('bucks-balance'),h=document.getElementById('bucks-history'); if(b)b.textContent=`${r.balance} Bucks`; if(h)h.textContent=r.history.length?r.history.slice(0,3).map(p=>`${p.bucks} Bucks · $${(p.total_cents/100).toFixed(2)} total · ${p.status}`).join(' | '):'No Buck funding payments yet.'; } catch (_) {} }
+  function updateBucksQuote() { const d=Math.max(1,Math.floor(Number(document.getElementById('bucks-dollars')?.value||1))); const q=document.getElementById('bucks-quote'); if(q) q.textContent=`${d} Bucks · $${(d/100).toFixed(2)} fee · $${(d+d/100).toFixed(2)} total`; }
+  async function startBucksCheckout() { const b=document.getElementById('bucks-checkout-btn'),s=document.getElementById('bucks-status'),d=Math.max(1,Math.floor(Number(document.getElementById('bucks-dollars')?.value||1))); b.disabled=true;s.textContent='Preparing secure Stripe checkout…'; try { const r=await authPost('/bucks/checkout',{dollars:d}); window.location.href=r.checkout_url; } catch(e) { s.textContent=e?.message||'Checkout is temporarily unavailable.';b.disabled=false; } }
+  updateBucksQuote();
+  loadBucks();
+</script>
 </body>
 </html>
