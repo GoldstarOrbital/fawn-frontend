@@ -3194,6 +3194,15 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
         <div style="font-size:0.72rem;color:var(--muted);margin-top:10px">💵 Real stocks & ETFs · $0.01 flat fee · $100k max order · Rate limited for safety</div>
       </div>
       <div style="background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:20px;margin-bottom:18px">
+        <div style="font-size:0.7rem;color:var(--muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:12px">Available Securities (79 stocks + 20 ETFs)</div>
+        <div id="securities-list" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(120px,1fr));gap:8px;max-height:300px;overflow-y:auto;padding-right:8px">
+          <div style="text-align:center;padding:40px 20px;color:var(--muted);grid-column:1/-1">
+            <span class="loading-spinner"></span>
+            <div style="margin-top:8px;font-size:0.9rem">Loading securities...</div>
+          </div>
+        </div>
+      </div>
+      <div style="background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:20px;margin-bottom:18px">
         <div style="font-size:0.7rem;color:var(--muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:12px">Your Portfolio</div>
         <div id="portfolio-content" style="min-height:120px">
           <div style="text-align:center;padding:40px 20px;color:var(--muted)">
@@ -3213,6 +3222,29 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
       </div>
       ${investingLearningHub()}
     `;
+    // Load securities list
+    loadSecuritiesList();
+  }
+
+  async function loadSecuritiesList() {
+    const container = document.getElementById('securities-list');
+    if (!container) return;
+    try {
+      const data = await fetch(`${API}/investments/securities`).then(r => r.json());
+      const securities = data.securities || [];
+      if (!securities.length) {
+        container.innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:20px;color:var(--muted)">No securities available</div>';
+        return;
+      }
+      container.innerHTML = securities.map(sec => `
+        <button onclick="document.getElementById('ticker-search').value='${sec.ticker}';searchSecurities()" style="background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:8px;cursor:pointer;font-size:0.8rem;text-align:center;transition:all 0.2s">
+          <div style="font-weight:700;margin-bottom:2px">${_esc(sec.ticker)}</div>
+          <div style="font-size:0.7rem;color:var(--muted);line-height:1.2">${_esc((sec.name || '').substring(0, 30))}</div>
+        </button>
+      `).join('');
+    } catch (e) {
+      container.innerHTML = `<div style="grid-column:1/-1;text-align:center;padding:20px;color:var(--red)">Error loading securities: ${_esc(e.message)}</div>`;
+    }
   }
 
   function renderInvestingComingSoon(body) {
