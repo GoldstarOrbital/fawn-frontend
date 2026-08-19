@@ -500,6 +500,48 @@
       font-size: 0.75rem; color: #555; line-height: 1.6;
     }
 
+    /* ── INVESTMENTS ── */
+    .investments-container { margin-bottom: 28px; }
+    .investment-panel { margin-bottom: 28px; }
+
+    .portfolio-grid {
+      display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+      gap: 14px; margin-top: 14px;
+    }
+
+    .portfolio-card {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: 14px; padding: 16px;
+      transition: all 0.2s; cursor: default;
+    }
+    .portfolio-card:hover { border-color: var(--green); background: var(--green-faint); }
+
+    .portfolio-ticker { font-size: 0.75rem; color: var(--muted); text-transform: uppercase; font-weight: 700; margin-bottom: 4px; }
+    .portfolio-value { font-size: 1.4rem; font-weight: 800; margin-bottom: 8px; }
+    .portfolio-row { display: flex; justify-content: space-between; font-size: 0.82rem; margin-bottom: 4px; }
+    .portfolio-label { color: var(--muted); }
+    .portfolio-gain.pos { color: var(--green); }
+    .portfolio-gain.neg { color: var(--red); }
+
+    .loading-spinner {
+      display: inline-block; width: 16px; height: 16px;
+      border: 2px solid var(--border); border-top-color: var(--green);
+      border-radius: 50%; animation: spin 0.8s linear infinite;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    .error-banner {
+      background: rgba(255,77,77,0.1); border: 1px solid rgba(255,77,77,0.3);
+      border-radius: 10px; padding: 12px 16px; font-size: 0.85rem;
+      color: var(--red); margin-bottom: 12px;
+    }
+
+    .success-banner {
+      background: rgba(0,200,150,0.1); border: 1px solid rgba(0,200,150,0.3);
+      border-radius: 10px; padding: 12px 16px; font-size: 0.85rem;
+      color: var(--green); margin-bottom: 12px;
+    }
+
     /* ── MODAL ── */
     .modal-overlay {
       position: fixed; inset: 0; background: rgba(0,0,0,0.75);
@@ -1504,17 +1546,79 @@ Available anytime for questions or issues</span>
         <div class="perk-grid" id="military-grid"></div>
       </div>
 
-      <!-- INVESTING -->
+      <!-- INVESTING / PORTFOLIO -->
       <div class="tab" id="tab-investing">
         <div class="page-header">
-          <h1>Investing</h1>
-          <p>Learn the basics, build a calmer investing habit, and keep your money moving on your terms. Investment capabilities are coming soon.</p>
+          <h1>Investments</h1>
+          <p>Build your portfolio with stocks and ETFs. Real-time quotes, buy orders, and transparent order history.</p>
         </div>
-        <div id="investing-body">
-          <div style="color:var(--muted);font-size:0.9rem;padding:20px 0;text-align:center">Loading investing…</div>
+
+        <!-- Portfolio Overview -->
+        <div class="investments-container">
+          <!-- Search & Buy Section -->
+          <div class="investment-panel">
+            <div class="section-header">
+              <div class="section-title">Search & Buy Securities</div>
+            </div>
+            <div style="background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:20px;margin-bottom:20px">
+              <div style="display:grid;grid-template-columns:1fr 100px;gap:12px;margin-bottom:12px">
+                <div>
+                  <label style="display:block;font-size:0.75rem;color:var(--muted);margin-bottom:6px;text-transform:uppercase;font-weight:700">Ticker (Stock or ETF)</label>
+                  <input id="ticker-search" type="text" placeholder="e.g. AAPL, SPY, VOO" maxlength="10" style="width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:11px 14px;color:var(--text);font-size:0.95rem;outline:none;transition:border-color 0.2s" />
+                </div>
+                <div>
+                  <label style="display:block;font-size:0.75rem;color:var(--muted);margin-bottom:6px;text-transform:uppercase;font-weight:700">Shares</label>
+                  <input id="buy-shares" type="number" placeholder="1" min="0.001" step="0.001" style="width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:11px 14px;color:var(--text);font-size:0.95rem;outline:none;transition:border-color 0.2s" />
+                </div>
+              </div>
+              <div style="background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:12px 14px;margin-bottom:12px;font-size:0.9rem">
+                <div style="color:var(--muted);margin-bottom:4px">Live price</div>
+                <div style="font-size:1.3rem;font-weight:700" id="quote-price">—</div>
+                <div style="font-size:0.75rem;color:var(--muted);margin-top:4px" id="quote-meta">Search a ticker to see live pricing</div>
+              </div>
+              <div style="background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:12px 14px;margin-bottom:16px">
+                <div style="display:flex;justify-content:space-between;align-items:center">
+                  <div>
+                    <div style="color:var(--muted);font-size:0.75rem;margin-bottom:4px">Order Total</div>
+                    <div style="font-size:1.3rem;font-weight:700" id="order-total">$0.00</div>
+                  </div>
+                  <div style="text-align:right">
+                    <div style="color:var(--muted);font-size:0.75rem;margin-bottom:4px">Available to invest</div>
+                    <div style="font-size:1.3rem;font-weight:700;color:var(--green)" id="available-balance">$—</div>
+                  </div>
+                </div>
+              </div>
+              <button id="search-quote-btn" onclick="searchSecurities()" style="width:100%;padding:12px;background:var(--surface2);border:1px solid var(--border);border-radius:10px;color:var(--text);font-weight:700;cursor:pointer;margin-bottom:10px;transition:all 0.2s">Get Quote</button>
+              <button id="buy-btn" onclick="placeBuyOrder()" style="width:100%;padding:12px;background:var(--green);color:#000;border:none;border-radius:10px;font-weight:700;cursor:pointer;transition:background 0.2s" disabled>Buy</button>
+              <div style="font-size:0.75rem;color:var(--muted);margin-top:10px;line-height:1.5">Rate limit: 5 trades/hour. Orders placed during market hours execute immediately at market price.</div>
+            </div>
+          </div>
+
+          <!-- My Portfolio Section -->
+          <div class="investment-panel">
+            <div class="section-header">
+              <div class="section-title">My Portfolio</div>
+              <span onclick="loadPortfolio()" style="cursor:pointer;font-size:0.75rem;color:var(--green);font-weight:700">↻ Refresh</span>
+            </div>
+            <div id="portfolio-content" style="background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:20px">
+              <div style="color:var(--muted);font-size:0.9rem;padding:20px 0;text-align:center">Loading portfolio…</div>
+            </div>
+          </div>
+
+          <!-- Order History Section -->
+          <div class="investment-panel">
+            <div class="section-header">
+              <div class="section-title">Order History</div>
+            </div>
+            <div id="order-history-content" class="tx-list">
+              <div style="color:var(--muted);font-size:0.9rem;padding:20px 0;text-align:center">Loading order history…</div>
+            </div>
+          </div>
         </div>
-        <div class="disclaimer-box" style="margin-top:16px">
-          FAWN uses blockchain-based infrastructure to enable instant transfers. Funds are held in USDC, a USD-backed stablecoin regulated by NYDFS as a licensed money transmitter.
+
+        <!-- Disclaimer -->
+        <div class="disclaimer-box" style="margin-top:20px">
+          Securities trading is speculative and carries risk of loss. Past performance does not guarantee future results. Do not invest more than you can afford to lose. FAWN is not a registered investment advisor and does not provide investment advice.
         </div>
       </div>
 
@@ -2879,7 +2983,7 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
     if (name === 'automation') renderAutomation();
     // FAWN Learn is available independently of brokerage availability. Render
     // it even when an auth token is being refreshed or has just expired.
-    if (name === 'investing') loadInvesting();
+    if (name === 'investing') { loadInvesting(); initPortfolioTab(); }
     if (name === 'brief') { loadBrief(); startBriefAutoRefresh(); }
     else stopBriefAutoRefresh();
     if (name === 'news') {
@@ -3064,10 +3168,51 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
 
   async function loadInvesting() {
     const body = document.getElementById('investing-body');
-    // Keep education available even while execution is disabled. Do not call
-    // account, quote, brokerage, or order endpoints until the capability is
-    // intentionally launched and its safeguards are production-approved.
-    renderInvestingComingSoon(body);
+    // Render the full investing interface with portfolio, trading, and education
+    body.innerHTML = `
+      <div style="background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:20px;margin-bottom:18px">
+        <div style="font-size:0.7rem;color:var(--muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:12px">Search & buy stocks and ETFs</div>
+        <div style="display:flex;gap:10px;margin-bottom:12px">
+          <input id="ticker-search" placeholder="AAPL, SPY, QQQ..." maxlength="10" style="flex:1;text-transform:uppercase;background:var(--bg);border:1px solid var(--border);border-radius:10px;padding:11px 12px;color:var(--text);font-size:0.95rem" />
+          <button class="qa-btn" onclick="searchSecurities()">Quote</button>
+        </div>
+        <div id="quote-price" style="display:none;background:var(--bg);border:1px solid var(--border);border-radius:10px;padding:12px;margin-bottom:12px;font-size:0.85rem">
+          <div style="display:flex;justify-content:space-between;align-items:center">
+            <div>
+              <div style="font-weight:700;margin-bottom:4px"><span id="quote-ticker"></span> <span id="quote-dollars"></span></div>
+              <div id="quote-meta" style="color:var(--muted);font-size:0.75rem">Live quote</div>
+            </div>
+          </div>
+        </div>
+        <div style="display:flex;gap:10px;flex-wrap:wrap">
+          <input id="buy-shares" type="number" min="1" step="0.01" placeholder="$ amount (min $1)" style="flex:1;min-width:140px;background:var(--bg);border:1px solid var(--border);border-radius:10px;padding:11px 12px;color:var(--text);font-size:0.95rem" />
+          <div style="display:flex;gap:8px">
+            <button class="qa-btn" id="buy-btn" onclick="placeBuyOrder()">Buy</button>
+            <button class="qa-btn" style="background:var(--surface);border:1px solid var(--border);color:var(--text)" onclick="placeSellOrder()">Sell</button>
+          </div>
+        </div>
+        <div style="font-size:0.72rem;color:var(--muted);margin-top:10px">💵 Real stocks & ETFs · $0.01 flat fee · $100k max order · Rate limited for safety</div>
+      </div>
+      <div style="background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:20px;margin-bottom:18px">
+        <div style="font-size:0.7rem;color:var(--muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:12px">Your Portfolio</div>
+        <div id="portfolio-content" style="min-height:120px">
+          <div style="text-align:center;padding:40px 20px;color:var(--muted)">
+            <span class="loading-spinner"></span>
+            <div style="margin-top:12px">Loading your portfolio...</div>
+          </div>
+        </div>
+      </div>
+      <div style="background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:20px;margin-bottom:18px">
+        <div style="font-size:0.7rem;color:var(--muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:12px">Recent Orders</div>
+        <div id="order-history" style="min-height:80px">
+          <div style="text-align:center;padding:20px;color:var(--muted);font-size:0.9rem">
+            <span class="loading-spinner"></span>
+            <div style="margin-top:8px">Loading order history...</div>
+          </div>
+        </div>
+      </div>
+      ${investingLearningHub()}
+    `;
   }
 
   function renderInvestingComingSoon(body) {
@@ -3374,6 +3519,202 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
     document.getElementById('invest-symbol').value = symbol;
     getQuote();
     showInvestTab('positions');
+  }
+
+  // ── INVESTMENT/PORTFOLIO TAB (NEW) ──
+  async function loadPortfolio() {
+    const content = document.getElementById('portfolio-content');
+    if (!content) return;
+    content.innerHTML = '<div style="text-align:center;padding:20px"><span class="loading-spinner"></span></div>';
+    try {
+      const data = await authGet('/investments/portfolio');
+      const holdings = data.holdings || [];
+      if (!holdings.length) {
+        content.innerHTML = `<div class="empty-state">
+          <div class="empty-icon">📈</div>
+          <div class="empty-title">No holdings yet</div>
+          <div class="empty-sub">Search for a stock or ETF above and place your first buy order to get started.</div>
+        </div>`;
+        return;
+      }
+      const grid = document.createElement('div');
+      grid.className = 'portfolio-grid';
+      holdings.forEach(h => {
+        const unrealizedGain = (h.current_value || 0) - (h.cost_basis || 0);
+        const gainPercent = h.cost_basis ? ((unrealizedGain / h.cost_basis) * 100) : 0;
+        const card = document.createElement('div');
+        card.className = 'portfolio-card';
+        card.innerHTML = `
+          <div class="portfolio-ticker">${_esc(h.ticker || 'N/A')}</div>
+          <div class="portfolio-value">${fmt(h.current_value || 0)}</div>
+          <div class="portfolio-row">
+            <span class="portfolio-label">Shares</span>
+            <span>${(h.quantity || 0).toFixed(4)}</span>
+          </div>
+          <div class="portfolio-row">
+            <span class="portfolio-label">Avg Cost</span>
+            <span>${fmt(h.avg_cost || 0)}</span>
+          </div>
+          <div class="portfolio-row">
+            <span class="portfolio-label">Gain/Loss</span>
+            <span class="portfolio-gain ${unrealizedGain >= 0 ? 'pos' : 'neg'}">
+              ${unrealizedGain >= 0 ? '+' : ''}${fmt(unrealizedGain)} (${gainPercent.toFixed(2)}%)
+            </span>
+          </div>
+        `;
+        grid.appendChild(card);
+      });
+      content.innerHTML = '';
+      content.appendChild(grid);
+    } catch (e) {
+      const msg = _esc(e.message || 'Failed to load portfolio');
+      content.innerHTML = `<div class="error-banner">${msg}</div>`;
+    }
+  }
+
+  async function searchSecurities() {
+    const ticker = (document.getElementById('ticker-search')?.value || '').trim().toUpperCase().replace(/[^A-Z0-9.]/g, '');
+    if (!ticker) { toast('Enter a ticker symbol'); return; }
+    try {
+      const quoteEl = document.getElementById('quote-price');
+      const tickerEl = document.getElementById('quote-ticker');
+      const priceEl = document.getElementById('quote-dollars');
+      const metaEl = document.getElementById('quote-meta');
+      const buyBtn = document.getElementById('buy-btn');
+      if (quoteEl) quoteEl.style.display = 'block';
+      if (priceEl) priceEl.textContent = '...';
+      if (metaEl) metaEl.textContent = 'Fetching live quote...';
+      const data = await fetch(`${API}/investments/public/quote/${encodeURIComponent(ticker)}`).then(r => {
+        if (!r.ok) throw new Error(`Quote not found for ${ticker}`);
+        return r.json();
+      });
+      const price = data.price_dollars || data.price || 0;
+      if (tickerEl) tickerEl.textContent = _esc(data.ticker || ticker);
+      if (priceEl) priceEl.textContent = '$' + price.toFixed(2);
+      if (metaEl) metaEl.textContent = `${_esc(data.name || '')} · Real-time price`;
+      if (buyBtn) buyBtn.disabled = false;
+      if (document.getElementById('buy-shares')) document.getElementById('buy-shares').focus();
+    } catch (e) {
+      const msg = _esc(e.message || 'Could not fetch quote');
+      const metaEl = document.getElementById('quote-meta');
+      if (metaEl) metaEl.textContent = msg;
+      const buyBtn = document.getElementById('buy-btn');
+      if (buyBtn) buyBtn.disabled = true;
+    }
+  }
+
+  function updateOrderTotal() {
+    const price = parseFloat(document.getElementById('quote-price')?.textContent?.replace('$', '') || 0);
+    const shares = parseFloat(document.getElementById('buy-shares')?.value || 0);
+    const total = price * shares;
+    const totalEl = document.getElementById('order-total');
+    if (totalEl) totalEl.textContent = fmt(total);
+  }
+
+  async function placeBuyOrder() {
+    const ticker = (document.getElementById('ticker-search')?.value || '').trim().toUpperCase().replace(/[^A-Z0-9.]/g, '');
+    const amount = parseFloat(document.getElementById('buy-shares')?.value || 0);
+    if (!ticker) { toast('Enter a ticker'); return; }
+    if (!amount || amount <= 0) { toast('Enter an amount ($1-$100,000)'); return; }
+    if (amount > 100000) { toast('Maximum $100,000 per order'); return; }
+    const btn = document.getElementById('buy-btn');
+    if (!confirm(`Buy $${fmt(amount)} of ${ticker}?`)) return;
+    if (btn) { btn.disabled = true; btn.textContent = 'Placing order...'; }
+    try {
+      const result = await authPost('/investments/orders/buy', {
+        ticker: ticker,
+        amount_dollars: amount
+      });
+      toast(`✓ Order placed for ${ticker}`);
+      document.getElementById('ticker-search').value = '';
+      document.getElementById('buy-shares').value = '';
+      if (document.getElementById('quote-price')) document.getElementById('quote-price').style.display = 'none';
+      if (btn) { btn.disabled = false; btn.textContent = 'Buy'; }
+      setTimeout(() => { loadPortfolio(); loadOrderHistory(); }, 800);
+    } catch (e) {
+      const msg = _esc(e.message || 'Order failed');
+      toast(msg);
+      if (btn) { btn.disabled = false; btn.textContent = 'Buy'; }
+    }
+  }
+
+  async function placeSellOrder() {
+    const ticker = (document.getElementById('ticker-search')?.value || '').trim().toUpperCase().replace(/[^A-Z0-9.]/g, '');
+    const quantity = parseFloat(document.getElementById('buy-shares')?.value || 0);
+    if (!ticker) { toast('Enter a ticker'); return; }
+    if (!quantity || quantity <= 0) { toast('Enter quantity to sell'); return; }
+    const btn = document.querySelectorAll('button')[Array.from(document.querySelectorAll('button')).findIndex(b => b.textContent === 'Sell')];
+    if (!confirm(`Sell ${quantity.toFixed(4)} shares of ${ticker}?`)) return;
+    if (btn) { btn.disabled = true; btn.textContent = 'Selling...'; }
+    try {
+      const result = await authPost('/investments/orders/sell', {
+        ticker: ticker,
+        quantity: quantity
+      });
+      toast(`✓ Sell order placed for ${ticker}`);
+      document.getElementById('ticker-search').value = '';
+      document.getElementById('buy-shares').value = '';
+      if (document.getElementById('quote-price')) document.getElementById('quote-price').style.display = 'none';
+      if (btn) { btn.disabled = false; btn.textContent = 'Sell'; }
+      setTimeout(() => { loadPortfolio(); loadOrderHistory(); }, 800);
+    } catch (e) {
+      const msg = _esc(e.message || 'Order failed');
+      toast(msg);
+      if (btn) { btn.disabled = false; btn.textContent = 'Sell'; }
+    }
+  }
+
+  async function loadOrderHistory() {
+    const content = document.getElementById('order-history');
+    if (!content) return;
+    content.innerHTML = '<div style="text-align:center;padding:20px"><span class="loading-spinner"></span></div>';
+    try {
+      const data = await authGet('/investments/orders');
+      const orders = data.orders || [];
+      if (!orders.length) {
+        content.innerHTML = `<div class="empty-state">
+          <div class="empty-icon">📋</div>
+          <div class="empty-title">No order history yet</div>
+          <div class="empty-sub">Your buy and sell orders will appear here after you place your first trade.</div>
+        </div>`;
+        return;
+      }
+      content.innerHTML = orders.map(order => {
+        const isBuy = (order.side || '').toLowerCase() === 'buy';
+        const icon = isBuy ? '📥' : '📤';
+        const statusColor = order.status === 'filled' ? 'var(--green)' : order.status === 'canceled' ? 'var(--red)' : 'var(--muted)';
+        return `<div class="tx-item">
+          <div class="tx-left">
+            <div class="tx-icon">${icon}</div>
+            <div>
+              <div class="tx-name">${_esc(order.ticker || 'N/A')} ${isBuy ? 'Buy' : 'Sell'}</div>
+              <div class="tx-meta">${(order.quantity || 0).toFixed(4)} shares @ ${fmt(order.price || 0)}</div>
+            </div>
+          </div>
+          <div class="tx-right">
+            <div class="tx-amount">${fmt(order.total_value || 0)}</div>
+            <div class="tx-status" style="color:${statusColor}">${_esc(order.status || 'pending')}</div>
+          </div>
+        </div>`;
+      }).join('');
+    } catch (e) {
+      const msg = _esc(e.message || 'Failed to load order history');
+      content.innerHTML = `<div class="error-banner">${msg}</div>`;
+    }
+  }
+
+  function initPortfolioTab() {
+    loadBalance();
+    loadPortfolio();
+    loadOrderHistory();
+    const sharesInput = document.getElementById('buy-shares');
+    if (sharesInput) sharesInput.addEventListener('input', updateOrderTotal);
+    const tickerSearch = document.getElementById('ticker-search');
+    if (tickerSearch) {
+      tickerSearch.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') { e.preventDefault(); searchSecurities(); }
+      });
+    }
   }
 
   // ── DAILY BRIEF (AI podcast) ──
