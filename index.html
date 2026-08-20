@@ -1552,73 +1552,11 @@ Available anytime for questions or issues</span>
           <h1>Investments</h1>
           <p>Build your portfolio with stocks and ETFs. Real-time quotes, buy orders, and transparent order history.</p>
         </div>
-
-        <!-- Portfolio Overview -->
-        <div class="investments-container">
-          <!-- Search & Buy Section -->
-          <div class="investment-panel">
-            <div class="section-header">
-              <div class="section-title">Search & Buy Securities</div>
-            </div>
-            <div style="background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:20px;margin-bottom:20px">
-              <div style="display:grid;grid-template-columns:1fr 100px;gap:12px;margin-bottom:12px">
-                <div>
-                  <label style="display:block;font-size:0.75rem;color:var(--muted);margin-bottom:6px;text-transform:uppercase;font-weight:700">Ticker (Stock or ETF)</label>
-                  <input id="ticker-search" type="text" placeholder="e.g. AAPL, SPY, VOO" maxlength="10" style="width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:11px 14px;color:var(--text);font-size:0.95rem;outline:none;transition:border-color 0.2s" />
-                </div>
-                <div>
-                  <label style="display:block;font-size:0.75rem;color:var(--muted);margin-bottom:6px;text-transform:uppercase;font-weight:700">Shares</label>
-                  <input id="buy-shares" type="number" placeholder="1" min="0.001" step="0.001" style="width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:11px 14px;color:var(--text);font-size:0.95rem;outline:none;transition:border-color 0.2s" />
-                </div>
-              </div>
-              <div style="background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:12px 14px;margin-bottom:12px;font-size:0.9rem">
-                <div style="color:var(--muted);margin-bottom:4px">Live price</div>
-                <div style="font-size:1.3rem;font-weight:700" id="quote-price">—</div>
-                <div style="font-size:0.75rem;color:var(--muted);margin-top:4px" id="quote-meta">Search a ticker to see live pricing</div>
-              </div>
-              <div style="background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:12px 14px;margin-bottom:16px">
-                <div style="display:flex;justify-content:space-between;align-items:center">
-                  <div>
-                    <div style="color:var(--muted);font-size:0.75rem;margin-bottom:4px">Order Total</div>
-                    <div style="font-size:1.3rem;font-weight:700" id="order-total">$0.00</div>
-                  </div>
-                  <div style="text-align:right">
-                    <div style="color:var(--muted);font-size:0.75rem;margin-bottom:4px">Available to invest</div>
-                    <div style="font-size:1.3rem;font-weight:700;color:var(--green)" id="available-balance">$—</div>
-                  </div>
-                </div>
-              </div>
-              <button id="search-quote-btn" onclick="searchSecurities()" style="width:100%;padding:12px;background:var(--surface2);border:1px solid var(--border);border-radius:10px;color:var(--text);font-weight:700;cursor:pointer;margin-bottom:10px;transition:all 0.2s">Get Quote</button>
-              <button id="buy-btn" onclick="placeBuyOrder()" style="width:100%;padding:12px;background:var(--green);color:#000;border:none;border-radius:10px;font-weight:700;cursor:pointer;transition:background 0.2s" disabled>Buy</button>
-              <div style="font-size:0.75rem;color:var(--muted);margin-top:10px;line-height:1.5">Rate limit: 5 trades/hour. Orders placed during market hours execute immediately at market price.</div>
-            </div>
+        <div id="investing-body">
+          <div style="text-align:center;padding:40px 20px;color:var(--muted)">
+            <span class="loading-spinner"></span>
+            <div style="margin-top:12px">Loading investments…</div>
           </div>
-
-          <!-- My Portfolio Section -->
-          <div class="investment-panel">
-            <div class="section-header">
-              <div class="section-title">My Portfolio</div>
-              <span onclick="loadPortfolio()" style="cursor:pointer;font-size:0.75rem;color:var(--green);font-weight:700">↻ Refresh</span>
-            </div>
-            <div id="portfolio-content" style="background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:20px">
-              <div style="color:var(--muted);font-size:0.9rem;padding:20px 0;text-align:center">Loading portfolio…</div>
-            </div>
-          </div>
-
-          <!-- Order History Section -->
-          <div class="investment-panel">
-            <div class="section-header">
-              <div class="section-title">Order History</div>
-            </div>
-            <div id="order-history-content" class="tx-list">
-              <div style="color:var(--muted);font-size:0.9rem;padding:20px 0;text-align:center">Loading order history…</div>
-            </div>
-          </div>
-        </div>
-
-        <!-- Disclaimer -->
-        <div class="disclaimer-box" style="margin-top:20px">
-          Securities trading is speculative and carries risk of loss. Past performance does not guarantee future results. Do not invest more than you can afford to lose. FAWN is not a registered investment advisor and does not provide investment advice.
         </div>
       </div>
 
@@ -3190,12 +3128,13 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
             </div>
           </div>
         </div>
+        <div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:10px">
+          <input id="buy-shares" type="number" min="0.01" step="0.01" placeholder="$ amount to buy (min $1)" style="flex:1;min-width:140px;background:var(--bg);border:1px solid var(--border);border-radius:10px;padding:11px 12px;color:var(--text);font-size:0.95rem" />
+          <button class="qa-btn" id="buy-btn" onclick="placeBuyOrder()">Buy</button>
+        </div>
         <div style="display:flex;gap:10px;flex-wrap:wrap">
-          <input id="buy-shares" type="number" min="1" step="0.01" placeholder="$ amount (min $1)" style="flex:1;min-width:140px;background:var(--bg);border:1px solid var(--border);border-radius:10px;padding:11px 12px;color:var(--text);font-size:0.95rem" />
-          <div style="display:flex;gap:8px">
-            <button class="qa-btn" id="buy-btn" onclick="placeBuyOrder()">Buy</button>
-            <button class="qa-btn" style="background:var(--surface);border:1px solid var(--border);color:var(--text)" onclick="placeSellOrder()">Sell</button>
-          </div>
+          <input id="sell-qty" type="number" min="0.00000001" step="0.0001" placeholder="Shares to sell" style="flex:1;min-width:140px;background:var(--bg);border:1px solid var(--border);border-radius:10px;padding:11px 12px;color:var(--text);font-size:0.95rem" />
+          <button class="qa-btn" id="sell-btn" style="background:var(--surface);border:1px solid var(--border);color:var(--text)" onclick="placeSellOrder()">Sell</button>
         </div>
         <div style="font-size:0.72rem;color:var(--muted);margin-top:10px">💵 Real stocks & ETFs · $0.01 flat fee · $100k max order · Rate limited for safety</div>
       </div>
@@ -3227,6 +3166,9 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
         </div>
       </div>
       ${investingLearningHub()}
+      <div class="disclaimer-box" style="margin-top:18px">
+        Securities trading is speculative and carries risk of loss. Past performance does not guarantee future results. Do not invest more than you can afford to lose. FAWN is not a registered investment advisor and does not provide investment advice.
+      </div>
     `;
     // Load securities list
     loadSecuritiesList();
@@ -3620,20 +3562,23 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
       const grid = document.createElement('div');
       grid.className = 'portfolio-grid';
       holdings.forEach(h => {
-        const unrealizedGain = (h.current_value || 0) - (h.cost_basis || 0);
-        const gainPercent = h.cost_basis ? ((unrealizedGain / h.cost_basis) * 100) : 0;
+        const currentValue = (h.current_value_cents || 0) / 100;
+        const costBasis = (h.cost_basis_cents || 0) / 100;
+        const avgCost = (h.avg_cost_per_share_cents || 0) / 100;
+        const unrealizedGain = (h.unrealized_gain_cents != null ? h.unrealized_gain_cents : (currentValue - costBasis) * 100) / 100;
+        const gainPercent = h.unrealized_gain_percent != null ? h.unrealized_gain_percent : (costBasis ? ((unrealizedGain / costBasis) * 100) : 0);
         const card = document.createElement('div');
         card.className = 'portfolio-card';
         card.innerHTML = `
           <div class="portfolio-ticker">${_esc(h.ticker || 'N/A')}</div>
-          <div class="portfolio-value">${fmt(h.current_value || 0)}</div>
+          <div class="portfolio-value">${fmt(currentValue)}</div>
           <div class="portfolio-row">
             <span class="portfolio-label">Shares</span>
             <span>${(h.quantity || 0).toFixed(4)}</span>
           </div>
           <div class="portfolio-row">
-            <span class="portfolio-label">Avg Cost</span>
-            <span>${fmt(h.avg_cost || 0)}</span>
+            <span class="portfolio-label">Avg Cost/Share</span>
+            <span>${fmt(avgCost)}</span>
           </div>
           <div class="portfolio-row">
             <span class="portfolio-label">Gain/Loss</span>
@@ -3714,14 +3659,15 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
     if (!amount || amount <= 0) { toast('Enter an amount ($1-$100,000)'); return; }
     if (amount > 100000) { toast('Maximum $100,000 per order'); return; }
     const btn = document.getElementById('buy-btn');
-    if (!confirm(`Buy $${fmt(amount)} of ${ticker}?`)) return;
+    if (!confirm(`Buy ${fmt(amount)} of ${ticker}?`)) return;
     if (btn) { btn.disabled = true; btn.textContent = 'Placing order...'; }
     try {
       const result = await authPost('/investments/orders/buy', {
         ticker: ticker,
         amount_dollars: amount
       });
-      toast(`✓ Order placed for ${ticker}`);
+      const boughtQty = typeof result.quantity === 'number' ? result.quantity.toFixed(4) : null;
+      toast(boughtQty ? `✓ Bought ${boughtQty} shares of ${ticker}` : `✓ Order placed for ${ticker}`);
       document.getElementById('ticker-search').value = '';
       document.getElementById('buy-shares').value = '';
       if (document.getElementById('quote-price')) document.getElementById('quote-price').style.display = 'none';
@@ -3736,10 +3682,10 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
 
   async function placeSellOrder() {
     const ticker = (document.getElementById('ticker-search')?.value || '').trim().toUpperCase().replace(/[^A-Z0-9.]/g, '');
-    const quantity = parseFloat(document.getElementById('buy-shares')?.value || 0);
+    const quantity = parseFloat(document.getElementById('sell-qty')?.value || 0);
     if (!ticker) { toast('Enter a ticker'); return; }
     if (!quantity || quantity <= 0) { toast('Enter quantity to sell'); return; }
-    const btn = document.querySelectorAll('button')[Array.from(document.querySelectorAll('button')).findIndex(b => b.textContent === 'Sell')];
+    const btn = document.getElementById('sell-btn');
     if (!confirm(`Sell ${quantity.toFixed(4)} shares of ${ticker}?`)) return;
     if (btn) { btn.disabled = true; btn.textContent = 'Selling...'; }
     try {
@@ -3749,7 +3695,7 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
       });
       toast(`✓ Sell order placed for ${ticker}`);
       document.getElementById('ticker-search').value = '';
-      document.getElementById('buy-shares').value = '';
+      document.getElementById('sell-qty').value = '';
       if (document.getElementById('quote-price')) document.getElementById('quote-price').style.display = 'none';
       if (btn) { btn.disabled = false; btn.textContent = 'Sell'; }
       setTimeout(() => { loadPortfolio(); loadOrderHistory(); }, 800);
@@ -3776,19 +3722,22 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
         return;
       }
       content.innerHTML = orders.map(order => {
-        const isBuy = (order.side || '').toLowerCase() === 'buy';
+        const isBuy = (order.order_type || '').toLowerCase() === 'buy';
         const icon = isBuy ? '📥' : '📤';
-        const statusColor = order.status === 'filled' ? 'var(--green)' : order.status === 'canceled' ? 'var(--red)' : 'var(--muted)';
+        const statusLower = (order.status || '').toLowerCase();
+        const statusColor = /pending|manual/.test(statusLower) ? 'var(--muted)' : statusLower === 'failed' ? 'var(--red)' : 'var(--green)';
+        const pricePerShare = (order.price_per_share_cents || 0) / 100;
+        const totalValue = (order.total_cost_cents || 0) / 100;
         return `<div class="tx-item">
           <div class="tx-left">
             <div class="tx-icon">${icon}</div>
             <div>
               <div class="tx-name">${_esc(order.ticker || 'N/A')} ${isBuy ? 'Buy' : 'Sell'}</div>
-              <div class="tx-meta">${(order.quantity || 0).toFixed(4)} shares @ ${fmt(order.price || 0)}</div>
+              <div class="tx-meta">${(order.quantity || 0).toFixed(4)} shares${pricePerShare ? ' @ ' + fmt(pricePerShare) : ''}</div>
             </div>
           </div>
           <div class="tx-right">
-            <div class="tx-amount">${fmt(order.total_value || 0)}</div>
+            <div class="tx-amount">${fmt(totalValue)}</div>
             <div class="tx-status" style="color:${statusColor}">${_esc(order.status || 'pending')}</div>
           </div>
         </div>`;
