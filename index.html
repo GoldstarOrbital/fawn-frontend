@@ -3110,9 +3110,9 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
     body.innerHTML = `
       <div style="background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:20px;margin-bottom:18px">
         <div style="font-size:0.7rem;color:var(--muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:12px">Search & buy stocks and ETFs</div>
-        <div style="display:flex;gap:10px;margin-bottom:12px">
-          <input id="ticker-search" placeholder="AAPL, SPY, QQQ..." maxlength="10" style="flex:1;text-transform:uppercase;background:var(--bg);border:1px solid var(--border);border-radius:10px;padding:11px 12px;color:var(--text);font-size:0.95rem" />
-          <button class="qa-btn" onclick="searchSecurities()">Get Quote</button>
+        <div style="display:flex;gap:10px;margin-bottom:12px;flex-wrap:wrap">
+          <input id="ticker-search" placeholder="AAPL, SPY, QQQ..." maxlength="10" style="flex:1;min-width:140px;text-transform:uppercase;background:var(--bg);border:1px solid var(--border);border-radius:10px;padding:11px 12px;color:var(--text);font-size:0.95rem" />
+          <button class="qa-btn" style="padding:11px 16px" onclick="searchSecurities()">Get Quote</button>
         </div>
         <div id="quote-price" style="display:none;background:linear-gradient(135deg, var(--green) 0%, var(--green-dark) 100%);border-radius:10px;padding:16px;margin-bottom:12px;color:#fff">
           <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:12px">
