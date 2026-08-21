@@ -971,6 +971,19 @@ Available anytime for questions or issues</span>
   </div>
 </div>
 
+<!-- ── USDC REDEMPTION MODAL ── -->
+<div id="redemption-modal" role="dialog" aria-modal="true" aria-labelledby="redemption-title" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.7);z-index:1000;align-items:center;justify-content:center;padding:24px">
+  <div style="background:var(--surface);border:1px solid var(--border);border-radius:24px;padding:32px;max-width:440px;width:100%;max-height:85vh;overflow-y:auto;position:relative">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px"><div id="redemption-title" style="font-size:1.3rem;font-weight:800">Cash out USDC</div><button onclick="closeRedemptionModal()" aria-label="Close cash out dialog" style="background:none;border:none;font-size:1.5rem;cursor:pointer;color:var(--muted)">✕</button></div>
+    <p style="font-size:.84rem;color:var(--muted);line-height:1.5;margin:0 0 18px">Sell USDC to FAWN at 1:1 for USD. Your USDC is held when you request cash-out; a payout is reviewed and completed separately.</p>
+    <div class="field"><label for="redemption-amount">Amount (USD)</label><input type="number" id="redemption-amount" placeholder="25.00" step="0.01" min="0.01" inputmode="decimal" oninput="invalidateRedemptionQuote()" /></div>
+    <div class="field"><label for="redemption-destination">Payout destination label <span style="color:var(--muted);font-weight:400">(optional)</span></label><input type="text" id="redemption-destination" maxlength="120" placeholder="e.g. Chase ••••1234" /><div style="font-size:.74rem;color:var(--muted);margin-top:5px">Use a label only—never enter account or routing numbers.</div></div>
+    <div id="redemption-quote" aria-live="polite" style="display:none;margin:14px 0;padding:12px;border-radius:10px;font-size:.82rem;line-height:1.45"></div><div id="redemption-error" class="error-box hidden" role="alert"></div><div id="redemption-success" class="hidden" role="status" style="margin-top:14px;padding:12px;background:rgba(0,200,150,.1);border:1px solid rgba(0,200,150,.35);border-radius:10px;font-size:.84rem;line-height:1.45"></div>
+    <div style="display:flex;gap:10px;margin-top:18px"><button id="redemption-quote-btn" onclick="getRedemptionQuote()" style="flex:1;padding:11px;background:var(--surface2);color:var(--text);font-weight:700;border:1px solid var(--border);border-radius:10px;cursor:pointer">Check eligibility</button><button id="redemption-submit-btn" onclick="submitRedemption()" disabled style="flex:1;padding:11px;background:var(--green);color:#000;font-weight:800;border:none;border-radius:10px;cursor:pointer;opacity:.55">Request cash out</button></div>
+    <div style="font-size:.72rem;color:var(--muted);line-height:1.45;margin-top:14px">Cash-out availability and limits are checked before funds are held. You can cancel only while the request is pending; declined or failed payouts return the held USDC.</div><div id="redemption-history" style="margin-top:20px;border-top:1px solid var(--border);padding-top:16px"></div>
+  </div>
+</div>
+
 <!-- ── RECEIVE USDC MODAL ── -->
 <div id="receive-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.7);z-index:1000;align-items:center;justify-content:center;padding:24px">
   <div style="background:var(--surface);border:1px solid var(--border);border-radius:24px;padding:32px;max-width:420px;width:100%;position:relative">
@@ -1302,9 +1315,9 @@ Available anytime for questions or issues</span>
             <div class="qa-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M12 5v14M6 13l6 6 6-6"/></svg></div>
             <div class="qa-label">Receive</div>
           </div>
-          <div class="qa-btn" onclick="showTab('investing')">
-            <div class="qa-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M4 18 10 12l4 3 6-8"/><path d="M16 7h4v4"/></svg></div>
-            <div class="qa-label">Invest</div>
+          <div class="qa-btn" onclick="openRedemptionModal()">
+            <div class="qa-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M5 7h14v10H5z"/><path d="M8 11h8M8 14h4"/></svg></div>
+            <div class="qa-label">Cash out</div>
           </div>
         </div>
 
@@ -4220,6 +4233,34 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
     document.getElementById('send-error').classList.add('hidden');
   }
 
+  let redemptionIdempotencyKey = null, redemptionRequestInFlight = false;
+  const redemptionAmountCents = () => { const n = Number(document.getElementById('redemption-amount')?.value); return Number.isFinite(n) && n > 0 ? Math.round(n * 100) : 0; };
+  function setRedemptionError(message = '') { const el = document.getElementById('redemption-error'); el.textContent = message; el.classList.toggle('hidden', !message); }
+  function setRedemptionPending(pending) { redemptionRequestInFlight = pending; const q = document.getElementById('redemption-quote-btn'), s = document.getElementById('redemption-submit-btn'); q.disabled = pending; s.disabled = pending || s.dataset.eligible !== 'true'; q.textContent = pending ? 'Checking…' : 'Check eligibility'; s.textContent = pending ? 'Submitting…' : 'Request cash out'; }
+  function renderRedemptions(rows) {
+    const el = document.getElementById('redemption-history'), labels = { requested:'Pending review', approved:'Approved', paid:'Paid', cancelled:'Cancelled — USDC returned', rejected:'Declined — USDC returned', failed:'Payout failed — USDC returned' };
+    if (!rows.length) { el.innerHTML = '<div style="font-size:.8rem;color:var(--muted)">No cash-out requests yet.</div>'; return; }
+    el.innerHTML = `<div style="font-size:.76rem;font-weight:800;text-transform:uppercase;letter-spacing:.8px;color:var(--muted);margin-bottom:9px">Recent requests</div>${rows.slice(0,5).map(row => { const id = String(row.id).replace(/[^A-Za-z0-9_-]/g,''), cancel = row.status === 'requested' ? `<button data-redemption-id="${id}" onclick="cancelRedemption(this.dataset.redemptionId)" style="padding:7px 9px;background:transparent;border:1px solid var(--border);border-radius:7px;color:var(--text);font-size:.75rem;font-weight:700;cursor:pointer">Cancel</button>` : ''; return `<div style="display:flex;justify-content:space-between;gap:10px;align-items:center;padding:10px 0;border-top:1px solid var(--border);font-size:.82rem"><div><strong>$${Number(row.payout_usd || row.usdc || 0).toFixed(2)}</strong><div style="color:var(--muted);margin-top:2px">${labels[row.status] || row.status}</div></div>${cancel}</div>`; }).join('')}`;
+  }
+  async function loadRedemptions() { const el = document.getElementById('redemption-history'); try { const data = await authGet('/redemptions'); renderRedemptions(Array.isArray(data?.redemptions) ? data.redemptions : []); } catch { el.innerHTML = '<div style="font-size:.8rem;color:var(--muted)">Cash-out history is temporarily unavailable.</div>'; } }
+  function openRedemptionModal() { document.getElementById('redemption-modal').style.display = 'flex'; document.getElementById('redemption-success').classList.add('hidden'); document.getElementById('redemption-quote').style.display = 'none'; document.getElementById('redemption-submit-btn').dataset.eligible = 'false'; redemptionIdempotencyKey = null; setRedemptionError(); loadRedemptions(); }
+  function invalidateRedemptionQuote() { const quote = document.getElementById('redemption-quote'), submit = document.getElementById('redemption-submit-btn'); quote.style.display = 'none'; submit.dataset.eligible = 'false'; submit.disabled = true; redemptionIdempotencyKey = null; }
+  function closeRedemptionModal() { if (!redemptionRequestInFlight) document.getElementById('redemption-modal').style.display = 'none'; }
+  async function getRedemptionQuote() {
+    const amount_cents = redemptionAmountCents(), quote = document.getElementById('redemption-quote'), submit = document.getElementById('redemption-submit-btn');
+    if (!amount_cents) { setRedemptionError('Enter a cash-out amount greater than $0.'); return; }
+    setRedemptionError(); setRedemptionPending(true);
+    try { const data = await authGet(`/redemptions/quote?amount_cents=${amount_cents}`), eligible = data.eligible === true; quote.style.display = 'block'; quote.style.background = eligible ? 'rgba(0,200,150,.1)' : 'rgba(255,77,77,.1)'; quote.style.border = `1px solid ${eligible ? 'rgba(0,200,150,.35)' : 'rgba(255,77,77,.35)'}`; quote.innerHTML = eligible ? `<strong>Eligible for a $${(data.payout_cents / 100).toFixed(2)} USD payout</strong><br><span style="color:var(--muted)">1:1 rate · No cash-out fee · 24h limit: $${(data.daily_limit_cents / 100).toFixed(2)}</span>` : `<strong>Not eligible yet</strong><br><span style="color:var(--muted)">${(data.reasons || ['Please try again later.']).join(' ')}</span>`; submit.dataset.eligible = String(eligible); } catch (e) { submit.dataset.eligible = 'false'; setRedemptionError(e?.message || 'Could not check cash-out eligibility.'); } finally { setRedemptionPending(false); }
+  }
+  async function submitRedemption() {
+    const amount_cents = redemptionAmountCents(), destination_label = document.getElementById('redemption-destination').value.trim();
+    if (!amount_cents) { setRedemptionError('Enter a cash-out amount greater than $0.'); return; }
+    if (document.getElementById('redemption-submit-btn').dataset.eligible !== 'true') { setRedemptionError('Check eligibility before requesting a cash-out.'); return; }
+    setRedemptionError(); setRedemptionPending(true); redemptionIdempotencyKey ||= (crypto.randomUUID ? crypto.randomUUID() : `redemption-${Date.now()}-${Math.random().toString(16).slice(2)}`);
+    try { const data = await authPost('/redemptions', { amount_cents, destination_label: destination_label || undefined, idempotency_key: redemptionIdempotencyKey }); const success = document.getElementById('redemption-success'); success.innerHTML = `<strong>Cash-out request pending</strong><br>$${(data.payout_usd || amount_cents / 100).toFixed(2)} is held from your USDC balance while FAWN reviews the payout. You can cancel this request while it remains pending.`; success.classList.remove('hidden'); document.getElementById('redemption-submit-btn').dataset.eligible = 'false'; document.getElementById('redemption-amount').value = ''; document.getElementById('redemption-destination').value = ''; redemptionIdempotencyKey = null; loadBalance(); loadTxns(); loadRedemptions(); } catch (e) { setRedemptionError(e?.message || 'Cash-out request failed. Your balance was not changed.'); } finally { setRedemptionPending(false); }
+  }
+  async function cancelRedemption(id) { setRedemptionError(); try { await authPost(`/redemptions/${encodeURIComponent(id)}/cancel`, {}); const success = document.getElementById('redemption-success'); success.textContent = 'Cash-out request cancelled. The held USDC has been returned to your balance.'; success.classList.remove('hidden'); loadBalance(); loadTxns(); loadRedemptions(); } catch (e) { setRedemptionError(e?.message || 'Could not cancel this cash-out request.'); } }
+
   async function openReceiveModal() {
     document.getElementById('receive-modal').style.display = 'flex';
     const profile = await updateSettingsDisplay();
@@ -4854,6 +4895,7 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
   document.addEventListener('click', (e) => {
     if (e.target.id === 'settings-modal') closeSettings();
     if (e.target.id === 'send-modal') closeSendModal();
+    if (e.target.id === 'redemption-modal') closeRedemptionModal();
     if (e.target.id === 'receive-modal') closeReceiveModal();
     if (e.target.id === 'add-funds-modal') closeAddFundsModal();
     if (e.target.id === 'trade-modal') closeTradeModal();
