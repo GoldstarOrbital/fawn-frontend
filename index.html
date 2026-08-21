@@ -816,7 +816,7 @@
       <div style="font-size:0.8rem;font-weight:700;text-transform:uppercase;color:var(--muted);letter-spacing:1px;margin-bottom:12px">💰 Transfer Fees</div>
       <div style="background:rgba(0,200,150,0.05);border:1px solid rgba(0,200,150,0.3);border-radius:12px;padding:14px;font-size:0.85rem;color:var(--text);line-height:1.6">
         <div style="margin-bottom:8px"><strong>Send to FAWN friends:</strong> $0.01 per transfer</div>
-        <div><strong>Send to external wallets:</strong> $0.50 per transfer</div>
+        <div><strong>Send to external wallets:</strong> $0.01 per transfer</div>
       </div>
     </div>
 
@@ -956,7 +956,7 @@ Available anytime for questions or issues</span>
     <div class="field">
       <label>Amount (USD)</label>
       <input type="number" id="send-amount" placeholder="10.00" step="0.01" min="0" />
-      <div style="font-size:0.75rem;color:var(--muted);margin-top:4px">Fee: $0.01 for friends, $0.50 for external • Instant delivery</div>
+      <div style="font-size:0.75rem;color:var(--muted);margin-top:4px">Fee: $0.01 per transfer • Instant delivery</div>
     </div>
 
     <div class="field">
@@ -3335,7 +3335,7 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
       </div>
       <div class="disclaimer-box" style="margin-bottom:18px">
         <strong>Protected investing</strong><br>
-        Every order requires a fresh quote and is capped at $1,000. FAWN also applies a rolling $2,500 / 24-hour limit, limits open orders, and never enables margin or leverage.
+        Every order requires a fresh quote and is capped at $1,000. A $0.01 FAWN fee is charged from your USDC balance only when the brokerage accepts the order; failed provider requests are refunded. FAWN also applies a rolling $2,500 / 24-hour limit, limits open orders, and never enables margin or leverage.
       </div>
       ${investingLearningHub()}
       <div style="background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:20px;margin-bottom:18px">
@@ -3360,7 +3360,7 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
             <button class="qa-btn" id="invest-sell-btn" style="background:var(--surface);border:1px solid var(--border);color:var(--text)" onclick="reviewInvestOrder('sell')">Review sell</button>
           </div>
         </div>
-        <div style="font-size:0.72rem;color:var(--muted);margin-top:10px">Review a fresh quote before submitting · $1,000 max per order · $2,500 rolling 24-hour limit · no margin.</div>
+        <div style="font-size:0.72rem;color:var(--muted);margin-top:10px">Review a fresh quote before submitting · $0.01 FAWN fee · $1,000 max per order · $2,500 rolling 24-hour limit · no margin.</div>
       </div>
 
       <div id="brokerage-connections" style="background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:18px;margin-bottom:18px">
@@ -3510,12 +3510,12 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
       return;
     }
     const quotePrice = document.getElementById('quote-price')?.textContent || 'the quoted price';
-    if (!confirm(`Review ${side === 'buy' ? 'buy' : 'sell'} order\n\n${symbol} · $${amount.toFixed(2)} · estimated price ${quotePrice}\n\nSubmitting sends a market order to the configured brokerage. The final execution price can differ. Continue?`)) return;
+    if (!confirm(`Review ${side === 'buy' ? 'buy' : 'sell'} order\n\n${symbol} · $${amount.toFixed(2)} · estimated price ${quotePrice}\nFAWN fee: $0.01 from your USDC balance (refunded if the provider rejects the order)\n\nSubmitting sends a market order to the configured brokerage. The final execution price can differ. Continue?`)) return;
     const button = document.getElementById(side === 'buy' ? 'invest-buy-btn' : 'invest-sell-btn');
     if (button) { button.disabled = true; button.textContent = 'Submitting…'; }
     try {
       const r = await authPost('/investing/orders', { symbol, side, notional: amount });
-      toast(`${side === 'buy' ? 'Buy' : 'Sell'} order submitted. Status: ${r.status}`);
+      toast(`${side === 'buy' ? 'Buy' : 'Sell'} order submitted. $${Number(r.fee_usd || 0.01).toFixed(2)} FAWN fee applied. Status: ${r.status}`);
       document.getElementById('invest-symbol').value = '';
       document.getElementById('invest-amount').value = '';
       invalidateInvestQuote();
@@ -4291,7 +4291,7 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
     const amount_cents = redemptionAmountCents(), quote = document.getElementById('redemption-quote'), submit = document.getElementById('redemption-submit-btn');
     if (!amount_cents) { setRedemptionError('Enter a cash-out amount greater than $0.'); return; }
     setRedemptionError(); setRedemptionPending(true);
-    try { const data = await authGet(`/redemptions/quote?amount_cents=${amount_cents}`), eligible = data.eligible === true; quote.style.display = 'block'; quote.style.background = eligible ? 'rgba(0,200,150,.1)' : 'rgba(255,77,77,.1)'; quote.style.border = `1px solid ${eligible ? 'rgba(0,200,150,.35)' : 'rgba(255,77,77,.35)'}`; quote.innerHTML = eligible ? `<strong>Eligible for a $${(data.payout_cents / 100).toFixed(2)} USD payout</strong><br><span style="color:var(--muted)">1:1 rate · No cash-out fee · 24h limit: $${(data.daily_limit_cents / 100).toFixed(2)}</span>` : `<strong>Not eligible yet</strong><br><span style="color:var(--muted)">${(data.reasons || ['Please try again later.']).join(' ')}</span>`; submit.dataset.eligible = String(eligible); } catch (e) { submit.dataset.eligible = 'false'; setRedemptionError(e?.message || 'Could not check cash-out eligibility.'); } finally { setRedemptionPending(false); }
+    try { const data = await authGet(`/redemptions/quote?amount_cents=${amount_cents}`), eligible = data.eligible === true; quote.style.display = 'block'; quote.style.background = eligible ? 'rgba(0,200,150,.1)' : 'rgba(255,77,77,.1)'; quote.style.border = `1px solid ${eligible ? 'rgba(0,200,150,.35)' : 'rgba(255,77,77,.35)'}`; quote.innerHTML = eligible ? `<strong>Eligible for a $${(data.payout_cents / 100).toFixed(2)} USD payout</strong><br><span style="color:var(--muted)">1:1 rate · $${(data.fee_cents / 100).toFixed(2)} cash-out fee · 24h limit: $${(data.daily_limit_cents / 100).toFixed(2)}</span>` : `<strong>Not eligible yet</strong><br><span style="color:var(--muted)">${(data.reasons || ['Please try again later.']).join(' ')}</span>`; submit.dataset.eligible = String(eligible); } catch (e) { submit.dataset.eligible = 'false'; setRedemptionError(e?.message || 'Could not check cash-out eligibility.'); } finally { setRedemptionPending(false); }
   }
   async function submitRedemption() {
     const amount_cents = redemptionAmountCents(), destination_label = document.getElementById('redemption-destination').value.trim();
