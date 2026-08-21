@@ -3119,6 +3119,25 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
 
   async function loadInvesting() {
     const body = document.getElementById('investing-body');
+    if (!body) return;
+    if (!token) {
+      body.innerHTML = '<div style="color:var(--muted);text-align:center;padding:32px">Sign in to open and manage an investing account.</div>';
+      return;
+    }
+    try {
+      const account = await authGet('/investing/account');
+      renderInvestingAccount(body, account);
+    } catch (e) {
+      const message = String(e?.message || '');
+      if (/no investing account/i.test(message)) {
+        renderInvestingOnboard(body);
+      } else if (/404|503|isn't available|not configured/i.test(message)) {
+        renderInvestingComingSoon(body);
+      } else {
+        body.innerHTML = `<div class="error-banner">${_esc(message || 'Could not load investing. Please try again.')}</div>`;
+      }
+    }
+    return;
     // Render the full investing interface with portfolio, trading, and education
     body.innerHTML = `
       <div style="background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:20px;margin-bottom:18px">
@@ -3322,7 +3341,7 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
       <div style="background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:20px;margin-bottom:18px">
         <div style="font-size:0.7rem;color:var(--muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:12px">Search & buy stocks and ETFs</div>
         <div style="display:flex;gap:10px;margin-bottom:12px">
-          <input id="invest-symbol" placeholder="AAPL, SPY, QQQ..." maxlength="10" style="flex:1;text-transform:uppercase;background:var(--bg);border:1px solid var(--border);border-radius:10px;padding:11px 12px;color:var(--text);font-size:0.95rem" />
+          <input id="invest-symbol" placeholder="AAPL, SPY, QQQ..." maxlength="10" oninput="invalidateInvestQuote()" style="flex:1;text-transform:uppercase;background:var(--bg);border:1px solid var(--border);border-radius:10px;padding:11px 12px;color:var(--text);font-size:0.95rem" />
           <button class="qa-btn" onclick="getQuote()">Quote</button>
         </div>
         <div id="invest-quote" style="display:none;background:var(--bg);border:1px solid var(--border);border-radius:10px;padding:12px;margin-bottom:12px;font-size:0.85rem">
@@ -3337,11 +3356,11 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
         <div style="display:flex;gap:10px;flex-wrap:wrap">
           <input id="invest-amount" type="number" min="1" step="0.01" placeholder="$ amount (min $1)" style="flex:1;min-width:140px;background:var(--bg);border:1px solid var(--border);border-radius:10px;padding:11px 12px;color:var(--text);font-size:0.95rem" />
           <div style="display:flex;gap:8px">
-            <button class="qa-btn" onclick="placeInvestOrder('buy')">Buy</button>
-            <button class="qa-btn" style="background:var(--surface);border:1px solid var(--border);color:var(--text)" onclick="placeInvestOrder('sell')">Sell</button>
+            <button class="qa-btn" id="invest-buy-btn" onclick="reviewInvestOrder('buy')" disabled>Review buy</button>
+            <button class="qa-btn" id="invest-sell-btn" style="background:var(--surface);border:1px solid var(--border);color:var(--text)" onclick="reviewInvestOrder('sell')">Review sell</button>
           </div>
         </div>
-        <div style="font-size:0.72rem;color:var(--muted);margin-top:10px">💵 $0.01 flat fee per order · $1,000 max per order · $2,500 rolling 24-hour limit · no margin.</div>
+        <div style="font-size:0.72rem;color:var(--muted);margin-top:10px">Review a fresh quote before submitting · $1,000 max per order · $2,500 rolling 24-hour limit · no margin.</div>
       </div>
 
       <div id="brokerage-connections" style="background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:18px;margin-bottom:18px">
@@ -3419,6 +3438,15 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
     });
   }
 
+  let investQuoteAt = 0;
+  function invalidateInvestQuote() {
+    investQuoteAt = 0;
+    const quote = document.getElementById('invest-quote');
+    const buy = document.getElementById('invest-buy-btn');
+    if (quote) quote.style.display = 'none';
+    if (buy) buy.disabled = true;
+  }
+
   async function getQuote() {
     const symbol = (document.getElementById('invest-symbol')?.value || '').trim().toUpperCase().replace(/[^A-Z0-9.]/g, '');
     if (!symbol) { toast('Enter a symbol'); return; }
@@ -3429,10 +3457,14 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
       document.getElementById('quote-bid').textContent = `$${q.bid.toFixed(2)}`;
       document.getElementById('quote-ask').textContent = `$${q.ask.toFixed(2)}`;
       document.getElementById('invest-quote').style.display = 'block';
+      investQuoteAt = Date.now();
+      const buy = document.getElementById('invest-buy-btn');
+      if (buy) buy.disabled = false;
       if (!document.getElementById('invest-amount')?.value) {
         document.getElementById('invest-amount').focus();
       }
     } catch (e) {
+      invalidateInvestQuote();
       toast(`Quote not found for ${symbol}`);
     }
   }
@@ -3461,7 +3493,7 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
     }
   }
 
-  async function placeInvestOrder(side) {
+  async function reviewInvestOrder(side) {
     const symbol = (document.getElementById('invest-symbol')?.value || '').trim().toUpperCase().replace(/[^A-Z0-9.]/g, '');
     const amount = parseFloat(document.getElementById('invest-amount')?.value || '');
     const quoteSymbol = (document.getElementById('quote-symbol')?.textContent || '').trim().toUpperCase();
@@ -3472,17 +3504,26 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
       toast('Get a fresh quote for this symbol before placing the order');
       return;
     }
+    if (!investQuoteAt || Date.now() - investQuoteAt > 30_000) {
+      invalidateInvestQuote();
+      toast('Your quote is more than 30 seconds old. Get a new quote before reviewing the order.');
+      return;
+    }
     const quotePrice = document.getElementById('quote-price')?.textContent || 'the quoted price';
-    if (!confirm(`${side === 'buy' ? 'Buy' : 'Sell'} $${amount.toFixed(2)} of ${symbol} at about ${quotePrice}?\n\nProtective limits apply. Market prices can move before execution.`)) return;
+    if (!confirm(`Review ${side === 'buy' ? 'buy' : 'sell'} order\n\n${symbol} · $${amount.toFixed(2)} · estimated price ${quotePrice}\n\nSubmitting sends a market order to the configured brokerage. The final execution price can differ. Continue?`)) return;
+    const button = document.getElementById(side === 'buy' ? 'invest-buy-btn' : 'invest-sell-btn');
+    if (button) { button.disabled = true; button.textContent = 'Submitting…'; }
     try {
       const r = await authPost('/investing/orders', { symbol, side, notional: amount });
-      toast(`${side === 'buy' ? 'Bought' : 'Sold'}. Order status: ${r.status}`);
+      toast(`${side === 'buy' ? 'Buy' : 'Sell'} order submitted. Status: ${r.status}`);
       document.getElementById('invest-symbol').value = '';
       document.getElementById('invest-amount').value = '';
-      document.getElementById('invest-quote').style.display = 'none';
+      invalidateInvestQuote();
       setTimeout(loadInvesting, 800);
     } catch (e) {
       toast(String(e.message || 'Order failed'));
+    } finally {
+      if (button) { button.disabled = side === 'buy' ? !investQuoteAt : false; button.textContent = side === 'buy' ? 'Review buy' : 'Review sell'; }
     }
   }
 
